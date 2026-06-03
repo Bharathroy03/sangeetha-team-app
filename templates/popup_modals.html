@@ -1,0 +1,242 @@
+<!-- ==================== POPUP SELECT MODALS (shared partial) ==================== -->
+<!-- NOTE: This file contains ONLY the popup modals — no form elements.            -->
+<!--       Include this in pages that have their own form (e.g. edit_request.html) -->
+<!--       Use customer_entry.html (which includes both form + modals) for the     -->
+<!--       New Customer Entry page in dashboard.html.                               -->
+
+<!-- Transaction Mode Selection Modal -->
+<div id="modal-transaction_mode" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('transaction_mode')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">payments</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Transaction Mode</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('transaction_mode')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-4 overflow-y-auto">
+            <div class="flex flex-col gap-2">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance" onclick="selectPopupOption('transaction_mode', 'Finance')">
+                    <span class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">Finance — EMI Transactions</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Non-Finance" onclick="selectPopupOption('transaction_mode', 'Non-Finance')">
+                    <span class="w-8 h-8 rounded-full bg-green-100 text-emerald-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">money</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">Non-Finance — Direct Splits</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Finance Provider Searchable Selection Modal -->
+<div id="modal-finance_provider" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('finance_provider')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">account_balance</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Finance Provider</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('finance_provider')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-3 border-b border-outline-variant bg-slate-50 flex-shrink-0">
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                <input type="text" placeholder="Search Finance Provider..." oninput="filterPopupOptions('finance_provider', this.value)"
+                    class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl text-xs focus:ring-1 focus:ring-primary focus:border-primary" />
+            </div>
+        </div>
+        <div class="p-4 overflow-y-auto flex-grow">
+            <div class="flex flex-col gap-2 option-list">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Bajaj Finserv Lending Financier" onclick="selectPopupOption('finance_provider', 'Bajaj Finserv Lending Financier')">
+                    <span class="text-sm font-semibold text-slate-700">Bajaj Finserv Lending Financier</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="DMI Consumer Credit (Samsung, Oppo, Vivo)" onclick="selectPopupOption('finance_provider', 'DMI Consumer Credit (Samsung, Oppo, Vivo)')">
+                    <span class="text-sm font-semibold text-slate-700">DMI Consumer Credit (Samsung, Oppo, Vivo)</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="HDB Financial Services Ltd (Financier)" onclick="selectPopupOption('finance_provider', 'HDB Financial Services Ltd (Financier)')">
+                    <span class="text-sm font-semibold text-slate-700">HDB Financial Services Ltd (Financier)</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="IDFC First Bank Ltd (Financier)" onclick="selectPopupOption('finance_provider', 'IDFC First Bank Ltd (Financier)')">
+                    <span class="text-sm font-semibold text-slate-700">IDFC First Bank Ltd (Financier)</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="TVS Credit Services Limited (Financier)" onclick="selectPopupOption('finance_provider', 'TVS Credit Services Limited (Financier)')">
+                    <span class="text-sm font-semibold text-slate-700">TVS Credit Services Limited (Financier)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Down Payment Mode Selection Modal -->
+<div id="modal-down_payment_mode" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('down_payment_mode')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">credit_card</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Down Payment Mode</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('down_payment_mode')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-4 overflow-y-auto">
+            <div class="flex flex-col gap-2">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Cash" onclick="selectPopupOption('down_payment_mode', 'Cash')">
+                    <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">payments</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">Cash Payment</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Card" onclick="selectPopupOption('down_payment_mode', 'Card')">
+                    <span class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">Card Terminal Payment</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="E-Wallet" onclick="selectPopupOption('down_payment_mode', 'E-Wallet')">
+                    <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">E-Wallet / UPI Payment</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exchange Status Selection Modal -->
+<div id="modal-exchange_status" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('exchange_status')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Exchange Status</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('exchange_status')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-4 overflow-y-auto">
+            <div class="flex flex-col gap-2">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Yes" onclick="selectPopupOption('exchange_status', 'Yes')">
+                    <span class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">Yes — Exchange Involved</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="No" onclick="selectPopupOption('exchange_status', 'No')">
+                    <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[18px]">cancel</span>
+                    </span>
+                    <span class="text-sm font-semibold text-slate-700">No — Direct Purchase</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exchange Brand Selection Modal -->
+<div id="modal-exchange_brand" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('exchange_brand')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Exchange Brand</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('exchange_brand')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-4 overflow-y-auto">
+            <div class="flex flex-col gap-2">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Samsung" onclick="selectPopupOption('exchange_brand', 'Samsung')">
+                    <span class="text-sm font-semibold text-slate-700">Samsung</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Oppo" onclick="selectPopupOption('exchange_brand', 'Oppo')">
+                    <span class="text-sm font-semibold text-slate-700">Oppo</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Vivo" onclick="selectPopupOption('exchange_brand', 'Vivo')">
+                    <span class="text-sm font-semibold text-slate-700">Vivo</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Redmi" onclick="selectPopupOption('exchange_brand', 'Redmi')">
+                    <span class="text-sm font-semibold text-slate-700">Redmi</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="OnePlus" onclick="selectPopupOption('exchange_brand', 'OnePlus')">
+                    <span class="text-sm font-semibold text-slate-700">OnePlus</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Realme" onclick="selectPopupOption('exchange_brand', 'Realme')">
+                    <span class="text-sm font-semibold text-slate-700">Realme</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sales Person Searchable Selection Modal -->
+<div id="modal-sales_person" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+    <div class="absolute inset-0" onclick="closePopupModal('sales_person')"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">badge</span>
+                <h3 class="text-sm sm:text-base font-bold">Select Sales Person</h3>
+            </div>
+            <button type="button" onclick="closePopupModal('sales_person')" class="text-white/80 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-3 border-b border-outline-variant bg-slate-50 flex-shrink-0">
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                <input type="text" placeholder="Search Sales Person..." oninput="filterPopupOptions('sales_person', this.value)"
+                    class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl text-xs focus:ring-1 focus:ring-primary focus:border-primary" />
+            </div>
+        </div>
+        <div class="p-4 overflow-y-auto flex-grow">
+            <div class="flex flex-col gap-2 option-list">
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('sales_person', 'Bharath Kumar - Manager')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">BM</span>
+                    <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('sales_person', 'Ramesh T - Cashier')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">RT</span>
+                    <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Mohammad Farooq - Staff" onclick="selectPopupOption('sales_person', 'Mohammad Farooq - Staff')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">MF</span>
+                    <span class="text-sm font-semibold text-slate-700">Mohammad Farooq - Staff</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('sales_person', 'Abhishek - OPPO')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">AO</span>
+                    <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - VIVO" onclick="selectPopupOption('sales_person', 'Azeem - VIVO')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">AV</span>
+                    <span class="text-sm font-semibold text-slate-700">Azeem - VIVO</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('sales_person', 'Rabiya - Xiaomi')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">RX</span>
+                    <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
+                </button>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Finance Promoter" onclick="selectPopupOption('sales_person', 'Finance Promoter')">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">FP</span>
+                    <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

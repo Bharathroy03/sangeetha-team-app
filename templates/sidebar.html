@@ -1,0 +1,99 @@
+<!-- SideNavBar -->
+<aside
+    class="fixed left-0 top-16 bottom-0 w-64 flex flex-col p-unit bg-white border-r border-outline-variant dark:border-outline shadow-sm overflow-y-auto z-40 transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0"
+    id="side-nav">
+    <div class="px-stack-md py-stack-lg mb-4">
+        <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface leading-tight">Sangeetha Gadgets</h2>
+        <p class="text-body-sm font-body-sm text-on-surface-variant">Doddaballapur -2- (Lions Bhavan Complex)</p>
+    </div>
+    
+    <nav class="flex-1 space-y-4">
+        <!-- Dashboard Category -->
+        <div>
+            <a href="/dashboard"
+                class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/dashboard' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                <span class="material-symbols-outlined text-[20px] {% if request.path == '/dashboard' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">dashboard</span>
+                Dashboard
+            </a>
+        </div>
+
+        <!-- SECTION 1: CUSTOMER MANAGEMENT -->
+        <div>
+            <div class="px-stack-md py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5 select-none">
+                <span class="material-symbols-outlined text-[14px]">groups</span>
+                Customer Management
+            </div>
+            <div class="space-y-0.5">
+                <a href="/customer-entry"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/customer-entry' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path == '/customer-entry' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">person_add</span>
+                    New Customer Entry
+                </a>
+                <a href="/customer-records"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/customer-records' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path == '/customer-records' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">folder_shared</span>
+                    Customer Records
+                </a>
+                <a href="/payment-tracker"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/payment-tracker' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path == '/payment-tracker' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">account_balance_wallet</span>
+                    Payment Tracker
+                </a>
+            </div>
+        </div>
+
+        <!-- SECTION 2: CRM MANAGEMENT -->
+        <div>
+            <div class="px-stack-md py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5 select-none">
+                <span class="material-symbols-outlined text-[14px]">analytics</span>
+                CRM Management
+            </div>
+            <div class="space-y-0.5">
+                <a href="/crm-walkin-customers"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/crm-walkin-customers' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path == '/crm-walkin-customers' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">support_agent</span>
+                    CRM Walk-in Entry
+                </a>
+                <a href="/crm-data"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path == '/crm-data' %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path == '/crm-data' %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">dataset</span>
+                    CRM Data
+                </a>
+            </div>
+        </div>
+
+        <!-- SECTION 3: ADMINISTRATION (Admin / Super Admin only) -->
+        {% if session.get('role') in ['super_admin', 'admin'] %}
+        <div>
+            <div class="px-stack-md py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5 select-none">
+                <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                Administration
+            </div>
+            <div class="space-y-0.5">
+                <a href="/admin/edit-requests"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path.startswith('/admin/edit-requests') or request.path.startswith('/customers/') and request.path.endswith('/request-edit') %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path.startswith('/admin/edit-requests') or request.path.startswith('/customers/') and request.path.endswith('/request-edit') %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">rule</span>
+                    Edit Requests
+                </a>
+                <a href="/admin/users"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path.startswith('/admin/users') %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path.startswith('/admin/users') %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">manage_accounts</span>
+                    User Management
+                </a>
+                <a href="/admin/database-editor"
+                    class="w-full flex items-center gap-3 px-stack-md py-2.5 {% if request.path.startswith('/admin/database-editor') %}bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm scale-[1.02]{% else %}text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1{% endif %} transition-all rounded-lg group text-sm font-semibold duration-300">
+                    <span class="material-symbols-outlined text-[20px] {% if request.path.startswith('/admin/database-editor') %}text-white{% else %}text-on-surface-variant group-hover:text-[#EE8133]{% endif %} transition-colors">edit_note</span>
+                    Database Text Editor
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+    <div class="mt-auto p-stack-md flex flex-col gap-2">
+        <button id="btnLogoutMobile"
+            class="lg:hidden w-full py-3 px-4 bg-rose-50 border border-rose-200 text-[#BA1A1A] hover:bg-rose-100/50 text-label-md font-label-md rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+            Logout
+        </button>
+    </div>
+</aside>

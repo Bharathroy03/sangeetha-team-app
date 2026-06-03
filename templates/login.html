@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login | Sangeetha Mobiles</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F9FAFB",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        @keyframes bgZoom {
+            from {
+                transform: scale(1.05);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes containerFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes staggeredFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-bg-zoom {
+            animation: bgZoom 10s ease-out forwards;
+        }
+
+        .animate-container-fade-up {
+            animation: containerFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-stagger-1 {
+            animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            opacity: 0;
+        }
+
+        .animate-stagger-2 {
+            animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+            opacity: 0;
+        }
+
+        .animate-stagger-3 {
+            animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+            opacity: 0;
+        }
+
+        .animate-stagger-4 {
+            animation: staggeredFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+            opacity: 0;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .brand-gradient {
+            background: linear-gradient(135deg, #600000 0%, #390000 100%);
+        }
+
+        .full-page-bg {
+            background-image: url("{{ url_for('static', filename='images/login_background.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        /* Toast Backdrop Blur Overlay */
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Toast Container - Centered */
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+
+        .toast.success {
+            background: #0D70C0;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .toast.error {
+            background: #F3F4F6;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #1E293B;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .toast.success .toast-content {
+            color: #FFFFFF;
+        }
+
+        .toast.error .toast-content {
+            color: #1E293B;
+        }
+
+        .toast-content svg {
+            color: #EE8133 !important;
+        }
+
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .toast.success .toast-close {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toast.success .toast-close:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toast.error .toast-close {
+            color: #64748B;
+        }
+
+        .toast.error .toast-close:hover {
+            color: #1E293B;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Countdown Progress Bar */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+
+        .toast.success .toast-progress {
+            background: linear-gradient(90deg, #EE8133, #FF9E59);
+        }
+
+        .toast.error .toast-progress {
+            background: linear-gradient(90deg, #EE8133, #FF9E59);
+        }
+
+        @keyframes toastPopIn {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastPopOut {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+        }
+
+        @keyframes toastProgressRun {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        /* Premium Shimmer Button styling */
+        .btn-premium {
+            background: linear-gradient(135deg, #0D70C0 0%, #00569E 100%);
+            border: 1px solid rgba(238, 129, 51, 0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.15),
+                transparent
+            );
+            transition: 0.6s;
+        }
+
+        .btn-premium:hover::before {
+            left: 150%;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 112, 192, 0.45), 0 0 0 2px rgba(238, 129, 51, 0.45);
+            border-color: rgba(238, 129, 51, 0.85);
+        }
+
+        .btn-premium:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Premium error input indicator */
+        .input-error {
+            border-color: rgba(244, 63, 94, 0.8) !important;
+            box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
+        }
+
+        /* Premium Shake Animation with decay */
+        .shake-premium {
+            animation: premiumShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes premiumShake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+
+<body class="bg-black font-body-md text-on-surface min-h-screen flex flex-col relative overflow-x-hidden">
+    <!-- Background Wrapper with Animation -->
+    <div class="fixed inset-0 z-0 animate-bg-zoom overflow-hidden">
+        <div class="absolute inset-0 full-page-bg"></div>
+        <!-- Dark Overlay -->
+        <div class="absolute inset-0 bg-black/60 z-10"></div>
+    </div>
+    <main class="min-h-screen w-full flex items-center justify-center px-margin-mobile md:px-margin-desktop py-6 relative z-20">
+        <div class="w-full max-w-[420px] flex flex-col items-center">
+            <!-- Global Logo -->
+            <div class="mb-4 animate-container-fade-up" style="animation-delay: 0.1s;">
+                <img alt="Sangeetha Mobiles" class="h-10 w-auto object-contain"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuByI05IEXhNqsWcb7G1hPMRzZG4kQd-ymaeGpiAHoHOc6BnYLqJlT3f0jmjw09OxmM-vaEl190toUFJMpae3XclMsS9ROcd7mjlFe0xKPThRnDVPk9-CM_QGjEzmBrwqGrqVC9f0--Edui6YjK9N5FXI8xfKrdc0qOQecLsZ6iO7YQEwzzsR3j3ctoQ4DnkyqE1-VEe9UJFkyVwho3kc9qXZb8ct-LeVg75-Hz042nEQYqHcZGRRe27zfzBWr3s3xlPqtyD_YW1_jc" />
+            </div>
+            <!-- Login Card -->
+            <div class="w-full bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl shadow-[0px_32px_64px_rgba(0,0,0,0.5)] overflow-hidden animate-container-fade-up"
+                style="animation-delay: 0.2s;">
+                <!-- Anniversary Header Section -->
+                <div class="bg-heritage-maroon/5 p-4 flex justify-center border-b border-outline-variant/10">
+                    <img alt="52nd Anniversary Sale" class="h-20 w-auto object-contain"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4rt3qnTVC5DbTEr5LrOpQPgCCloFKn_09s30jbrjmSE_waEH18p1pzLnzUNGDI24I8UPkI-CZDtF8drw5SrT6IH-o5m3b--h2l8L-leOcI7QnVnb_waPcNig53pV28tU6x2wMTdEYGpf-uOVZcD-FjxDxH294xX04u1wDD1ab0CoS8jMn8cNOM0FlbQ-tQks_3phW5WEK8JG73ZzguLrOdWlRj3R7eMWzxozGzo8DlNZLfOsweROc94LLD_NLaiFcLwIKz4jD6KE" />
+                </div>
+                <!-- Form Section -->
+                <div class="p-6 md:p-8">
+                    <div class="mb-4 text-center animate-stagger-1">
+                        <h1 class="font-headline-md text-headline-md text-heritage-maroon mb-1">Welcome Back</h1>
+                        <p class="font-label-md text-label-md text-on-surface-variant">Access your account and celebrate with us.</p>
+                    </div>
+                    <!-- Error Message Block -->
+                    <div id="loginErrorMessage" class="hidden mb-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-[#ba1a1a] rounded-xl text-label-md font-label-md flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-[#ba1a1a] text-[20px]">error</span>
+                        <span id="errorMessageText"></span>
+                    </div>
+                    <form id="loginForm" class="space-y-4">
+                        <!-- Employee ID Field -->
+                        <div class="space-y-1 animate-stagger-2">
+                            <label class="font-label-md text-label-md text-on-surface-variant block ml-1"
+                                for="employee_id">Employee ID</label>
+                            <div class="relative group">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-heritage-maroon">badge</span>
+                                <input
+                                    class="w-full pl-12 pr-4 py-2.5 bg-white rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-on-surface placeholder:text-on-surface-variant/40"
+                                    id="employee_id" name="employee_id" placeholder="Employee ID" type="text" required />
+                            </div>
+                        </div>
+                        <!-- Password Field -->
+                        <div class="space-y-1 animate-stagger-3">
+                            <label class="font-label-md text-label-md text-on-surface-variant block ml-1"
+                                for="password">Password</label>
+                            <div class="relative group">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-heritage-maroon">lock</span>
+                                <input
+                                    class="w-full pl-12 pr-4 py-2.5 bg-white rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-on-surface placeholder:text-on-surface-variant/40"
+                                    id="password" name="password" placeholder="Password" type="password" autocomplete="current-password" required />
+                            </div>
+                        </div>
+                        <!-- Actions -->
+                        <div class="pt-2 animate-stagger-4">
+                            <button
+                                id="btnSignIn"
+                                class="w-full py-3 btn-premium text-white font-headline-md text-label-md rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] duration-200 flex items-center justify-center gap-3"
+                                type="submit">
+                                SIGN IN
+                                <span class="material-symbols-outlined text-[20px]">login</span>
+                            </button>
+                            <div class="mt-3 flex justify-center">
+                                <a id="forgotPasswordLink" class="font-label-md text-label-md text-on-surface-variant hover:text-heritage-maroon transition-colors hover:underline underline-offset-4 decoration-prestige-gold"
+                                    href="#">
+                                    Forgot Password?
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- Footer of the Card -->
+                <div class="px-6 py-4 bg-surface-container-low/50 text-center border-t border-outline-variant/10">
+                    <p class="font-label-sm text-label-sm text-on-surface-variant">
+                        Don't have an account?
+                        <a class="text-heritage-maroon font-bold hover:underline ml-1" href="#">Create Account</a>
+                    </p>
+                </div>
+            </div>
+            <!-- Supporting Info -->
+            <div class="mt-4 text-center animate-container-fade-up" style="animation-delay: 0.4s;">
+                <p class="font-label-sm text-label-sm text-white/60 tracking-wide">
+                    © 2024 SANGEETHA MOBILES. 52 YEARS OF EXCELLENCE.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Backdrop Blur -->
+    <div id="toastBackdrop"></div>
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.parentElement.classList.add('scale-[1.02]');
+                input.parentElement.parentElement.classList.add('duration-300');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.parentElement.classList.remove('scale-[1.02]');
+            });
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 100000) | random }}"></script>
+</body>
+</html>

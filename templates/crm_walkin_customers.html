@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CRM Walk-in Customer Entry | Sangeetha Mobiles</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F9FAFB",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        window.currentUserRole = "{{ session.get('role', 'store_employee') }}";
+        window.currentUsername = "{{ session.get('username', '') }}";
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            background-color: #ffffff !important;
+            border-color: #0D70C0 !important;
+            box-shadow: 0 0 0 2px rgba(13, 112, 192, 0.1);
+        }
+        /* Toast Alert styling */
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+        .toast.success {
+            background: #0D70C0;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast.error {
+            background: #F3F4F6;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #1E293B;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .toast.success .toast-close:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .toast.error .toast-close:hover {
+            color: #1E293B;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        .toast.error .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        
+        .form-label-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4B5563;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .option-item {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-item:hover {
+            background-color: rgba(13, 112, 192, 0.04);
+            border-color: rgba(13, 112, 192, 0.2);
+            transform: translateX(2px);
+        }
+        .option-item.selected {
+            background-color: rgba(13, 112, 192, 0.08);
+            border-color: #0D70C0;
+        }
+        @keyframes toastPopIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes toastProgressRun {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+    {% include 'header.html' %}
+
+    <!-- SideNavBar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        <!-- Page Header & Breadcrumb -->
+        <div class="mb-6 animate-container-fade-up">
+            <nav class="flex mb-1" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 text-xs font-semibold text-on-surface-variant/70">
+                    <li class="inline-flex items-center">
+                        <a href="/dashboard" class="inline-flex items-center hover:text-primary transition-colors gap-1">
+                            <span class="material-symbols-outlined text-[16px]">dashboard</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-[16px] mx-1 text-on-surface-variant/40 flex-shrink-0">chevron_right</span>
+                            <span class="text-on-surface font-bold text-slate-800">CRM Walk-in Entry</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="text-headline-md font-headline-md font-bold text-slate-800 flex items-center gap-2 mt-2">
+                <span class="material-symbols-outlined text-primary text-3xl">support_agent</span>
+                CRM Walk-in Customer Entry Form
+            </h1>
+        </div>
+
+        <!-- Single Form Card directly embedded -->
+        <div class="mb-8">
+            <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div class="px-4 py-3.5 sm:px-6 sm:py-4.5 border-b border-[#0D70C0] bg-[#0D70C0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-[#EE8133] text-[22px] font-bold">person_add</span>
+                        <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">Register Walk-in/Walkout Customer</h2>
+                    </div>
+                    <span class="text-[11px] sm:text-xs text-white/95 font-semibold bg-white/15 px-2.5 py-1 rounded-full w-max">Fields marked * are mandatory</span>
+                </div>
+                <form id="crmForm" class="p-4 sm:p-6 space-y-4 text-xs font-semibold text-slate-700 bg-slate-50/50">
+                    <input type="hidden" id="crm_record_id" value="" />
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Customer Name -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="crm_customer_name">Customer Name <span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="crm_customer_name" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="Name" type="text" maxlength="100" required />
+                        </div>
+                        <!-- Mobile Number -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="crm_mobile_number">Mobile Number (10 Digits) <span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="crm_mobile_number" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="e.g. 9876543210" type="tel" maxlength="10" required />
+                        </div>
+                    </div>
+
+                    <!-- Model / Item Enquired -->
+                    <div class="flex flex-col gap-1">
+                        <label class="form-label-badge" for="crm_model_item">Model / Item Enquired <span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                        <input id="crm_model_item" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-medium w-full text-slate-800" placeholder="e.g. Oppo F33 6/128 White" type="text" maxlength="200" required />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Reason (Popup Modal Trigger) -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge">Walk-in / Walkout Reason <span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <div class="relative w-full" onclick="openPopupModal('crm_walkout_reason')">
+                                <input type="text" id="crm_walkout_reason" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Reason" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none text-[18px]">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        <!-- Sales Person (Popup Modal Trigger) -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge">Sales Person <span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <div class="relative w-full" onclick="openPopupModal('crm_sales_person')">
+                                <input type="text" id="crm_sales_person" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Employee" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none text-[18px]">arrow_drop_down</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="flex flex-col gap-1">
+                        <label class="form-label-badge" for="crm_remarks">Remarks (Optional)</label>
+                        <textarea id="crm_remarks" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-medium resize-none h-20 w-full text-slate-800" placeholder="Additional details..." maxlength="500"></textarea>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="pt-4 flex flex-col sm:flex-row justify-end gap-3 bg-white -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 p-4 border-t border-slate-100">
+                        <button type="button" onclick="clearCrmForm()" class="w-full sm:w-auto px-6 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg transition-all text-xs font-bold">Clear Form</button>
+                        <button type="submit" class="w-full sm:w-auto px-8 py-2.5 bg-[#0D70C0] hover:bg-[#00569E] text-white rounded-lg transition-all shadow font-bold text-xs">Save CRM Customer</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- Walk-in Reason Selector Modal -->
+    <div id="modal-crm_walkout_reason" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('crm_walkout_reason')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">psychology</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Walkout Reason</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('crm_walkout_reason')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="No Walkout - Purchasing at Sangeetha" onclick="selectPopupOption('crm_walkout_reason', 'No Walkout - Purchasing at Sangeetha')">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                        </span>
+                        <span class="text-xs font-semibold text-slate-700">No Walkout - Purchasing at Sangeetha</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Just Walk-in Customer" onclick="selectPopupOption('crm_walkout_reason', 'Just Walk-in Customer')">
+                        <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">directions_walk</span>
+                        </span>
+                        <span class="text-xs font-semibold text-slate-700">Just Walk-in Customer</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Enquiry Customer" onclick="selectPopupOption('crm_walkout_reason', 'Enquiry Customer')">
+                        <span class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">contact_support</span>
+                        </span>
+                        <span class="text-xs font-semibold text-slate-700">Enquiry Customer</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Pricing Issue" onclick="selectPopupOption('crm_walkout_reason', 'Pricing Issue')">
+                        <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">sell</span>
+                        </span>
+                        <span class="text-xs font-semibold text-slate-700">Pricing Issue</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="others" onclick="selectPopupOption('crm_walkout_reason', 'others')">
+                        <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+                        </span>
+                        <span class="text-xs font-semibold text-slate-700">others</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salesperson Selector Modal -->
+    <div id="modal-crm_sales_person" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('crm_sales_person')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Sales Person</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('crm_sales_person')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-3 border-b border-outline-variant bg-slate-50 flex-shrink-0">
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                    <input type="text" placeholder="Search Sales Person..." oninput="filterPopupOptions('crm_sales_person', this.value)"
+                        class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl text-xs focus:ring-1 focus:ring-primary" />
+                </div>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2 option-list">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('crm_sales_person', 'Bharath Kumar - Manager')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">BM</span>
+                        <span class="text-xs font-semibold text-slate-700">Bharath Kumar - Manager</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('crm_sales_person', 'Ramesh T - Cashier')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RT</span>
+                        <span class="text-xs font-semibold text-slate-700">Ramesh T - Cashier</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Mohammad Farooq - Staff" onclick="selectPopupOption('crm_sales_person', 'Mohammad Farooq - Staff')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">MF</span>
+                        <span class="text-xs font-semibold text-slate-700">Mohammad Farooq - Staff</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('crm_sales_person', 'Farooq - Staff')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">FS</span>
+                        <span class="text-xs font-semibold text-slate-700">Farooq - Staff</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('crm_sales_person', 'Abhishek - OPPO')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AO</span>
+                        <span class="text-xs font-semibold text-slate-700">Abhishek - OPPO</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - VIVO" onclick="selectPopupOption('crm_sales_person', 'Azeem - VIVO')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AV</span>
+                        <span class="text-xs font-semibold text-slate-700">Azeem - VIVO</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('crm_sales_person', 'Azeem - Vivo')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold font-data-mono">av</span>
+                        <span class="text-xs font-semibold text-slate-700">Azeem - Vivo</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('crm_sales_person', 'Rabiya - Xiaomi')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RX</span>
+                        <span class="text-xs font-semibold text-slate-700">Rabiya - Xiaomi</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Finance Promoter" onclick="selectPopupOption('crm_sales_person', 'Finance Promoter')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold font-data-mono">FP</span>
+                        <span class="text-xs font-semibold text-slate-700">Finance Promoter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastBackdrop"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Script Block -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // DOM Elements
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sideNav = document.getElementById('side-nav');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const btnLogout = document.getElementById('btnLogout');
+        const btnLogoutMobile = document.getElementById('btnLogoutMobile');
+        
+        const crmForm = document.getElementById('crmForm');
+        const crmCustomerNameInput = document.getElementById('crm_customer_name');
+        const crmMobileNumberInput = document.getElementById('crm_mobile_number');
+        const crmModelItemInput = document.getElementById('crm_model_item');
+        const crmWalkoutReasonInput = document.getElementById('crm_walkout_reason');
+        const crmRemarksInput = document.getElementById('crm_remarks');
+        const crmSalesPersonInput = document.getElementById('crm_sales_person');
+
+        // Sidebar Toggle
+        if (mobileMenuToggle && sideNav && sidebarOverlay) {
+            const toggleSidebar = () => {
+                const isHidden = sideNav.classList.contains('-translate-x-full');
+                if (isHidden) {
+                    sideNav.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.remove('hidden');
+                } else {
+                    sideNav.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                }
+            };
+            mobileMenuToggle.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+
+        // Logout
+        const logoutAction = async () => {
+            try {
+                const response = await fetch('/api/logout', { method: 'POST' });
+                if (response.ok) window.location.href = '/login';
+            } catch (err) {
+                window.location.href = '/login';
+            }
+        };
+        if (btnLogout) btnLogout.addEventListener('click', logoutAction);
+        if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', logoutAction);
+
+        // Toast Notification System
+        window.showToast = (message, type = 'success') => {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const iconName = type === 'success' ? 'check_circle' : 'error';
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <span class="material-symbols-outlined">${iconName}</span>
+                    <span>${message}</span>
+                </div>
+                <span class="toast-close material-symbols-outlined" onclick="this.parentElement.remove()">close</span>
+                <div class="toast-progress"></div>
+            `;
+            container.appendChild(toast);
+            const dismiss = () => {
+                toast.style.animation = 'toastPopIn 0.35s ease forwards reverse';
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 350);
+            };
+            setTimeout(() => { if (toast.parentNode) dismiss(); }, 4000);
+        };
+
+        // Clear Form function
+        window.clearCrmForm = () => {
+            crmCustomerNameInput.value = '';
+            crmMobileNumberInput.value = '';
+            crmModelItemInput.value = '';
+            crmWalkoutReasonInput.value = '';
+            crmRemarksInput.value = '';
+            crmSalesPersonInput.value = '';
+            crmCustomerNameInput.classList.remove('border-rose-500');
+            crmMobileNumberInput.classList.remove('border-rose-500');
+            crmModelItemInput.classList.remove('border-rose-500');
+            crmWalkoutReasonInput.classList.remove('border-rose-500');
+            crmSalesPersonInput.classList.remove('border-rose-500');
+        };
+
+        // Form Submit
+        crmForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = crmCustomerNameInput.value.trim();
+            const mobile = crmMobileNumberInput.value.trim();
+            const model = crmModelItemInput.value.trim();
+            const reason = crmWalkoutReasonInput.value.trim();
+            const remarks = crmRemarksInput.value.trim();
+            const salesperson = crmSalesPersonInput.value.trim();
+
+            let valid = true;
+            if (!name) { crmCustomerNameInput.classList.add('border-rose-500'); valid = false; }
+            else { crmCustomerNameInput.classList.remove('border-rose-500'); }
+
+            if (!mobile || mobile.length !== 10 || !/^\d+$/.test(mobile)) { crmMobileNumberInput.classList.add('border-rose-500'); valid = false; }
+            else { crmMobileNumberInput.classList.remove('border-rose-500'); }
+
+            if (!model) { crmModelItemInput.classList.add('border-rose-500'); valid = false; }
+            else { crmModelItemInput.classList.remove('border-rose-500'); }
+
+            if (!reason) { crmWalkoutReasonInput.classList.add('border-rose-500'); valid = false; }
+            else { crmWalkoutReasonInput.classList.remove('border-rose-500'); }
+
+            if (!salesperson) { crmSalesPersonInput.classList.add('border-rose-500'); valid = false; }
+            else { crmSalesPersonInput.classList.remove('border-rose-500'); }
+
+            if (!valid) {
+                showToast('Please correct validation errors on the form.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/crm-walkin-customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_name: name,
+                        mobile_number: mobile,
+                        model_item: model,
+                        walkout_reason: reason,
+                        remarks: remarks,
+                        sales_person: salesperson
+                    })
+                });
+
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    showToast('CRM walk-in customer record saved successfully!', 'success');
+                    clearCrmForm();
+                } else {
+                    showToast(res.message || 'Failed to save CRM record.', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error while saving record.', 'error');
+            }
+        });
+
+        // Searchable Popup Modals logic
+        window.openPopupModal = (id) => {
+            const modal = document.getElementById(`modal-${id}`);
+            if (!modal) return;
+
+            const searchInput = modal.querySelector(`input[type="text"]`);
+            if (searchInput) {
+                searchInput.value = '';
+                window.filterPopupOptions(id, '');
+            }
+
+            const currentVal = document.getElementById(id) ? document.getElementById(id).value : '';
+            modal.querySelectorAll('.option-item').forEach(item => {
+                let checkIcon = item.querySelector('.selected-check-icon');
+                if (item.getAttribute('data-value') === currentVal && currentVal !== '') {
+                    item.classList.add('selected');
+                    if (!checkIcon) {
+                        checkIcon = document.createElement('span');
+                        checkIcon.className = 'selected-check-icon material-symbols-outlined text-primary ml-auto text-[18px]';
+                        checkIcon.textContent = 'check_circle';
+                        item.appendChild(checkIcon);
+                    }
+                } else {
+                    item.classList.remove('selected');
+                    if (checkIcon) checkIcon.remove();
+                }
+            });
+
+            modal.classList.remove('hidden');
+            modal.offsetHeight;
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+
+            const content = modal.querySelector('.popup-modal-content');
+            if (content) {
+                content.classList.remove('translate-y-full', 'sm:translate-y-4', 'sm:scale-95');
+                content.classList.add('translate-y-0', 'sm:translate-y-0', 'sm:scale-100');
+            }
+
+            setTimeout(() => { if (searchInput) searchInput.focus(); }, 50);
+            document.addEventListener('keydown', handlePopupEscKey);
+        };
+
+        window.closePopupModal = (id) => {
+            const modal = document.getElementById(`modal-${id}`);
+            if (!modal) return;
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+
+            const content = modal.querySelector('.popup-modal-content');
+            if (content) {
+                content.classList.remove('translate-y-0', 'sm:translate-y-0', 'sm:scale-100');
+                content.classList.add('translate-y-full', 'sm:translate-y-4', 'sm:scale-95');
+            }
+
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            document.removeEventListener('keydown', handlePopupEscKey);
+        };
+
+        const handlePopupEscKey = (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('[id^="modal-"]:not(.hidden)').forEach(modal => {
+                    const id = modal.id.replace('modal-', '');
+                    window.closePopupModal(id);
+                });
+            }
+        };
+
+        window.selectPopupOption = (id, value) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.value = value;
+                input.classList.remove('border-rose-500');
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            window.closePopupModal(id);
+        };
+
+        window.filterPopupOptions = (id, query) => {
+            const modal = document.getElementById(`modal-${id}`);
+            if (!modal) return;
+            const list = modal.querySelector('.option-list') || modal.querySelector('.flex-col');
+            if (!list) return;
+            const items = list.querySelectorAll('.option-item');
+            const cleanQuery = query.toLowerCase().trim();
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(cleanQuery)) item.classList.remove('hidden');
+                else item.classList.add('hidden');
+            });
+        };
+
+        document.querySelectorAll('.popup-modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    const id = overlay.id.replace('modal-', '');
+                    window.closePopupModal(id);
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>

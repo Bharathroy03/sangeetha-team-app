@@ -1,0 +1,38 @@
+[
+    {
+        "crm_customer_id": "CRM-1001",
+        "customer_name": "67896",
+        "mobile_number": "6899678978",
+        "model_item": "ghjmj",
+        "walkout_reason": "No Walkout - Purchasing at Sangeetha",
+        "remarks": "dgvfsgdff",
+        "sales_person": "Farooq - Staff",
+        "created_by": "22913",
+        "created_at": "2026-06-03 16:11:33",
+        "updated_at": "2026-06-03 16:11:33"
+    },
+    {
+        "crm_customer_id": "CRM-1002",
+        "customer_name": "Bargerg",
+        "mobile_number": "1232121234",
+        "model_item": "ergferfr",
+        "walkout_reason": "Enquiry Customer",
+        "remarks": "wqecwfr",
+        "sales_person": "Farooq - Staff",
+        "created_by": "22913",
+        "created_at": "2026-06-03 16:38:12",
+        "updated_at": "2026-06-03 16:38:12"
+    },
+    {
+        "crm_customer_id": "CRM-1003",
+        "customer_name": "Afad",
+        "mobile_number": "9284513423",
+        "model_item": "adva",
+        "walkout_reason": "Just Walk-in Customer",
+        "remarks": "aefWF",
+        "sales_person": "Mohammad Farooq - Staff",
+        "created_by": "22913",
+        "created_at": "2026-06-03 21:41:22",
+        "updated_at": "2026-06-03 21:41:22"
+    }
+]

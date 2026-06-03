@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Edit Requests Approval Panel | Sangeetha Mobiles</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F9FAFB",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+        .toast.success {
+            background: #0D70C0;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast.error {
+            background: #F3F4F6;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #1E293B;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        .toast.error .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        @keyframes toastPopIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes toastProgressRun {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+        .comparison-diff {
+            background-color: #FEF3C7; /* yellow background for diff */
+            color: #D97706;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+    {% include 'header.html' %}
+
+    <!-- SideNavBar -->
+    {% include 'sidebar.html' %}
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        <div class="max-w-6xl mx-auto flex flex-col gap-6">
+            <!-- Header section -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-wide">Customer Edit Requests</h1>
+                    <p class="text-sm text-slate-500 mt-1">Review pending customer edits requested by store employees.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-clear-history" class="px-4 py-2 bg-[#BA1A1A] hover:bg-red-700 text-white font-bold rounded-xl shadow-sm text-xs transition-all hidden flex items-center gap-1.5" onclick="clearHistoryLog()">
+                        <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+                        Clear History Log
+                    </button>
+                    <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                        <button id="tab-pending" class="px-4 py-2 bg-white text-[#0D70C0] font-bold rounded-lg shadow-sm text-xs transition-all" onclick="toggleRequestTab('Pending')">Pending</button>
+                        <button id="tab-history" class="px-4 py-2 text-slate-600 font-semibold rounded-lg text-xs transition-all" onclick="toggleRequestTab('History')">History Log</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loader banner -->
+            <div id="requests-loader" class="p-12 text-center bg-white border rounded-2xl flex flex-col items-center justify-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined animate-spin text-[36px] text-[#0D70C0]">sync</span>
+                <span class="text-sm font-semibold text-slate-500">Loading edit requests...</span>
+            </div>
+
+            <!-- Requests list container -->
+            <div id="requests-list-container" class="grid grid-cols-1 gap-6 hidden">
+                <!-- Cards will be dynamically populated here -->
+            </div>
+
+            <!-- Empty state banner -->
+            <div id="requests-empty" class="p-12 text-center bg-white border border-outline-variant rounded-2xl flex flex-col items-center justify-center gap-4 shadow-sm hidden">
+                <span class="material-symbols-outlined text-[48px] text-slate-300">task_alt</span>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800">All caught up!</h3>
+                    <p class="text-sm text-slate-400 mt-1">There are no customer edit requests currently pending review.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- REJECTION REASON MODAL -->
+    <div id="rejectionModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-outline-variant flex flex-col m-4 transform scale-95 opacity-0 transition-all duration-300" id="rejectionModalCard">
+            <div class="px-6 py-4 bg-[#BA1A1A] text-white flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[22px]">cancel</span>
+                    <h3 class="text-base font-bold">Reject Edit Request</h3>
+                </div>
+                <button type="button" onclick="closeRejectionModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <form id="rejectionForm" class="p-6 flex flex-col gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label for="rejection_reason" class="text-xs font-bold text-slate-700 uppercase">Reason for Rejection *</label>
+                    <textarea id="rejection_reason" name="rejection_reason" required maxlength="250" rows="3"
+                        class="px-4 py-3 bg-white border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-xl text-body-md resize-none w-full"
+                        placeholder="State clearly why this edit request is rejected..."></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeRejectionModal()"
+                        class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-semibold rounded-lg">Cancel</button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-[#BA1A1A] text-white hover:bg-red-700 text-xs font-semibold rounded-lg shadow-sm">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Alerts -->
+    <div id="toastBackdrop"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Setup simple alerts hooks
+        window.showToast = (message, type = 'success') => {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' 
+                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+            toast.innerHTML = `
+                <div class="toast-content">${icon}<span>${message}</span></div>
+                <span class="toast-close">&times;</span>
+                <div class="toast-progress"></div>
+            `;
+            container.appendChild(toast);
+            const dismiss = () => {
+                toast.style.animation = 'toastPopOut 0.35s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards';
+                setTimeout(() => toast.remove(), 350);
+            };
+            toast.querySelector('.toast-close').addEventListener('click', dismiss);
+            setTimeout(() => { if (toast.parentNode) dismiss(); }, 4000);
+        };
+
+        let activeTab = 'Pending'; // 'Pending' or 'History'
+        let allRequests = [];
+        let currentRejectingRequestId = null;
+
+        const loadRequests = async () => {
+            document.getElementById('requests-loader').classList.remove('hidden');
+            document.getElementById('requests-list-container').classList.add('hidden');
+            document.getElementById('requests-empty').classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/edit-requests');
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    allRequests = res.data || [];
+                    renderRequests();
+                } else {
+                    window.showToast(res.message || 'Failed to load requests.', 'error');
+                }
+            } catch (err) {
+                window.showToast('Network error while loading requests.', 'error');
+            }
+        };
+
+        const renderRequests = () => {
+            const container = document.getElementById('requests-list-container');
+            const emptyEl = document.getElementById('requests-empty');
+            document.getElementById('requests-loader').classList.add('hidden');
+
+            let filtered = [];
+            if (activeTab === 'Pending') {
+                filtered = allRequests.filter(r => r.status === 'pending');
+            } else {
+                filtered = allRequests.filter(r => r.status !== 'pending');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            container.innerHTML = filtered.map(req => {
+                const original = req.original_data || {};
+                const proposed = req.proposed_data || {};
+                const keys = [
+                    { label: 'Customer Name', key: 'customer_name' },
+                    { label: 'Mobile Number', key: 'mobile_number' },
+                    { label: 'Item / Model', key: 'item_model' },
+                    { label: 'IMEI Number', key: 'imei_number' },
+                    { label: 'Transaction Mode', key: 'transaction_mode' },
+                    { label: 'Finance Provider', key: 'finance_provider' },
+                    { label: 'Down Payment Mode', key: 'down_payment_mode' },
+                    { label: 'Down Payment Value', key: 'down_payment_value', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'Cash Amount', key: 'cash_amount', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'Card Amount', key: 'card_amount', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'E-Wallet Amount', key: 'ewallet_amount', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'Total Amount Received', key: 'total_amount_received', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'Exchange Status', key: 'exchange_status' },
+                    { label: 'Exchange Brand', key: 'exchange_brand' },
+                    { label: 'Exchange Value', key: 'exchange_value', format: v => '₹' + parseFloat(v || 0).toLocaleString() },
+                    { label: 'Sales Person', key: 'sales_person' },
+                    { label: 'Remarks', key: 'remarks' }
+                ];
+
+                // Build diff rows
+                let diffRows = '';
+                keys.forEach(k => {
+                    const origValRaw = original[k.key];
+                    const propValRaw = proposed[k.key];
+
+                    const origVal = k.format ? k.format(origValRaw) : (origValRaw || '—');
+                    const propVal = k.format ? k.format(propValRaw) : (propValRaw || '—');
+
+                    const isDifferent = String(origValRaw).trim() !== String(propValRaw).trim();
+
+                    if (isDifferent) {
+                        diffRows += `
+                            <tr class="border-b last:border-b-0 bg-amber-50/40">
+                                <td class="px-4 py-2.5 text-xs font-bold text-slate-500 uppercase">${k.label}</td>
+                                <td class="px-4 py-2.5 text-sm text-slate-500 line-through decoration-rose-500/70">${origVal}</td>
+                                <td class="px-4 py-2.5 text-sm text-emerald-700 font-bold bg-emerald-50/50">${propVal}</td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                if (diffRows === '') {
+                    // Show standard info if no differences found (safety)
+                    diffRows = `
+                        <tr>
+                            <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-400">No modifications detected in input fields.</td>
+                        </tr>
+                    `;
+                }
+
+                // Render action controls or history label
+                let actionHeader = '';
+                let statusBadge = '';
+                if (req.status === 'pending') {
+                    statusBadge = `<span class="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-700 rounded-full">Pending Approval</span>`;
+                    actionHeader = `
+                        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                            <button onclick="rejectRequest('${req.request_id}')" class="px-4 py-2 border border-rose-200 text-[#BA1A1A] hover:bg-rose-50 font-bold text-xs rounded-lg active:scale-95 transition-all">Reject</button>
+                            <button onclick="approveRequest('${req.request_id}')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm active:scale-95 transition-all">Approve & Update</button>
+                        </div>
+                    `;
+                } else if (req.status === 'approved') {
+                    statusBadge = `<span class="px-2.5 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full">Approved</span>`;
+                    actionHeader = `
+                        <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 text-xs font-medium text-slate-500 flex justify-between items-center">
+                            <div class="flex flex-col sm:flex-row sm:gap-4">
+                                <span>Approved by: <b>${req.approved_by || 'admin'}</b></span>
+                                <span>Date: <b>${req.approved_at}</b></span>
+                            </div>
+                            <button onclick="deleteRequest('${req.request_id}')" class="px-3 py-1.5 border border-rose-200 text-[#BA1A1A] hover:bg-rose-50 font-bold text-xs rounded-lg active:scale-95 transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">delete</span>Delete Record
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    statusBadge = `<span class="px-2.5 py-1 text-xs font-bold bg-rose-100 text-[#BA1A1A] rounded-full">Rejected</span>`;
+                    actionHeader = `
+                        <div class="px-6 py-4 bg-rose-50/50 border-t border-rose-100 flex flex-col gap-1.5">
+                            <div class="text-xs font-semibold text-[#BA1A1A]">Rejection Note:</div>
+                            <div class="text-sm text-slate-700 bg-white p-3 border border-rose-100 rounded-xl leading-relaxed">${escapeHtml(req.admin_remarks || '')}</div>
+                            <div class="text-xs font-medium text-slate-500 mt-1 flex justify-between items-center">
+                                <div class="flex flex-col sm:flex-row sm:gap-4">
+                                    <span>Rejected by: <b>${req.rejected_by || 'admin'}</b></span>
+                                    <span>Date: <b>${req.rejected_at}</b></span>
+                                </div>
+                                <button onclick="deleteRequest('${req.request_id}')" class="px-3 py-1.5 border border-rose-200 text-[#BA1A1A] hover:bg-rose-50 font-bold text-xs rounded-lg active:scale-95 transition-all flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">delete</span>Delete Record
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        <!-- Top header -->
+                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-[#0D70C0] flex items-center justify-center font-bold text-sm">
+                                    ${escapeHtml(original.customer_name ? original.customer_name.charAt(0) : 'C')}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-base font-bold text-slate-800">${escapeHtml(original.customer_name || 'Customer')}</h3>
+                                        <span class="text-xs font-semibold bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono">${req.customer_id}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-0.5">Submitted by Employee ID: <b>${req.requested_by}</b> (${req.requested_role || 'store_employee'}) at ${req.created_at}</p>
+                                </div>
+                            </div>
+                            <div>
+                                ${statusBadge}
+                            </div>
+                        </div>
+
+                        <!-- Content comparative grid -->
+                        <div class="p-6 flex flex-col gap-4">
+                            <!-- Change request Reason -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-2.5">
+                                <span class="material-symbols-outlined text-amber-600 shrink-0 text-[20px]">rate_review</span>
+                                <div class="text-sm">
+                                    <div class="font-bold text-amber-800 text-xs uppercase mb-0.5">Reason for Edit Submission:</div>
+                                    <p class="text-slate-700 leading-relaxed italic">"${escapeHtml(req.reason)}"</p>
+                                </div>
+                            </div>
+
+                            <!-- Comparative Table -->
+                            <div class="border border-outline-variant rounded-xl overflow-hidden">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                            <th class="px-4 py-2 w-1/3">Field</th>
+                                            <th class="px-4 py-2 w-1/3">Original Value</th>
+                                            <th class="px-4 py-2 w-1/3">Proposed Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${diffRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Footer actions -->
+                        ${actionHeader}
+                    </div>
+                `;
+            }).join('');
+        };
+
+        const toggleRequestTab = (tab) => {
+            activeTab = tab;
+            const btnPending = document.getElementById('tab-pending');
+            const btnHistory = document.getElementById('tab-history');
+            const btnClearHistory = document.getElementById('btn-clear-history');
+
+            if (tab === 'Pending') {
+                btnPending.className = 'px-4 py-2 bg-white text-[#0D70C0] font-bold rounded-lg shadow-sm text-xs transition-all';
+                btnHistory.className = 'px-4 py-2 text-slate-600 font-semibold rounded-lg text-xs transition-all';
+                if (btnClearHistory) btnClearHistory.classList.add('hidden');
+            } else {
+                btnPending.className = 'px-4 py-2 text-slate-600 font-semibold rounded-lg text-xs transition-all';
+                btnHistory.className = 'px-4 py-2 bg-white text-[#0D70C0] font-bold rounded-lg shadow-sm text-xs transition-all';
+                if (btnClearHistory) btnClearHistory.classList.remove('hidden');
+            }
+
+            renderRequests();
+        };
+
+        const deleteRequest = async (requestId) => {
+            const confirmed = await window.showConfirm(
+                "Are you sure you want to delete this edit request history log record? This action cannot be undone.",
+                "danger",
+                "Delete History Record"
+            );
+            if (!confirmed) return;
+
+            window.showLoading("Deleting request record...");
+            try {
+                const response = await fetch(`/api/edit-requests/${requestId}`, {
+                    method: 'DELETE'
+                });
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    window.showToast("Edit request history record deleted successfully!", "success");
+                    loadRequests();
+                } else {
+                    window.showToast(res.message || "Failed to delete request record.", "error");
+                }
+            } catch (err) {
+                window.showToast("Connection error while deleting.", "error");
+            } finally {
+                window.hideLoading();
+            }
+        };
+
+        const clearHistoryLog = async () => {
+            const confirmed = await window.showConfirm(
+                "Are you sure you want to clear all approved and rejected edit request history logs? Pending requests will not be deleted. This action cannot be undone.",
+                "danger",
+                "Clear History Log"
+            );
+            if (!confirmed) return;
+
+            window.showLoading("Clearing history logs...");
+            try {
+                const response = await fetch('/api/edit-requests/clear-history', {
+                    method: 'POST'
+                });
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    window.showToast("All edit request history cleared successfully!", "success");
+                    loadRequests();
+                } else {
+                    window.showToast(res.message || "Failed to clear history log.", "error");
+                }
+            } catch (err) {
+                window.showToast("Connection error while clearing history.", "error");
+            } finally {
+                window.hideLoading();
+            }
+        };
+
+        const approveRequest = async (requestId) => {
+            const confirmed = await window.showConfirm(
+                "Are you sure you want to approve this edit request? The customer record will be updated immediately.",
+                "confirm",
+                "Approve Edit Request"
+            );
+            if (!confirmed) return;
+
+            window.showLoading("Approving and updating record...");
+            try {
+                const response = await fetch(`/api/edit-requests/${requestId}/approve`, {
+                    method: 'POST'
+                });
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    window.showToast("Edit request approved and record updated!", "success");
+                    loadRequests();
+                } else {
+                    window.showToast(res.message || "Failed to approve request.", "error");
+                }
+            } catch (err) {
+                window.showToast("Connection error while approving.", "error");
+            } finally {
+                window.hideLoading();
+            }
+        };
+
+        const rejectRequest = (requestId) => {
+            currentRejectingRequestId = requestId;
+            const modal = document.getElementById('rejectionModal');
+            const card = document.getElementById('rejectionModalCard');
+            document.getElementById('rejection_reason').value = '';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        };
+
+        const closeRejectionModal = () => {
+            const modal = document.getElementById('rejectionModal');
+            const card = document.getElementById('rejectionModalCard');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                currentRejectingRequestId = null;
+            }, 300);
+        };
+
+        // Rejection form submit
+        document.getElementById('rejectionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const reason = document.getElementById('rejection_reason').value.trim();
+            if (!reason || !currentRejectingRequestId) return;
+
+            window.showLoading("Rejecting edit request...");
+            try {
+                const response = await fetch(`/api/edit-requests/${currentRejectingRequestId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admin_remarks: reason })
+                });
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    window.showToast("Edit request rejected.", "success");
+                    closeRejectionModal();
+                    loadRequests();
+                } else {
+                    window.showToast(res.message || "Failed to reject request.", "error");
+                }
+            } catch (err) {
+                window.showToast("Connection error while rejecting.", "error");
+            } finally {
+                window.hideLoading();
+            }
+        });
+
+        const escapeHtml = (text) => {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRequests();
+
+            // Toggle sidebar menu for mobile
+            const toggleSidebar = () => {
+                const sidebar = document.getElementById('side-nav');
+                const overlay = document.getElementById('sidebar-overlay');
+                const isHidden = sidebar.classList.contains('-translate-x-full');
+
+                if (isHidden) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            };
+            document.getElementById('mobile-menu-toggle').addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
+        });
+    </script>
+</body>
+</html>

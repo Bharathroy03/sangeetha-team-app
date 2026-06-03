@@ -1,0 +1,18 @@
+[
+    {
+        "action": "clear_all_customers",
+        "performed_by": "Bharath Kumar R",
+        "employee_id": "22913",
+        "role": "super_admin",
+        "timestamp": "2026-06-03 13:52:41",
+        "records_deleted": 22
+    },
+    {
+        "action": "clear_all_customers",
+        "performed_by": "Bharath Kumar R",
+        "employee_id": "22913",
+        "role": "super_admin",
+        "timestamp": "2026-06-03 16:13:00",
+        "records_deleted": 2
+    }
+]

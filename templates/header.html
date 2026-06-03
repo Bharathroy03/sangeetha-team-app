@@ -1,0 +1,276 @@
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-[#0D70C0] shadow-md text-white">
+    <div class="flex items-center gap-4">
+        <button class="lg:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors" id="mobile-menu-toggle" title="Toggle Sidebar">
+            <span class="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+        <div class="flex items-center gap-2">
+            <img alt="Sangeetha Mobiles" class="h-8 md:h-10 w-auto object-contain bg-white/10 p-1 rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkeUqDOJ5mDT4F2zyPaf-yzVpNQ2IxUuUVLzsnEusNhKSWj1G0vLH1_tLucgYteU2frvo2uw34H_uC4qP-kN8O52KnCTA1oRSDg_ZHbpPIoZLeb_fmqi5mzfPAv6ocTejJsa5ciXeD8BIrux6rPPUVh96bRPYYhA9tXaYzzoD59GlP9LDSbQnuCiw9uXDUqEgXT5byYzpECtn-fQUCJeo1PrhGHMPlTCJ5Gbxtgm8T8v_nr7UAgSpRkL1Z756vGnNZ6v_sVuJZb_Q" />
+            <span class="text-sm font-bold tracking-wider hidden sm:inline-block">SALES MANAGEMENT PORTAL</span>
+        </div>
+    </div>
+    
+    <div class="flex items-center gap-4 relative">
+        <!-- User Profile Pill (Interactive for mobile) -->
+        <button id="userProfileToggle" class="flex items-center gap-2.5 bg-white/10 backdrop-blur-md border border-white/10 px-2.5 py-1.5 rounded-full shadow-inner hover:bg-white/20 transition-all select-none focus:outline-none" title="User Menu">
+            <div id="userProfileIconCircle" class="w-7 h-7 rounded-full bg-white text-[#0D70C0] font-bold flex items-center justify-center text-xs uppercase shadow-sm flex-shrink-0 transition-all duration-200">
+                <span id="userProfileLetter">{{ session.get('username', username or 'User')[0] | upper }}</span>
+                <span id="userProfileCloseIcon" class="hidden material-symbols-outlined text-sm font-bold">close</span>
+            </div>
+            <div class="flex flex-col text-left hidden md:block">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[8px] text-white/70 font-semibold uppercase tracking-wider leading-none">ACTIVE USER</span>
+                    <span class="text-[8px] font-bold text-white bg-[#EE8133] px-1.5 py-0.5 rounded uppercase tracking-wider scale-90 -translate-x-0.5">{{ session.get('role', role or 'staff') | replace('_', ' ') }}</span>
+                </div>
+                <span class="text-xs text-white font-bold leading-tight">{{ session.get('username', username or 'User') }}</span>
+            </div>
+        </button>
+
+        <!-- Logout Button (Desktop only) -->
+        <button id="btnLogout" class="hidden lg:flex px-4 py-2 bg-transparent text-white border border-white/20 hover:border-white/50 hover:bg-white/10 text-label-md font-label-md rounded-lg transition-all active:scale-95 items-center gap-2">
+            Logout <span class="material-symbols-outlined text-[18px]">logout</span>
+        </button>
+        
+        <!-- Mobile User Dropdown Menu Panel -->
+        <div id="mobileUserDropdown" class="hidden absolute top-14 right-0 mt-2 bg-white dark:bg-neutral-dark border border-outline-variant dark:border-outline rounded-xl shadow-lg py-4 px-4 z-50 min-w-[220px] flex flex-col gap-3 text-slate-800 dark:text-white transition-all duration-200 animate-container-fade-up">
+            <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <div class="w-8 h-8 rounded-full bg-[#0D70C0] text-white font-bold flex items-center justify-center text-sm uppercase">
+                    {{ session.get('username', username or 'User')[0] | upper }}
+                </div>
+                <div class="flex flex-col text-left">
+                    <span class="text-xs font-bold text-slate-900 dark:text-slate-100">{{ session.get('username', username or 'User') }}</span>
+                    <span class="text-[9px] font-bold text-white bg-[#EE8133] px-1.5 py-0.5 rounded uppercase tracking-wider self-start mt-0.5">{{ session.get('role', role or 'staff') | replace('_', ' ') }}</span>
+                </div>
+            </div>
+            <button id="btnLogoutMobileMenu" class="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-[#BA1A1A] text-xs font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">logout</span>
+                Logout
+            </button>
+        </div>
+    </div>
+</header>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- User Profile Mobile Dropdown Toggle ---
+    const profileToggle = document.getElementById('userProfileToggle');
+    const userDropdown = document.getElementById('mobileUserDropdown');
+    const profileLetter = document.getElementById('userProfileLetter');
+    const profileCloseIcon = document.getElementById('userProfileCloseIcon');
+    const btnLogoutMobileMenu = document.getElementById('btnLogoutMobileMenu');
+
+    if (profileToggle && userDropdown) {
+        // Toggle dropdown open/close
+        profileToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = userDropdown.classList.contains('hidden');
+            if (isHidden) {
+                userDropdown.classList.remove('hidden');
+                profileLetter.classList.add('hidden');
+                profileCloseIcon.classList.remove('hidden');
+                profileToggle.classList.add('bg-white/20');
+            } else {
+                userDropdown.classList.add('hidden');
+                profileLetter.classList.remove('hidden');
+                profileCloseIcon.classList.add('hidden');
+                profileToggle.classList.remove('bg-white/20');
+            }
+        });
+
+        // Hide dropdown when clicking inside the dropdown panel
+        userDropdown.addEventListener('click', () => {
+            userDropdown.classList.add('hidden');
+            profileLetter.classList.remove('hidden');
+            profileCloseIcon.classList.add('hidden');
+            profileToggle.classList.remove('bg-white/20');
+        });
+
+        // Hide dropdown when clicking anywhere outside
+        document.addEventListener('click', (e) => {
+            if (!profileToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+                profileLetter.classList.remove('hidden');
+                profileCloseIcon.classList.add('hidden');
+                profileToggle.classList.remove('bg-white/20');
+            }
+        });
+    }
+
+    // Connect mobile logout button to API
+    if (btnLogoutMobileMenu) {
+        btnLogoutMobileMenu.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            try {
+                const res = await fetch('/api/logout', { method: 'POST' });
+                if (res.ok) {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                window.location.href = '/login';
+            }
+        });
+    }
+
+    // --- Global Mobile Sidebar Toggle (for pages missing it like customer-entry) ---
+    const menuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('side-nav');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (window.location.pathname.startsWith('/customer-entry') && menuToggle && sidebar && overlay) {
+        if (!menuToggle.dataset.sidebarBound) {
+            menuToggle.dataset.sidebarBound = "true";
+            
+            const toggleSidebar = () => {
+                const isHidden = sidebar.classList.contains('-translate-x-full');
+                if (isHidden) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            };
+            
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+            
+            overlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+    }
+});
+
+// --- GLOBAL CUSTOM CONFIRM MODAL ---
+window.showConfirm = (message, type = 'warning', title = '') => {
+    return new Promise((resolve) => {
+        const existing = document.getElementById('confirmBackdrop');
+        if (existing) existing.remove();
+
+        const backdrop = document.createElement('div');
+        backdrop.id = 'confirmBackdrop';
+        backdrop.className = 'fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300';
+
+        let themeColor = '#EE8133'; // Default orange
+        let iconName = 'warning';
+        let titleText = title || 'Confirm Action';
+        let btnConfirmClass = 'bg-[#EE8133] hover:bg-[#D77227] text-white shadow-[0_4px_12px_rgba(238,129,51,0.3)]';
+
+        if (type === 'danger' || type === 'error') {
+            themeColor = '#BA1A1A'; // Crimson red
+            iconName = 'delete_forever';
+            titleText = title || 'Warning: Destructive Action';
+            btnConfirmClass = 'bg-[#BA1A1A] hover:bg-[#A31616] text-white shadow-[0_4px_12px_rgba(186,26,26,0.3)]';
+        } else if (type === 'success') {
+            themeColor = '#10B981'; // Green
+            iconName = 'check_circle';
+            titleText = title || 'Success Confirmation';
+            btnConfirmClass = 'bg-[#10B981] hover:bg-[#059669] text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]';
+        } else if (type === 'info' || type === 'confirm') {
+            themeColor = '#0D70C0'; // Blue
+            iconName = 'info';
+            titleText = title || 'Please Confirm';
+            btnConfirmClass = 'bg-[#0D70C0] hover:bg-[#0B5C9E] text-white shadow-[0_4px_12px_rgba(13,112,192,0.3)]';
+        }
+
+        backdrop.innerHTML = `
+            <div class="confirm-card w-[95%] max-w-[400px] p-6 rounded-2xl bg-white border-t-[6px] transform scale-95 opacity-0 transition-all duration-300 flex flex-col gap-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]" style="border-color: ${themeColor}">
+                <div class="flex items-start gap-4">
+                    <span class="material-symbols-outlined text-[32px] shrink-0" style="color: ${themeColor}; font-variation-settings: 'FILL' 1;">${iconName}</span>
+                    <div class="flex-1">
+                        <h3 class="font-display-lg text-[18px] font-bold text-slate-800 mb-1.5">${titleText}</h3>
+                        <div class="font-body-md text-[14px] text-slate-600 leading-relaxed">${message}</div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                     <button class="btn-cancel px-4 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all duration-200 active:scale-95">Cancel</button>
+                     <button class="btn-confirm px-5 py-2.5 rounded-xl text-[13px] font-bold ${btnConfirmClass} transition-all duration-200 active:scale-95">Confirm</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(backdrop);
+
+        requestAnimationFrame(() => {
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            backdrop.classList.add('opacity-100');
+            const card = backdrop.querySelector('.confirm-card');
+            card.classList.remove('scale-95', 'opacity-0');
+            card.classList.add('scale-100', 'opacity-100');
+        });
+
+        const closeModal = (result) => {
+            const card = backdrop.querySelector('.confirm-card');
+            backdrop.classList.remove('opacity-100');
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                backdrop.remove();
+                resolve(result);
+            }, 300);
+        };
+
+        backdrop.querySelector('.btn-cancel').addEventListener('click', () => closeModal(false));
+        backdrop.querySelector('.btn-confirm').addEventListener('click', () => closeModal(true));
+        
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                closeModal(false);
+            }
+        });
+    });
+};
+
+// --- GLOBAL LOADING SPINNER MODAL ---
+window.showLoading = (message = 'Processing...') => {
+    let backdrop = document.getElementById('globalLoadingBackdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'globalLoadingBackdrop';
+        backdrop.className = 'fixed inset-0 z-[11000] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300';
+        backdrop.innerHTML = `
+            <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-2xl border border-outline-variant max-w-[280px] w-[90%] transform scale-95 transition-all duration-300 loading-card">
+                <div class="relative w-12 h-12">
+                    <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-t-primary animate-spin"></div>
+                </div>
+                <p id="globalLoadingMessage" class="text-slate-700 font-bold text-xs tracking-wider uppercase text-center leading-normal">Processing...</p>
+            </div>
+        `;
+        document.body.appendChild(backdrop);
+    }
+    
+    document.getElementById('globalLoadingMessage').textContent = message;
+    
+    requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        backdrop.classList.add('opacity-100');
+        const card = backdrop.querySelector('.loading-card');
+        if (card) {
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+    });
+};
+
+window.hideLoading = () => {
+    const backdrop = document.getElementById('globalLoadingBackdrop');
+    if (backdrop) {
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+        const card = backdrop.querySelector('.loading-card');
+        if (card) {
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+        }
+        setTimeout(() => {
+            backdrop.remove();
+        }, 300);
+    }
+};
+</script>

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sangeetha Gadgets - Payment Tracker</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133",
+                        "primary-container": "#FFFFFF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "data-mono": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            background-color: #ffffff !important;
+            border-color: #0D70C0 !important;
+            box-shadow: 0 0 0 2px rgba(13, 112, 192, 0.1);
+        }
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+        .toast.success {
+            background: #0D70C0;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast.error {
+            background: #F3F4F6;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #1E293B;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .toast.success .toast-content {
+            color: #FFFFFF;
+        }
+        .toast.error .toast-content {
+            color: #1E293B;
+        }
+        .toast-content svg {
+            color: #EE8133 !important;
+        }
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .toast.success .toast-close {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .toast.success .toast-close:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .toast.error .toast-close {
+            color: #64748B;
+        }
+        .toast.error .toast-close:hover {
+            color: #1E293B;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        .toast.error .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        @keyframes toastPopIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes toastPopOut {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(0.7); opacity: 0; }
+        }
+        @keyframes toastProgressRun {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+        .btn-premium {
+            background: linear-gradient(135deg, #0D70C0 0%, #00569E 100%);
+            border: 1px solid rgba(238, 129, 51, 0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #ffffff;
+        }
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: 0.6s;
+        }
+        .btn-premium:hover::before { left: 150%; }
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 112, 192, 0.45), 0 0 0 2px rgba(238, 129, 51, 0.45);
+            border-color: rgba(238, 129, 51, 0.85);
+        }
+        .btn-premium:active { transform: translateY(0) scale(0.98); }
+        
+        form label:not(.form-label-badge) {
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            color: #1A1C1E !important;
+            letter-spacing: 0.01em !important;
+            margin-bottom: 6px !important;
+            display: inline-block;
+        }
+        .form-label-badge {
+            font-size: 11.5px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            box-sizing: border-box !important;
+            margin-bottom: 4px !important;
+            min-height: 38px !important;
+            background: #2B3544 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .form-label-badge span.material-symbols-outlined {
+            font-size: 16px !important;
+            margin-right: 6px !important;
+            color: #FF7A00 !important;
+            flex-shrink: 0 !important;
+        }
+        .form-label-badge span.text-rose-600 {
+            color: #FF5A3D !important;
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            margin-left: 4px !important;
+        }
+        .popup-modal-overlay { transition: opacity 0.25s ease-out; }
+        .popup-modal-content { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out; }
+        .option-item {
+            cursor: pointer;
+            outline: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+            background-color: #FFFFFF !important;
+        }
+        .option-item:hover, .option-item:focus {
+            border-color: rgba(238, 129, 51, 0.5) !important;
+            background-color: rgba(255, 247, 237, 0.8) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 4px 12px rgba(238, 129, 51, 0.1) !important;
+        }
+        .option-item:hover span.text-slate-700, .option-item:focus span.text-slate-700 {
+            color: #EE8133 !important;
+        }
+        .option-item.selected {
+            border-color: #0D70C0 !important;
+            background-color: rgba(13, 112, 192, 0.06) !important;
+            box-shadow: 0 4px 12px rgba(13, 112, 192, 0.08) !important;
+        }
+        .option-item.selected span.text-slate-700 {
+            color: #0D70C0 !important;
+            font-weight: 700 !important;
+        }
+        form input, form select, form textarea {
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            color: #1A1C1E !important;
+            background-color: #F9FAFB !important;
+            border-width: 1px !important;
+            border-color: #D1D5DB !important;
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+            transition: background-color 0.2s ease, border-color 0.2s ease !important;
+        }
+        form input::placeholder, form select::placeholder, form textarea::placeholder {
+            font-size: 12.5px !important;
+            font-weight: 400 !important;
+            color: #9CA3AF !important;
+            opacity: 1 !important;
+        }
+        @media (max-width: 1023px) {
+            .form-label-badge {
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                padding: 9px 12px !important;
+                margin-bottom: 4px !important;
+                letter-spacing: 0.05em !important;
+                width: 100% !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                box-sizing: border-box !important;
+                min-height: 36px !important;
+                display: flex !important;
+                align-items: center !important;
+                background: #2B3544 !important;
+                color: #FFFFFF !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 8px !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 15px !important;
+                margin-right: 5px !important;
+                color: #FF7A00 !important;
+            }
+        }
+        @media (max-width: 768px) {
+            #paymentFormGrid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            #paymentFormGrid > div {
+                grid-column: span 1 / span 1 !important;
+            }
+            #remarks_container {
+                grid-column: span 2 / span 2 !important;
+            }
+            .form-label-badge {
+                font-size: 9.5px !important;
+                padding: 8px 10px !important;
+                letter-spacing: 0.04em !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                width: 100% !important;
+                display: block !important;
+                box-sizing: border-box !important;
+                min-height: 34px !important;
+                line-height: 18px !important;
+                background: #2B3544 !important;
+                color: #FFFFFF !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 8px !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 13px !important;
+                margin-right: 4px !important;
+                color: #FF7A00 !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+                margin-top: -2px !important;
+            }
+            form input, form select, form [readonly] {
+                min-height: 48px !important;
+                height: 48px !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                border-radius: 8px !important;
+                box-sizing: border-box !important;
+            }
+            form textarea {
+                min-height: 96px !important;
+                height: auto !important;
+                border-radius: 8px !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                box-sizing: border-box !important;
+            }
+        }
+        
+        .history-timeline {
+            position: relative;
+            padding-left: 20px;
+            border-left: 2px solid #E5E7EB;
+        }
+        .history-timeline-item {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .history-timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #0D70C0;
+            border: 2px solid #FFFFFF;
+        }
+        .tab-btn.active {
+            border-bottom-color: #0D70C0;
+            color: #0D70C0;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+    {% include 'header.html' %}
+
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-16 bottom-0 w-64 flex flex-col p-unit bg-white border-r border-outline-variant dark:border-outline shadow-sm overflow-y-auto z-40 transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0" id="side-nav">
+        <div class="px-stack-md py-stack-lg mb-stack-lg">
+            <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface leading-tight">Sangeetha Gadgets</h2>
+            <p class="text-body-sm font-body-sm text-on-surface-variant">Doddaballapur -2- (Lions Bhavan Complex)</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a href="/dashboard?view=FORM" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">person_add</span>
+                <span class="text-label-md font-label-md">New Customer Entry</span>
+            </a>
+            <a href="/dashboard?view=TOTAL" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">group</span>
+                <span class="text-label-md font-label-md">Total Customers</span>
+            </a>
+            <a href="/dashboard?view=TODAY" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">today</span>
+                <span class="text-label-md font-label-md">Today's Customers</span>
+            </a>
+            <a href="/dashboard?view=FINANCE" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">payments</span>
+                <span class="text-label-md font-label-md">Finance customers</span>
+            </a>
+            <a href="/crm-walkin-customers" id="btn-nav-crm" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">support_agent</span>
+                <span class="text-label-md font-label-md">CRM Walk-in Customers</span>
+            </a>
+            {% if role in ['super_admin', 'admin'] %}
+            <a href="/dashboard?view=EDITOR" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">edit_note</span>
+                <span class="text-label-md font-label-md">Database Text Editor</span>
+            </a>
+            <a href="/payment-tracker" class="w-full flex items-center gap-3 px-stack-md py-3 bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm transition-all rounded-lg group scale-[1.02] duration-300">
+                <span class="material-symbols-outlined text-white">account_balance_wallet</span>
+                <span class="text-label-md font-label-md font-bold">Payment Tracker</span>
+            </a>
+            <a href="/admin/users" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">manage_accounts</span>
+                <span class="text-label-md font-label-md">User Management</span>
+            </a>
+            {% endif %}
+        </nav>
+        <div class="mt-auto p-stack-md flex flex-col gap-2">
+            <button id="btnLogoutMobile" class="lg:hidden w-full py-3 px-4 bg-rose-50 border border-rose-200 text-[#BA1A1A] hover:bg-rose-100/50 text-label-md font-label-md rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">logout</span> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        
+        <!-- Page Header & Breadcrumb -->
+        <div class="mb-6 animate-container-fade-up">
+            <nav class="flex mb-1" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 text-xs font-semibold text-on-surface-variant/70">
+                    <li class="inline-flex items-center">
+                        <a href="/dashboard" class="inline-flex items-center hover:text-primary transition-colors gap-1">
+                            <span class="material-symbols-outlined text-[16px]">dashboard</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-[16px] mx-1 text-on-surface-variant/40 flex-shrink-0">chevron_right</span>
+                            <span class="text-on-surface font-bold text-slate-800">Payment Tracker</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2">
+                <div>
+                    <h1 class="text-headline-md font-headline-md font-bold text-slate-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#0D70C0] text-3xl">account_balance_wallet</span>
+                        Sales & Payment Tracking
+                    </h1>
+                    <p class="text-body-sm text-on-surface-variant mt-1">Track payment modes, settlements, and employee pending balances.</p>
+                </div>
+                <!-- Navigation Action -->
+                <button onclick="document.getElementById('view-payment-form-section').scrollIntoView({behavior: 'smooth'})" class="px-5 py-2.5 bg-[#0D70C0] text-white font-semibold text-xs rounded-lg shadow hover:bg-[#00569E] transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Sales Record
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. PAYMENT SUMMARY CARDS GRID -->
+        <div class="mb-8">
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                <!-- Customer Pending -->
+                <div class="bg-white border border-[#E5E7EB] p-3.5 sm:p-5 rounded-2xl shadow-sm hover:shadow transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 sm:p-2 bg-amber-50 text-amber-700 rounded-lg">
+                            <span class="material-symbols-outlined text-[18px] sm:text-[24px]">person</span>
+                        </div>
+                        <span class="text-[9px] sm:text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Customers</span>
+                    </div>
+                    <p class="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Customer Pending</p>
+                    <h3 id="cardCustomerPending" class="text-xl sm:text-2xl font-bold mt-1 text-amber-600">₹0</h3>
+                </div>
+                <!-- Employee Pending -->
+                <div class="bg-white border border-[#E5E7EB] p-3.5 sm:p-5 rounded-2xl shadow-sm hover:shadow transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 sm:p-2 bg-orange-50 text-orange-700 rounded-lg">
+                            <span class="material-symbols-outlined text-[18px] sm:text-[24px]">badge</span>
+                        </div>
+                        <span class="text-[9px] sm:text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">Employees</span>
+                    </div>
+                    <p class="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Employee Pending</p>
+                    <h3 id="cardEmployeePending" class="text-xl sm:text-2xl font-bold mt-1 text-orange-600">₹0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PAYMENT ENTRY FORM SECTION -->
+        <div id="view-payment-form-section" class="mb-8 scroll-mt-20">
+            <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div class="px-4 py-3.5 sm:px-6 sm:py-4.5 border-b border-[#0D70C0] bg-[#0D70C0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-[#EE8133] text-[22px] font-bold">add_shopping_cart</span>
+                        <h2 id="formTitle" class="text-base sm:text-lg font-bold text-white tracking-wide">Record Sales Payment</h2>
+                    </div>
+                    <span class="text-[11px] sm:text-xs text-white/95 font-semibold bg-white/15 px-2.5 py-1 rounded-full w-max">Fields marked * are mandatory</span>
+                </div>
+                <form id="paymentForm" class="p-4 sm:p-6">
+                    <!-- Hidden fields for Edit Mode -->
+                    <input type="hidden" id="edit_payment_id" name="payment_id" value="" />
+                    
+                    <div id="paymentFormGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4 md:gap-x-6 md:gap-y-6">
+                        <!-- Customer Name -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="customer_name"><span class="material-symbols-outlined text-[12px] mr-1">person</span>Customer Name<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="customer_name" name="customer_name" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Customer Name" type="text" maxlength="100" required />
+                        </div>
+                        <!-- Mobile Number -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="mobile_number"><span class="material-symbols-outlined text-[12px] mr-1">call</span>Mobile Number<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="mobile_number" name="mobile_number" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="10 Digit Mobile Number" type="tel" maxlength="10" required />
+                        </div>
+                        <!-- Invoice Number -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="invoice_number"><span class="material-symbols-outlined text-[12px] mr-1">receipt</span>Invoice Number</label>
+                            <input id="invoice_number" name="invoice_number" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Invoice Number" type="text" maxlength="50" />
+                        </div>
+                        <!-- Hidden fields for compatibility -->
+                        <input type="hidden" id="item_model" name="item_model" value="" />
+                        <input type="hidden" id="imei_number" name="imei_number" value="" />
+                        <!-- Hidden field for compatibility -->
+                        <input type="hidden" id="sales_person" name="sales_person" value="" />
+                        <!-- Payment Mode (Modal trigger) -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">credit_card</span>Payment Mode<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <div class="relative w-full" onclick="openPopupModal('payment_mode')">
+                                <input type="text" id="payment_mode" name="payment_mode" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Payment Mode" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        <!-- Total Bill Amount -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="total_bill_amount"><span class="material-symbols-outlined text-[12px] mr-1">payments</span>Total Bill Amount (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="total_bill_amount" name="total_bill_amount" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Total Sale Price" type="number" step="0.01" min="0.01" required />
+                        </div>
+                        <!-- Amount Received -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="amount_received"><span class="material-symbols-outlined text-[12px] mr-1">savings</span>Amount Received (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="amount_received" name="amount_received" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Collected Amount" type="number" step="0.01" min="0" required />
+                        </div>
+                        <!-- Pending Amount (Auto Calculated) -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge" for="pending_amount"><span class="material-symbols-outlined text-[12px] mr-1">money_off</span>Pending Amount (₹)</label>
+                            <input id="pending_amount" name="pending_amount" readonly class="px-3 py-2.5 bg-slate-100 border border-outline-variant rounded-lg text-body-md focus:ring-0 text-slate-600 w-full" placeholder="0.00" type="text" value="0.00" />
+                        </div>
+                        
+                        <!-- CONDITIONAL PENDING SECTIONS (Revealed if pending amount > 0) -->
+                        <!-- Pending From (Modal trigger) -->
+                        <div class="flex-col gap-1 hidden" id="pendingFromSection">
+                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">help</span>Pending From<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <div class="relative w-full" onclick="openPopupModal('pending_from')">
+                                <input type="text" id="pending_from" name="pending_from" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Pending Debtor" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        <!-- Pending Person Name (Modal trigger) -->
+                        <div class="flex-col gap-1 hidden" id="pendingPersonNameSection">
+                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">person_search</span>Pending Person Name</label>
+                            <div class="relative w-full" onclick="openPopupModal('pending_person_name')">
+                                <input type="text" id="pending_person_name" name="pending_person_name" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Employee Name" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        <!-- Due Date -->
+                        <div class="flex-col gap-1 hidden" id="dueDateSection">
+                            <label class="form-label-badge" for="due_date"><span class="material-symbols-outlined text-[12px] mr-1">calendar_today</span>Due Date<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                            <input id="due_date" name="due_date" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" type="date" />
+                        </div>
+                        
+                        <!-- Status Fields (Modal triggers) -->
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">grading</span>Payment Status</label>
+                            <div class="relative w-full" onclick="openPopupModal('payment_status')">
+                                <input type="text" id="payment_status" name="payment_status" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Status" value="Fully Paid" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">lock</span>Settlement Status</label>
+                            <div class="relative w-full" onclick="openPopupModal('settlement_status')">
+                                <input type="text" id="settlement_status" name="settlement_status" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Settlement" value="Settled" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Remarks -->
+                        <div id="remarks_container" class="flex flex-col gap-1 col-span-2 lg:col-span-3">
+                            <label class="form-label-badge" for="remarks"><span class="material-symbols-outlined text-[12px] mr-1">rate_review</span>Remarks</label>
+                            <textarea id="remarks" name="remarks" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md resize-none focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Add payment breakdown comments, notes, or explanations" maxlength="500" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 pt-4">
+                        <button id="btnSubmit" class="order-1 sm:order-3 w-full sm:w-auto px-8 py-3 btn-premium text-label-md font-label-md rounded-lg shadow-lg active:scale-95 transition-all" type="submit">
+                            Save Payment Record
+                        </button>
+                        <button id="btnClearForm" class="order-2 sm:order-2 w-full sm:w-auto px-6 py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-label-md font-label-md rounded-lg transition-all active:scale-95" type="button">
+                            Clear Form
+                        </button>
+                        <button id="btnCancelForm" class="order-3 sm:order-1 w-full sm:w-auto px-6 py-3 bg-white border border-[#0D70C0] text-[#0D70C0] hover:bg-[#0D70C0]/5 text-label-md font-label-md rounded-lg transition-all active:scale-95" type="button">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <!-- 3. MAIN LEDGER VIEW AND TRACKING TAB PANEL -->
+        <div class="mb-8">
+            <div class="bg-white border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+                <!-- Tab Headers -->
+                <div class="flex border-b border-outline-variant bg-slate-50">
+                    <button id="tabBtnAll" onclick="switchTrackerTab('all')" class="tab-btn active px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">receipt_long</span> All Payments
+                    </button>
+                    <button id="tabBtnCustomer" onclick="switchTrackerTab('customer')" class="tab-btn px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">support_agent</span> Customer Debts
+                    </button>
+                    <button id="tabBtnEmployee" onclick="switchTrackerTab('employee')" class="tab-btn px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">badge</span> Salesperson Pending
+                    </button>
+                </div>
+
+                <!-- Tab content for ALL payments ledger -->
+                <div id="tabContentAll" class="tab-pane p-4">
+                    <!-- Filters Grid -->
+                    <div class="mb-4 bg-slate-50 border border-outline-variant rounded-xl p-4 flex flex-col gap-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <!-- Search -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</label>
+                                <div class="relative">
+                                    <input type="text" id="filterSearch" class="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs" placeholder="Name, Mobile, Invoice, IMEI..." />
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">search</span>
+                                </div>
+                            </div>
+                            <!-- Payment Mode -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mode</label>
+                                <select id="filterMode" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
+                                    <option value="">All Modes</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Card</option>
+                                    <option value="E-Wallet">E-Wallet</option>
+                                </select>
+                            </div>
+                            <!-- Payment Status -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Payment Status</label>
+                                <select id="filterStatus" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
+                                    <option value="">All Statuses</option>
+                                    <option value="Fully Paid">Fully Paid</option>
+                                    <option value="Partially Paid">Partially Paid</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                            <!-- Settlement Status -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Settlement</label>
+                                <select id="filterSettlement" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
+                                    <option value="">All Settlements</option>
+                                    <option value="Settled">Settled</option>
+                                    <option value="Unsettled">Unsettled</option>
+                                </select>
+                            </div>
+                            <!-- Pending From -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending From</label>
+                                <select id="filterPendingFrom" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
+                                    <option value="">All Debts</option>
+                                    <option value="Customer">Customer</option>
+                                    <option value="Employee / Salesperson">Employee / Salesperson</option>
+                                    <option value="No Pending">No Pending</option>
+                                </select>
+                            </div>
+                            <!-- Sales Person -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sales Person</label>
+                                <select id="filterSalesperson" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
+                                    <option value="">All Salespersons</option>
+                                    <option value="Bharath Kumar - Manager">Bharath Kumar</option>
+                                    <option value="Ramesh T - Cashier">Ramesh T</option>
+                                    <option value="Farooq - Staff">Farooq</option>
+                                    <option value="Abhishek - OPPO">Abhishek</option>
+                                    <option value="Azeem - Vivo">Azeem</option>
+                                    <option value="Rabiya - Xiaomi">Rabiya</option>
+                                    <option value="Finance Promoter">Finance Promoter</option>
+                                </select>
+                            </div>
+                            <!-- Date From -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">From Date</label>
+                                <input type="date" id="filterStartDate" class="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white" />
+                            </div>
+                            <!-- Date To -->
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">To Date</label>
+                                <div class="relative flex items-center">
+                                    <input type="date" id="filterEndDate" class="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white" />
+                                    <button type="button" id="btnClearDateFilters" class="absolute right-2 text-slate-400 hover:text-red-500" title="Clear dates">
+                                        <span class="material-symbols-outlined text-[16px]">close</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ledger Table -->
+                    <div class="overflow-x-auto border border-outline-variant rounded-xl hidden md:block">
+                        <table class="w-full border-collapse text-left text-xs bg-white">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3">CUSTOMER NAME</th>
+                                    <th class="px-4 py-3">MOBILE NUMBER</th>
+                                    <th class="px-4 py-3">INVOICE NUMBER</th>
+                                    <th class="px-4 py-3 text-right text-emerald-600">RECEIVED AMOUNT</th>
+                                    <th class="px-4 py-3 text-right text-rose-600">PENDING AMOUNT</th>
+                                    <th class="px-4 py-3">PENDING FROM</th>
+                                    <th class="px-4 py-3">STATUS</th>
+                                    <th class="px-4 py-3 text-right">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Responsive Cards View -->
+                    <div id="paymentMobileCards" class="grid grid-cols-1 gap-3 md:hidden">
+                        <!-- Dynamic Mobile Cards -->
+                    </div>
+                </div>
+
+                <!-- Tab content for CUSTOMER pending debts -->
+                <div id="tabContentCustomer" class="tab-pane p-4 hidden">
+                    <div class="overflow-x-auto border border-outline-variant rounded-xl">
+                        <table class="w-full border-collapse text-left text-xs bg-white">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3">CUSTOMER NAME</th>
+                                    <th class="px-4 py-3">MOBILE NUMBER</th>
+                                    <th class="px-4 py-3 text-right text-rose-600">PENDING AMOUNT</th>
+                                    <th class="px-4 py-3">DUE DATE</th>
+                                    <th class="px-4 py-3">FOLLOW-UP / REMARKS</th>
+                                    <th class="px-4 py-3 text-right">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerDebtTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab content for EMPLOYEE pending tracking -->
+                <div id="tabContentEmployee" class="tab-pane p-4 hidden">
+                    <div class="overflow-x-auto border border-outline-variant rounded-xl">
+                        <table class="w-full border-collapse text-left text-xs bg-white">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3">SALESPERSON NAME</th>
+                                    <th class="px-4 py-3 text-center">PENDING CASES</th>
+                                    <th class="px-4 py-3 text-right text-rose-600">TOTAL PENDING AMOUNT</th>
+                                    <th class="px-4 py-3">OLDEST DUE DATE</th>
+                                    <th class="px-4 py-3">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeDebtTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- POPUP DIALOGS & OVERLAYS -->
+
+    <!-- Backdrop Overlay for Toasts -->
+    <div id="toastBackdrop"></div>
+
+    <!-- Toast Alert Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 1. Selection Modal - Payment Mode -->
+    <div id="modal-payment_mode" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('payment_mode')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">credit_card</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Payment Mode</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('payment_mode')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Cash" onclick="selectPopupOption('payment_mode', 'Cash')">
+                        <span class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">payments</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Cash</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Card" onclick="selectPopupOption('payment_mode', 'Card')">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Card</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="E-Wallet" onclick="selectPopupOption('payment_mode', 'E-Wallet')">
+                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">E-Wallet</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Selection Modal - Sales Person -->
+    <div id="modal-sales_person" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('sales_person')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Sales Person</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('sales_person')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-3 border-b border-slate-100 flex-shrink-0">
+                <div class="relative">
+                    <span class="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                    <input type="text" id="search-sales_person" oninput="filterPopupOptions('sales_person', this.value)" class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Search sales person..." />
+                </div>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow" id="list-sales_person">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('sales_person', 'Bharath Kumar - Manager')">
+                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">BK</span>
+                        <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('sales_person', 'Ramesh T - Cashier')">
+                        <span class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RT</span>
+                        <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('sales_person', 'Farooq - Staff')">
+                        <span class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FS</span>
+                        <span class="text-sm font-semibold text-slate-700">Farooq - Staff</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('sales_person', 'Abhishek - OPPO')">
+                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AB</span>
+                        <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('sales_person', 'Azeem - Vivo')">
+                        <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AZ</span>
+                        <span class="text-sm font-semibold text-slate-700">Azeem - Vivo</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('sales_person', 'Rabiya - Xiaomi')">
+                        <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RB</span>
+                        <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance Promoter" onclick="selectPopupOption('sales_person', 'Finance Promoter')">
+                        <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FP</span>
+                        <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Selection Modal - Pending From -->
+    <div id="modal-pending_from" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('pending_from')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">help</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Pending Debtor</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('pending_from')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Customer" onclick="selectPopupOption('pending_from', 'Customer')">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Customer Pending</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Employee / Salesperson" onclick="selectPopupOption('pending_from', 'Employee / Salesperson')">
+                        <span class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">badge</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Employee / Salesperson Pending</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="No Pending" onclick="selectPopupOption('pending_from', 'No Pending')">
+                        <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">No Pending</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Barcode Scanner Camera Overlay Modal -->
+    <div id="modal-barcode" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closeBarcodeModal()"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] animate-pulse">barcode_scanner</span>
+                    <h3 class="text-sm sm:text-base font-bold">Scan IMEI Barcode</h3>
+                </div>
+                <button type="button" onclick="closeBarcodeModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col items-center justify-center gap-4">
+                <div class="w-full aspect-square max-w-[280px] bg-slate-100 rounded-xl overflow-hidden border-2 border-dashed border-[#0D70C0] flex items-center justify-center relative shadow-inner">
+                    <div id="interactive-reader" class="w-full h-full object-cover"></div>
+                    <div class="absolute inset-x-0 top-1/2 h-0.5 bg-rose-500 animate-bounce shadow-md"></div>
+                </div>
+                <p class="text-xs text-on-surface-variant font-medium text-center max-w-[260px]">Center the barcode inside the camera window. Scanning begins automatically.</p>
+                <div id="scannerErrorMessage" class="hidden text-[11px] text-[#BA1A1A] font-semibold bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg text-center max-w-[280px]"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Payment Details Modal (Displays payment metadata & log timelines) -->
+    <div id="modal-payment-detail" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closeDetailModal()"></div>
+        <div class="relative bg-white w-full sm:max-w-xl rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[90vh] sm:max-h-[85vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">analytics</span>
+                    <h3 class="text-sm sm:text-base font-bold">Payment Transaction Details</h3>
+                </div>
+                <button type="button" onclick="closeDetailModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-grow flex flex-col gap-6">
+                <!-- Data breakdown grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payment ID</span>
+                        <p id="detPaymentId" class="text-xs font-bold text-slate-800 font-data-mono">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Created Date</span>
+                        <p id="detDate" class="text-xs font-medium text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Customer</span>
+                        <p id="detCustomerName" class="text-xs font-bold text-[#0D70C0]">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Mobile</span>
+                        <p id="detMobile" class="text-xs font-medium text-slate-800 font-data-mono">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl col-span-2">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Item / Model & IMEI</span>
+                        <p id="detModel" class="text-xs font-medium text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Sales Person</span>
+                        <p id="detSalesPerson" class="text-xs font-medium text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Invoice Number</span>
+                        <p id="detInvoice" class="text-xs font-medium text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payment Mode</span>
+                        <p id="detPaymentMode" class="text-xs font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total Bill</span>
+                        <p id="detTotalBill" class="text-xs font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total Received</span>
+                        <p id="detReceived" class="text-xs font-bold text-emerald-600">--</p>
+                    </div>
+                    <div class="bg-rose-50/50 border border-rose-100 p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-rose-500 uppercase tracking-wider block">Pending Balance</span>
+                        <p id="detPending" class="text-xs font-bold text-rose-600">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl" id="detDebtSection">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Debt Owner / Due</span>
+                        <p id="detDebtInfo" class="text-xs font-medium text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Statuses</span>
+                        <p id="detStatuses" class="text-xs font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="bg-slate-50 border border-outline-variant p-3 rounded-xl col-span-2">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Initial Remarks</span>
+                        <p id="detRemarks" class="text-xs font-medium text-slate-600">--</p>
+                    </div>
+                </div>
+                
+                <!-- History Logs timeline -->
+                <div class="border-t border-slate-100 pt-4">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Settlement History Log</h4>
+                    <div class="history-timeline" id="detHistoryList">
+                        <!-- Dynamic History logs -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
+                <button type="button" onclick="closeDetailModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50">
+                    Close Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Partial Payment Popup Overlay -->
+    <div id="modal-partial-payment" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePartialModal()"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">add_card</span>
+                    <h3 class="text-sm sm:text-base font-bold">Record Partial Payment</h3>
+                </div>
+                <button type="button" onclick="closePartialModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <form id="partialPaymentForm" class="flex-grow flex flex-col overflow-hidden">
+                <input type="hidden" id="partial_payment_id" name="payment_id" value="" />
+                
+                <div class="p-6 overflow-y-auto flex-grow flex flex-col gap-4">
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col gap-1">
+                        <span class="text-[9px] font-bold text-rose-500 uppercase tracking-wider block">Remaining Debt Balance</span>
+                        <p id="partialPendingBalance" class="text-base font-bold text-rose-600">₹0.00</p>
+                    </div>
+                    
+                    <!-- Amount Received -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-slate-700" for="partial_amount_added">Amount Added (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
+                        <input id="partial_amount_added" name="amount_added" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Enter amount to add" type="number" step="0.01" min="0.01" required />
+                    </div>
+                    
+                    <!-- Remarks -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-slate-700" for="partial_remarks">Remarks / History Notes</label>
+                        <textarea id="partial_remarks" name="remarks" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none" placeholder="E.g., Second installment paid by GPay" maxlength="200" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
+                    <button type="button" onclick="closePartialModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow">
+                        Record Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. Selection Modal - Pending Person Name -->
+    <div id="modal-pending_person_name" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('pending_person_name')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Employee Name</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('pending_person_name')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-3 border-b border-slate-100 flex-shrink-0">
+                <div class="relative">
+                    <span class="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                    <input type="text" id="search-pending_person_name" oninput="filterPopupOptions('pending_person_name', this.value)" class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Search employee..." />
+                </div>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow" id="list-pending_person_name">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('pending_person_name', 'Bharath Kumar - Manager')">
+                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">BK</span>
+                        <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('pending_person_name', 'Ramesh T - Cashier')">
+                        <span class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RT</span>
+                        <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('pending_person_name', 'Farooq - Staff')">
+                        <span class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FS</span>
+                        <span class="text-sm font-semibold text-slate-700">Farooq - Staff</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('pending_person_name', 'Abhishek - OPPO')">
+                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AB</span>
+                        <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('pending_person_name', 'Azeem - Vivo')">
+                        <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AZ</span>
+                        <span class="text-sm font-semibold text-slate-700">Azeem - Vivo</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('pending_person_name', 'Rabiya - Xiaomi')">
+                        <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RB</span>
+                        <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance Promoter" onclick="selectPopupOption('pending_person_name', 'Finance Promoter')">
+                        <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FP</span>
+                        <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Selection Modal - Payment Status -->
+    <div id="modal-payment_status" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('payment_status')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">grading</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Payment Status</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('payment_status')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Fully Paid" onclick="selectPopupOption('payment_status', 'Fully Paid')">
+                        <span class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Fully Paid</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Partially Paid" onclick="selectPopupOption('payment_status', 'Partially Paid')">
+                        <span class="w-8 h-8 rounded-full bg-yellow-100 text-amber-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">add_card</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Partially Paid</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Pending" onclick="selectPopupOption('payment_status', 'Pending')">
+                        <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Pending</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Overdue" onclick="selectPopupOption('payment_status', 'Overdue')">
+                        <span class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">error</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Overdue</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. Selection Modal - Settlement Status -->
+    <div id="modal-settlement_status" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
+        <div class="absolute inset-0" onclick="closePopupModal('settlement_status')"></div>
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">lock</span>
+                    <h3 class="text-sm sm:text-base font-bold">Select Settlement Status</h3>
+                </div>
+                <button type="button" onclick="closePopupModal('settlement_status')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Settled" onclick="selectPopupOption('settlement_status', 'Settled')">
+                        <span class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Settled</span>
+                    </button>
+                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Unsettled" onclick="selectPopupOption('settlement_status', 'Unsettled')">
+                        <span class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            <span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Unsettled</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script files -->
+    <script src="{{ url_for('static', filename='js/payment_tracker.js') }}?v={{ range(1, 100000) | random }}"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+[
+    {
+        "user_id": "USR-1001",
+        "username": "Bharath Kumar R",
+        "employee_id": "22913",
+        "password_hash": "scrypt:32768:8:1$6Tb1rpBPMqFxfVgb$c935af86facfbd7a03aecf38b5e47b77633750af873036d7d35dbddec4efa22532270e0b341630f0f87f061bae9acb20468f8b6c86079aec946fe7097ab6f355",
+        "role": "super_admin",
+        "status": "active",
+        "created_at": "2026-06-02 21:07:44",
+        "updated_at": "2026-06-02 21:07:44"
+    },
+    {
+        "user_id": "USR-1002",
+        "username": "Admin",
+        "employee_id": "6909",
+        "password_hash": "scrypt:32768:8:1$dhfQ5Jz7Ejv8ZUFG$5e647b5b97a5117ecb9c6cd2376cca8095f9dcc4e06b5ca2e3c881a068a719763778de5c3595e507f8877f3deb2ed0216c147abcad07781596db65db9b9507c5",
+        "role": "admin",
+        "status": "active",
+        "created_at": "2026-06-02 21:07:45",
+        "updated_at": "2026-06-02 21:07:45"
+    },
+    {
+        "user_id": "USR-1003",
+        "username": "Sangeetha",
+        "employee_id": "SMPL",
+        "password_hash": "scrypt:32768:8:1$E7FAidDPDv8Lh8y0$8befa77cfc183c2a6b216737e74cff94e1bd2052339cac7f895b7262f4ae9e63c37b9fb1e019d55c2c7728e7875f27271c8b6d540e460536c27b2072714c7434",
+        "role": "store_employee",
+        "status": "active",
+        "created_at": "2026-06-02 21:07:45",
+        "updated_at": "2026-06-02 21:07:45"
+    }
+]

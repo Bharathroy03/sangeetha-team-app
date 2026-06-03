@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sangeetha Mobiles - New Customer Entry</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133",
+                        "primary-container": "#FFFFFF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "data-mono": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <script>
+        window.currentUserRole = "{{ session.get('role', 'store_employee') }}";
+        window.currentUsername = "{{ session.get('username', '') }}";
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            background-color: #ffffff !important;
+            border-color: #0D70C0 !important;
+            box-shadow: 0 0 0 2px rgba(13, 112, 192, 0.1);
+        }
+        /* Toast Backdrop Blur Overlay */
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+        .toast.success {
+            background: #0D70C0;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast.error {
+            background: #F3F4F6;
+            color: #1E293B;
+            border-left: 5px solid #EE8133;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .toast.success .toast-content { color: #FFFFFF; }
+        .toast.error .toast-content { color: #1E293B; }
+        .toast-content svg { color: #EE8133 !important; }
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .toast.success .toast-close:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .toast.error .toast-close:hover {
+            color: #1E293B;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        .toast.error .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        @keyframes toastPopIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes toastPopOut {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(0.9); opacity: 0; }
+        }
+        .btn-premium {
+            background: linear-gradient(135deg, #0D70C0 0%, #00569E 100%) !important;
+            border: 1px solid rgba(238, 129, 51, 0.25) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            color: #ffffff !important;
+        }
+        .btn-premium::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: -150% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent) !important;
+            transition: 0.6s !important;
+        }
+        .btn-premium:hover::before {
+            left: 150% !important;
+        }
+        .btn-premium:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 25px rgba(13, 112, 192, 0.45), 0 0 0 2px rgba(238, 129, 51, 0.45) !important;
+            border-color: rgba(238, 129, 51, 0.85) !important;
+        }
+        .btn-premium:active {
+            transform: translateY(0) scale(0.98) !important;
+        }
+        #customerFormGrid > div:not(.hidden) {
+            position: relative !important;
+            padding-top: 42px !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .form-label-badge {
+            font-size: 11.5px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            box-sizing: border-box !important;
+            min-height: 38px !important;
+            background: #2B3544 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            box-shadow: none !important;
+            transition: all 0.2s ease-in-out;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 10 !important;
+        }
+        .form-label-badge:hover {
+            position: absolute !important;
+            z-index: 50 !important;
+            width: max-content !important;
+            min-width: 100% !important;
+            max-width: 180% !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            background: #374151 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .form-label-badge span.material-symbols-outlined {
+            font-size: 16px !important;
+            margin-right: 6px !important;
+            color: #FF7A00 !important;
+            flex-shrink: 0 !important;
+        }
+        .form-label-badge span.text-rose-600 {
+            color: #FF5A3D !important;
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            margin-left: 4px !important;
+        }
+        @media (max-width: 1023px) {
+            .form-label-badge {
+                font-size: 11px !important;
+                padding: 9px 12px !important;
+                min-height: 36px !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 15px !important;
+                margin-right: 5px !important;
+            }
+        }
+        @media (max-width: 768px) {
+            #customerFormGrid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px !important;
+            }
+            #customerFormGrid > div:not(.hidden) {
+                padding-top: 38px !important;
+            }
+            .form-label-badge {
+                font-size: 9.5px !important;
+                padding: 8px 10px !important;
+                letter-spacing: 0.04em !important;
+                min-height: 34px !important;
+                line-height: 18px !important;
+                display: block !important;
+                text-align: left !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 13px !important;
+                margin-right: 4px !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+                margin-top: -2px !important;
+            }
+        }
+    </style>
+</head>
+    {% include 'header.html' %}
+
+    <!-- Sidebar Menu -->
+    {% include 'sidebar.html' %}
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        <!-- Page Header & Breadcrumb -->
+        <div class="mb-6 animate-container-fade-up">
+            <nav class="flex mb-1" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 text-xs font-semibold text-on-surface-variant/70">
+                    <li class="inline-flex items-center">
+                        <a href="/dashboard" class="inline-flex items-center hover:text-primary transition-colors gap-1">
+                            <span class="material-symbols-outlined text-[16px]">dashboard</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-[16px] mx-1 text-on-surface-variant/40 flex-shrink-0">chevron_right</span>
+                            <span class="text-on-surface font-bold text-slate-800">New Customer Entry</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="text-headline-md font-headline-md font-bold text-neutral-dark">New Customer Entry</h1>
+        </div>
+
+        <!-- Embedded Form -->
+        {% include 'customer_entry.html' %}
+
+        <!-- Footer Section -->
+        <footer class="mt-8 py-6 border-t border-outline-variant text-center text-body-sm text-on-surface-variant/60 font-medium">
+            <p>All rights reserved by Bharath Kumar.</p>
+        </footer>
+    </main>
+
+    <!-- ==================== BARCODE SCANNER MODAL ==================== -->
+    <div id="scannerModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="relative bg-white w-full max-w-sm mx-4 rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col">
+            <!-- Scanner Header -->
+            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] animate-pulse">barcode_scanner</span>
+                    <h3 class="text-sm sm:text-base font-bold">Scan IMEI Barcode</h3>
+                </div>
+                <button type="button" id="btnCancelScannerTop" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <!-- Scanner Body -->
+            <div class="p-5 flex flex-col items-center gap-4">
+                <!-- Camera View -->
+                <div class="w-full aspect-square max-w-[280px] bg-slate-100 rounded-xl overflow-hidden border-2 border-dashed border-[#0D70C0] flex items-center justify-center relative shadow-inner">
+                    <div id="scannerReader" class="w-full h-full"></div>
+                    <div class="absolute inset-x-0 top-1/2 h-0.5 bg-[#EE8133] animate-bounce shadow-md pointer-events-none"></div>
+                </div>
+                <p class="text-xs text-on-surface-variant font-medium text-center max-w-[260px]">
+                    Center the barcode inside the camera window. Scanning begins automatically.
+                </p>
+                <!-- Scanner Error -->
+                <div id="scannerErrorMessage" class="hidden w-full">
+                    <p id="scannerErrorText" class="text-[11px] text-[#BA1A1A] font-semibold bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg text-center"></p>
+                </div>
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-outline-variant hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-[18px]">image</span>
+                        Scan from Image
+                        <input type="file" id="barcodeFilePicker" accept="image/*" class="hidden" />
+                    </label>
+                    <button type="button" id="btnSwitchCamera" class="hidden flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-outline-variant hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl transition-all">
+                        <span class="material-symbols-outlined text-[18px]">flip_camera_android</span>
+                        Switch Camera
+                    </button>
+                    <button type="button" id="btnCancelScanner" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#0D70C0] text-[#0D70C0] hover:bg-[#0D70C0]/5 text-sm font-bold rounded-xl transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                        Cancel Scan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast alert structures -->
+    <div id="toastContainer" class="toast-container"></div>
+    <div id="toastBackdrop"></div>
+
+
+
+    <!-- App JavaScript bundles -->
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 100000) | random }}"></script>
+    <script src="{{ url_for('static', filename='js/customer_entry.js') }}?v={{ range(1, 100000) | random }}"></script>
+</body>
+</html>

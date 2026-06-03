@@ -1,0 +1,21 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local environment and secret files
+.env
+.env.*
+
+# Editor and system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Antigravity IDE and Gemini files
+.gemini/
+.antigravity-ide/
+browser_recordings/
+html_artifacts/

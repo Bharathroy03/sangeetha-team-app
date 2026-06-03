@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Edit Customer Record | Sangeetha Mobiles</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F9FAFB",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        window.currentUserRole = "{{ session.get('role', 'store_employee') }}";
+        window.currentUsername = "{{ session.get('username', '') }}";
+        window.targetCustomerId = "{{ customer.customer_id }}";
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        #toastBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+        }
+        #toastBackdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 420px;
+        }
+        .toast {
+            pointer-events: auto;
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: toastPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.3s ease;
+        }
+        .toast.success {
+            background: #0D70C0;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #FFFFFF;
+            box-shadow: 0 20px 50px rgba(13, 112, 192, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast.error {
+            background: #F3F4F6;
+            border: none;
+            border-left: 5px solid #EE8133;
+            color: #1E293B;
+            box-shadow: 0 20px 50px rgba(238, 129, 51, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .toast-close {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgressRun 4s linear forwards;
+        }
+        .toast.success .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        .toast.error .toast-progress { background: linear-gradient(90deg, #EE8133, #FF9E59); }
+        @keyframes toastPopIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes toastProgressRun {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+        .btn-premium {
+            background: linear-gradient(135deg, #0D70C0 0%, #00569E 100%);
+            border: 1px solid rgba(238, 129, 51, 0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #ffffff;
+        }
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 112, 192, 0.45), 0 0 0 2px rgba(238, 129, 51, 0.45);
+            border-color: rgba(238, 129, 51, 0.85);
+        }
+        .form-label-badge {
+            font-size: 11.5px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            box-sizing: border-box !important;
+            margin-bottom: 4px !important;
+            min-height: 38px !important;
+            background: #2B3544 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+        }
+        .form-label-badge span.material-symbols-outlined {
+            font-size: 16px !important;
+            margin-right: 6px !important;
+            color: #FF7A00 !important;
+            flex-shrink: 0 !important;
+        }
+        .option-item {
+            cursor: pointer;
+            outline: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+            background-color: #FFFFFF !important;
+        }
+        .option-item:hover, .option-item:focus {
+            border-color: rgba(238, 129, 51, 0.5) !important;
+            background-color: rgba(255, 247, 237, 0.8) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 4px 12px rgba(238, 129, 51, 0.1) !important;
+        }
+        .option-item:hover span.text-slate-700, .option-item:focus span.text-slate-700 {
+            color: #EE8133 !important;
+        }
+        .option-item.selected {
+            border-color: #0D70C0 !important;
+            background-color: rgba(13, 112, 192, 0.06) !important;
+            box-shadow: 0 4px 12px rgba(13, 112, 192, 0.08) !important;
+        }
+        .option-item.selected span.text-slate-700 {
+            color: #0D70C0 !important;
+            font-weight: 700 !important;
+        }
+        .popup-modal-overlay {
+            transition: opacity 0.25s ease-out;
+        }
+        .popup-modal-content {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
+        }
+        @media (max-width: 768px) {
+            #customerForm>div.grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            #customerForm>div.grid>div {
+                grid-column: span 1 / span 1;
+                min-width: 0 !important;
+            }
+            #item_model_container, #imei_number_container, #remarks_container, #reason_container {
+                grid-column: span 2 / span 2 !important;
+            }
+            form input, form select, form [readonly] {
+                min-height: 48px !important;
+                height: 48px !important;
+            }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+    {% include 'header.html' %}
+
+    <!-- SideNavBar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        <div id="view-form-container">
+            <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+                <!-- Header -->
+                <div class="px-4 py-3.5 sm:px-6 sm:py-4.5 border-b border-[#0D70C0] bg-[#0D70C0] flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-[#EE8133] text-[22px] font-bold">edit_note</span>
+                        <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">
+                            {% if role in ['super_admin', 'admin'] %}Direct Edit Customer: {{ customer.customer_id }}{% else %}Submit Edit Request: {{ customer.customer_id }}{% endif %}
+                        </h2>
+                    </div>
+                    <span class="text-[11px] sm:text-xs text-white/95 font-semibold bg-white/15 px-2.5 py-1 rounded-full w-max">
+                        Fields marked * are mandatory
+                    </span>
+                </div>
+
+                <form id="customerForm" class="p-4 sm:p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 md:gap-x-6 md:gap-y-6">
+                        <!-- 1. Customer Name -->
+                        <div class="flex flex-col gap-1.5" id="customer_name_container">
+                            <label class="form-label-badge" for="customer_name">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">person</span>Customer Name<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <input id="customer_name" name="customer_name" value="{{ customer.customer_name }}"
+                                class="px-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md w-full h-[48px]"
+                                placeholder="Enter Customer Name" type="text" maxlength="100" required />
+                        </div>
+
+                        <!-- 2. Mobile Number -->
+                        <div class="flex flex-col gap-1.5" id="mobile_number_container">
+                            <label class="form-label-badge" for="mobile_number">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">call</span>Mobile Number<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <input id="mobile_number" name="mobile_number" value="{{ customer.mobile_number }}"
+                                class="px-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md w-full h-[48px]"
+                                maxlength="10" placeholder="10-digit mobile number" type="tel" required />
+                        </div>
+
+                        <!-- 3. Item / Model -->
+                        <div class="flex flex-col gap-1.5" id="item_model_container">
+                            <label class="form-label-badge" for="item_model">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">smartphone</span>Item / Model<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <input id="item_model" name="item_model" value="{{ customer.item_model }}"
+                                class="px-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md w-full h-[48px]"
+                                placeholder="e.g. Oppo F33 6/128 White" type="text" maxlength="200" required />
+                        </div>
+
+                        <!-- 4. IMEI Number -->
+                        <div class="flex flex-col gap-1.5" id="imei_number_container">
+                            <label class="form-label-badge" for="imei_number">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">barcode_scanner</span>IMEI Number<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full">
+                                <input id="imei_number" name="imei_number" value="{{ customer.imei_number }}"
+                                    class="w-full pl-4 pr-12 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="15-digit IMEI number" type="text" minlength="15" maxlength="15" required />
+                                <button id="btnScanBarcode" type="button" title="Scan Barcode via Camera"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-all hover:scale-110 active:scale-95 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]">barcode_scanner</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 5. Transaction Mode -->
+                        <div class="flex flex-col gap-1.5" id="transaction_mode_container">
+                            <label class="form-label-badge" for="transaction_mode">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">payments</span>Transaction Mode<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('transaction_mode')">
+                                <input type="text" id="transaction_mode" name="transaction_mode" readonly value="{{ customer.transaction_mode }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Select Mode" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- ================= FINANCE FIELDS (CONDITIONAL) ================= -->
+                        <!-- Finance Provider -->
+                        <div class="flex flex-col gap-1.5 hidden" id="finance_provider_container">
+                            <label class="form-label-badge" for="finance_provider">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">account_balance</span>Finance Provider<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('finance_provider')">
+                                <input type="text" id="finance_provider" name="finance_provider" readonly value="{{ customer.finance_provider }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Select Finance Provider" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- Down Payment Mode -->
+                        <div class="flex flex-col gap-1.5 hidden" id="down_payment_mode_container">
+                            <label class="form-label-badge" for="down_payment_mode">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">credit_card</span>Down Payment Mode<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('down_payment_mode')">
+                                <input type="text" id="down_payment_mode" name="down_payment_mode" readonly value="{{ customer.down_payment_mode }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Select Payment Mode" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- Down Payment Value -->
+                        <div class="flex flex-col gap-1.5 hidden" id="down_payment_value_container">
+                            <label class="form-label-badge" for="down_payment_value">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">payments</span>Down Payment Value<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
+                                <input id="down_payment_value" name="down_payment_value" value="{{ customer.down_payment_value }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="0.00" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+
+                        <!-- ================= NON-FINANCE FIELDS (CONDITIONAL) ================= -->
+                        <!-- Cash Amount -->
+                        <div class="flex flex-col gap-1.5 hidden" id="cash_amount_container">
+                            <label class="form-label-badge" for="cash_amount">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">payments</span>Cash Amount
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
+                                <input id="cash_amount" name="cash_amount" value="{{ customer.cash_amount }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="0.00" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+
+                        <!-- Card Amount -->
+                        <div class="flex flex-col gap-1.5 hidden" id="card_amount_container">
+                            <label class="form-label-badge" for="card_amount">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">credit_card</span>Card Amount
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
+                                <input id="card_amount" name="card_amount" value="{{ customer.card_amount }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="0.00" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+
+                        <!-- E-Wallet Amount -->
+                        <div class="flex flex-col gap-1.5 hidden" id="ewallet_amount_container">
+                            <label class="form-label-badge" for="ewallet_amount">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">account_balance_wallet</span>E-Wallet Amount
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
+                                <input id="ewallet_amount" name="ewallet_amount" value="{{ customer.ewallet_amount }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="0.00" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+
+                        <!-- Total Amount Received -->
+                        <div class="flex flex-col gap-1.5 hidden" id="total_amount_received_container">
+                            <label class="form-label-badge" for="total_amount_received">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">monetization_on</span>Total Received
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50 font-bold text-sm">₹</span>
+                                <input id="total_amount_received" name="total_amount_received" readonly value="{{ customer.total_amount_received }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-md font-bold text-primary cursor-not-allowed h-[48px]"
+                                    placeholder="0.00" type="text" />
+                            </div>
+                        </div>
+
+                        <!-- 6. Exchange Status -->
+                        <div class="flex flex-col gap-1.5" id="exchange_status_container">
+                            <label class="form-label-badge" for="exchange_status">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">swap_horiz</span>Exchange?<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('exchange_status')">
+                                <input type="text" id="exchange_status" name="exchange_status" readonly value="{{ customer.exchange_status }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Exchange Involved?" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- Exchange Brand -->
+                        <div class="flex flex-col gap-1.5 hidden" id="exchange_brand_container">
+                            <label class="form-label-badge" for="exchange_brand">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">inventory_2</span>Exchange Brand<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('exchange_brand')">
+                                <input type="text" id="exchange_brand" name="exchange_brand" readonly value="{{ customer.exchange_brand }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Select Brand" />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- Exchange Value -->
+                        <div class="flex flex-col gap-1.5 hidden" id="exchange_value_container">
+                            <label class="form-label-badge" for="exchange_value">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">price_change</span>Exchange Value<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
+                                <input id="exchange_value" name="exchange_value" value="{{ customer.exchange_value }}"
+                                    class="w-full pl-8 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md h-[48px]"
+                                    placeholder="0.00" type="number" step="0.01" min="0" />
+                            </div>
+                        </div>
+
+                        <!-- 7. Sales Person -->
+                        <div class="flex flex-col gap-1.5" id="sales_person_container">
+                            <label class="form-label-badge">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">badge</span>Sales Person<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <div class="relative w-full" onclick="openPopupModal('sales_person')">
+                                <input type="text" id="sales_person" name="sales_person" readonly value="{{ customer.sales_person }}"
+                                    class="w-full pl-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-md cursor-pointer h-[48px]"
+                                    placeholder="Select Sales Person" required />
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
+                            </div>
+                        </div>
+
+                        <!-- 8. Remarks -->
+                        <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-3" id="remarks_container">
+                            <label class="form-label-badge" for="remarks">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">rate_review</span>Remarks
+                            </label>
+                            <textarea id="remarks" name="remarks"
+                                class="px-4 py-3 bg-white border border-outline-variant rounded-xl text-body-md resize-none w-full"
+                                placeholder="Enter notes or additional comments..." maxlength="500" rows="3">{{ customer.remarks }}</textarea>
+                        </div>
+
+                        <!-- 9. Reason for Change (Required ONLY for Employees submitting Edit Request) -->
+                        <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-3 {% if role in ['super_admin', 'admin'] %}hidden{% endif %}" id="reason_container">
+                            <label class="form-label-badge" for="reason">
+                                <span class="material-symbols-outlined text-[16px] mr-1.5">warning</span>Reason for Change<span class="text-rose-600 font-bold ml-0.5">*</span>
+                            </label>
+                            <textarea id="reason" name="reason" {% if role not in ['super_admin', 'admin'] %}required{% endif %}
+                                class="px-4 py-3 bg-white border border-amber-300 focus:border-[#EE8133] focus:ring-1 focus:ring-[#EE8133] rounded-xl text-body-md resize-none w-full"
+                                placeholder="State clearly why this change is necessary..." maxlength="300" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-outline-variant/30 pt-5">
+                        <button id="btnSubmit" type="submit"
+                            class="order-1 sm:order-3 w-full sm:w-auto px-8 py-3 btn-premium text-white text-label-md font-label-md rounded-xl shadow-lg flex items-center justify-center gap-2">
+                            {% if role in ['super_admin', 'admin'] %}Save Directly{% else %}Submit Edit Request{% endif %}
+                            <span class="material-symbols-outlined text-[20px]">save</span>
+                        </button>
+                        <a href="/customer-history" id="btnCancelForm"
+                            class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 bg-white border border-[#0D70C0] text-[#0D70C0] hover:bg-[#0D70C0]/5 text-label-md font-label-md rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- INCLUDE ONLY THE POPUP SELECT MODALS (not the full customer_entry form) -->
+    {% include 'popup_modals.html' %}
+
+    <!-- Toast Notifications -->
+    <div id="toastBackdrop"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/customer_entry.js') }}?v={{ range(1, 100000) | random }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const customerForm = document.getElementById('customerForm');
+            const reasonInput = document.getElementById('reason');
+
+            // Re-run field toggle based on the pre-filled values from the customer record.
+            // customer_entry.js registers its DOMContentLoaded first (it's loaded first),
+            // so window.rerunToggleFields will be available here. A timeout is a safety net.
+            const runToggle = () => {
+                if (typeof window.rerunToggleFields === 'function') {
+                    window.rerunToggleFields();
+                }
+            };
+            runToggle();
+            // Safety net: run again after a short delay in case script load order varies
+            setTimeout(runToggle, 50);
+
+            // Override form submit to handle edit request / direct edit saving
+            customerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Extract fields
+                const customer_name = document.getElementById('customer_name').value.trim();
+                const mobile_number = document.getElementById('mobile_number').value.trim();
+                const item_model = document.getElementById('item_model').value.trim();
+                const imei_number = document.getElementById('imei_number').value.trim();
+                const transaction_mode = document.getElementById('transaction_mode').value;
+                const finance_provider = document.getElementById('finance_provider').value;
+                const down_payment_mode = document.getElementById('down_payment_mode').value;
+                const down_payment_value = parseFloat(document.getElementById('down_payment_value').value) || 0;
+                const cash_amount = parseFloat(document.getElementById('cash_amount').value) || 0;
+                const card_amount = parseFloat(document.getElementById('card_amount').value) || 0;
+                const ewallet_amount = parseFloat(document.getElementById('ewallet_amount').value) || 0;
+                const exchange_status = document.getElementById('exchange_status').value;
+                const exchange_brand = document.getElementById('exchange_brand').value;
+                const exchange_value = parseFloat(document.getElementById('exchange_value').value) || 0;
+                const sales_person = document.getElementById('sales_person').value;
+                const remarks = document.getElementById('remarks').value.trim();
+
+                const proposed_data = {
+                    customer_name,
+                    mobile_number,
+                    item_model,
+                    imei_number,
+                    transaction_mode,
+                    finance_provider: transaction_mode === 'Finance' ? finance_provider : '',
+                    down_payment_mode: transaction_mode === 'Finance' ? down_payment_mode : '',
+                    down_payment_value: transaction_mode === 'Finance' ? down_payment_value : 0,
+                    cash_amount: transaction_mode === 'Non-Finance' ? cash_amount : 0,
+                    card_amount: transaction_mode === 'Non-Finance' ? card_amount : 0,
+                    ewallet_amount: transaction_mode === 'Non-Finance' ? ewallet_amount : 0,
+                    exchange_status,
+                    exchange_brand: exchange_status === 'Yes' ? exchange_brand : '',
+                    exchange_value: exchange_status === 'Yes' ? exchange_value : 0,
+                    sales_person,
+                    remarks
+                };
+
+                const btnSubmit = document.getElementById('btnSubmit');
+                btnSubmit.disabled = true;
+                const originalText = btnSubmit.innerHTML;
+                btnSubmit.innerHTML = 'Saving... <span class="material-symbols-outlined animate-spin text-[18px]">sync</span>';
+
+                // Determine URL and Method based on Role
+                const isAdmin = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
+                const url = isAdmin ? `/api/customers/${window.targetCustomerId}` : `/api/customers/${window.targetCustomerId}/edit-request`;
+                const method = isAdmin ? 'PUT' : 'POST';
+                
+                const payload = isAdmin ? proposed_data : {
+                    reason: reasonInput ? reasonInput.value.trim() : '',
+                    proposed_data
+                };
+
+                try {
+                    const response = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const res = await response.json();
+
+                    if (response.ok && res.success) {
+                        window.showToast(res.message || (isAdmin ? 'Customer record updated successfully!' : 'Edit request submitted successfully. Waiting for admin approval.'), 'success');
+                        setTimeout(() => {
+                            window.location.href = '/customer-history';
+                        }, 2000);
+                    } else {
+                        window.showToast(res.message || 'Error occurred.', 'error');
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = originalText;
+                    }
+                } catch (err) {
+                    window.showToast('Network error while saving changes.', 'error');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = originalText;
+                }
+            });
+
+            // Toggle sidebar menu for mobile
+            const toggleSidebar = () => {
+                const sidebar = document.getElementById('side-nav');
+                const overlay = document.getElementById('sidebar-overlay');
+                const isHidden = sidebar.classList.contains('-translate-x-full');
+
+                if (isHidden) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            };
+            document.getElementById('mobile-menu-toggle').addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Executive Dashboard | Sangeetha Mobiles</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0D70C0",
+                        "secondary": "#EE8133",
+                        "tertiary": "#FFFFFF",
+                        "neutral-dark": "#1A1C1E",
+                        "neutral-light": "#F3F4F6",
+                        "outline-variant": "#E5E7EB",
+                        "on-surface": "#1A1C1E",
+                        "on-surface-variant": "#4B5563",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F9FAFB",
+                        "surface-container": "#F3F4F6",
+                        "surface-container-high": "#E5E7EB",
+                        "surface-container-highest": "#D1D5DB",
+                        "error": "#BA1A1A",
+                        "heritage-maroon": "#0D70C0",
+                        "prestige-gold": "#EE8133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "24px",
+                        "stack-sm": "4px",
+                        "container-padding": "24px",
+                        "stack-md": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        window.currentUserRole = "{{ session.get('role', 'store_employee') }}";
+        window.currentUsername = "{{ session.get('username', '') }}";
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .canvas-area {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+        .metric-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
+        }
+        .ripple-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple-effect {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+    {% include 'header.html' %}
+
+    <!-- SideNavBar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+
+    <!-- Main Canvas Area -->
+    <main class="canvas-area p-3 sm:p-6 lg:ml-64">
+        <!-- 🚀 Quick Actions Section (fitted side by side on mobile in 2-cols) -->
+        <div class="mb-8 animate-container-fade-up">
+            <h2 class="text-headline-sm font-headline-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span>🚀</span> Quick Actions
+            </h2>
+            <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                <!-- Card 1: New Customer Entry -->
+                <a href="/customer-entry" class="ripple-btn group bg-gradient-to-r from-[#0D70C0] to-[#095BA0] border border-[#0D70C0]/20 p-4 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 flex items-center gap-3 cursor-pointer text-white">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 flex-shrink-0">
+                        <span class="material-symbols-outlined text-white text-xl">person_add</span>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-xs sm:text-sm md:text-base font-bold leading-snug break-words">New Customer Entry</h3>
+                        <p class="text-[9px] sm:text-[10px] text-white/70 font-semibold hidden sm:block mt-0.5">Register customer purchase sales</p>
+                    </div>
+                </a>
+
+                <!-- Card 2: CRM Walk-in / Walkout Module -->
+                <a href="/crm-walkin-customers" class="ripple-btn group bg-gradient-to-r from-[#EE8133] to-[#D46C24] border border-[#EE8133]/20 p-4 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 flex items-center gap-3 cursor-pointer text-white">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 flex-shrink-0">
+                        <span class="material-symbols-outlined text-white text-xl">groups</span>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-xs sm:text-sm md:text-base font-bold leading-snug break-words">CRM Walk-in Customer</h3>
+                        <p class="text-[9px] sm:text-[10px] text-white/70 font-semibold hidden sm:block mt-0.5">Log walkin customer queries</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Header & Breadcrumb -->
+        <div class="mb-6 animate-container-fade-up">
+            <nav class="flex mb-1" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 text-xs font-semibold text-on-surface-variant/70">
+                    <li class="inline-flex items-center">
+                        <a href="/dashboard" class="inline-flex items-center hover:text-primary transition-colors gap-1">
+                            <span class="material-symbols-outlined text-[16px]">dashboard</span>
+                            Dashboard
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="text-headline-md font-headline-md font-bold text-slate-800 flex items-center gap-2 mt-2">
+                <span class="material-symbols-outlined text-primary text-3xl">dashboard</span>
+                Executive Dashboard
+            </h1>
+        </div>
+
+        <!-- 1. Summary Metrics Cards (6-bento grid) -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 animate-container-fade-up">
+            <!-- Metric 1: Total Customers -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-blue-50 text-primary rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">groups</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-primary bg-blue-50 px-2 py-0.5 rounded-full uppercase">All Time</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Total Customers</p>
+                    <h3 id="countTotal" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 2: Today's Customers -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">today</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Today</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Today's Customers</p>
+                    <h3 id="countToday" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 3: Finance Customers -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-orange-50 text-orange-600 rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">account_balance</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">EMI</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Finance EMI</p>
+                    <h3 id="countFinance" class="text-2xl sm:text-3xl font-extrabold text-orange-600 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 4: CRM Walk-ins -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">support_agent</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full uppercase">CRM Logs</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">CRM Walk-ins</p>
+                    <h3 id="countCrm" class="text-2xl sm:text-3xl font-extrabold text-indigo-600 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 5: Pending Edit Requests -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">pending_actions</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">Approvals</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Edits</p>
+                    <h3 id="countEdits" class="text-2xl sm:text-3xl font-extrabold text-rose-600 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 6: Pending Payments -->
+            <div class="metric-card bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">account_balance_wallet</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase">Pending</span>
+                </div>
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Payments</p>
+                    <h3 id="countPayments" class="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-1">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Today's Financial Summary Section -->
+        <div class="animate-container-fade-up">
+            <h2 class="text-headline-sm font-headline-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">account_balance_wallet</span> Today's Financial Overview
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <!-- Today Cash Sales -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 bg-green-50 text-green-600 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">payments</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase">Cash</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Today Cash</p>
+                        <h3 id="dashTodayCash" class="text-lg font-bold text-slate-800 mt-1">₹0</h3>
+                    </div>
+                </div>
+
+                <!-- Today Card Sales -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">credit_card</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase">Card</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Today Card</p>
+                        <h3 id="dashTodayCard" class="text-lg font-bold text-slate-800 mt-1">₹0</h3>
+                    </div>
+                </div>
+
+                <!-- Today E-Wallet Sales -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full uppercase">E-Wallet</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Today Wallet</p>
+                        <h3 id="dashTodayEWallet" class="text-lg font-bold text-slate-800 mt-1">₹0</h3>
+                    </div>
+                </div>
+
+                <!-- Today Pending Amount -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">pending_actions</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase">Pending</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Today Pending</p>
+                        <h3 id="dashTodayPending" class="text-lg font-bold text-amber-600 mt-1">₹0</h3>
+                    </div>
+                </div>
+
+                <!-- Total Unsettled Amount -->
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col justify-between col-span-2 md:col-span-1">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-1.5 bg-red-50 text-red-600 rounded-lg">
+                            <span class="material-symbols-outlined text-[20px]">warning</span>
+                        </div>
+                        <span class="text-[9px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full uppercase">Total</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Total Unsettled</p>
+                        <h3 id="dashTotalUnsettled" class="text-lg font-bold text-red-600 mt-1">₹0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 py-6 border-t border-slate-200 text-center text-xs text-slate-400 font-medium">
+            <p>All rights reserved by Bharath Kumar.</p>
+        </footer>
+    </main>
+
+    <!-- SideNav overlay for mobile -->
+    <div class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Scripts -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('side-nav');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isHidden = sidebar.classList.contains('-translate-x-full');
+
+            if (isHidden) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+        document.getElementById('mobile-menu-toggle').addEventListener('click', toggleSidebar);
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 100000) | random }}"></script>
+    <script>
+        // Ripple animation logic for quick action buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.ripple-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const ripple = document.createElement('span');
+                    ripple.className = 'ripple-effect';
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    
+                    const size = Math.max(rect.width, rect.height) * 2;
+                    ripple.style.width = `${size}px`;
+                    ripple.style.height = `${size}px`;
+                    ripple.style.marginLeft = `-${size/2}px`;
+                    ripple.style.marginTop = `-${size/2}px`;
+                    
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
