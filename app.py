@@ -59,7 +59,7 @@ def load_users():
     if not users:
         # Check/seed defaults
         defaults = [
-            ("USR-1001", "Bharath Kumar R", "22913", "Sang@1974", "super_admin"),
+            ("USR-1001", "Bharath Kumar R", "22913", "Bharathroy@03", "super_admin"),
             ("USR-1002", "Admin", "6909", "Sang@1974", "admin"),
             ("USR-1003", "Sangeetha", "SMPL", "Sang@1974", "store_employee")
         ]

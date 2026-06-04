@@ -3,7 +3,7 @@
     "user_id": "USR-1001",
     "username": "Bharath Kumar R",
     "employee_id": "22913",
-    "password_hash": "scrypt:32768:8:1$FVtSvuLq81b3Zdki$3e932d230d80c797fd6c0318ee58368ec8aee4d7c79471b82b80b75ad5136dfb1a8aa902b28a33c37d6082156df4bc4ca3c08e3b0792e428b5eb3c61a4ba1cb5",
+    "password_hash": "scrypt:32768:8:1$pte03MwwtqptCW4L$01047b0d2ead5824dddc77882fb0f5355ddaa6fcf54a48566e297a075b51ce089aea5aaa6fd6036b3ec553287a80522e1812e520d4339e4f580f362d4e444a47",
     "role": "super_admin",
     "status": "active",
     "created_at": "2026-06-02 21:07:44",
