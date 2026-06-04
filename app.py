@@ -30,18 +30,15 @@ from database import db, User, Customer, CRMWalkin, Payment, PaymentHistory, Edi
 
 # Database Configuration
 db_url = os.environ.get('DATABASE_URL')
-if db_url:
-    if db_url.startswith('postgres://'):
-        db_url = db_url.replace('postgres://', 'postgresql://', 1)
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-else:
-    # If running in a serverless function environment (e.g. AWS Lambda / Vercel), the filesystem under /var/task is read-only.
-    # Fall back to placing sangeetha.db in the writable /tmp directory.
-    if os.environ.get('LAMBDA_TASK_ROOT') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.path.exists('/var/task'):
-        sqlite_db_path = os.path.join('/tmp', 'sangeetha.db')
-    else:
-        sqlite_db_path = os.path.join(DATA_DIR, 'sangeetha.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + sqlite_db_path
+if not db_url:
+    # Supabase PostgreSQL connection pooler (Session/Transaction mode) is default (uumcsdvssgejpygxuxmj)
+    import urllib.parse
+    escaped_password = urllib.parse.quote_plus("s,4U9JX!R_t&!cj")
+    db_url = f"postgresql://postgres.uumcsdvssgejpygxuxmj:{escaped_password}@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require"
+
+if db_url.startswith('postgres://'):
+    db_url = db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
