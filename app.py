@@ -42,9 +42,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
-with app.app_context():
-    db.create_all()
-    seed_database_from_json(DATA_DIR)
+
+try:
+    with app.app_context():
+        db.create_all()
+        seed_database_from_json(DATA_DIR)
+except Exception as e:
+    print(f"[CRITICAL] Database initialization failed at startup: {e}")
 
 
 from permissions import ROLE_PERMISSIONS
