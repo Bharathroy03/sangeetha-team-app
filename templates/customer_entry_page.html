@@ -83,6 +83,165 @@
         body {
             background-color: #f8f9fa;
         }
+
+        /* ── Wizard Modals ───────────────────────────────────── */
+        .wizard-modal-overlay { transition: opacity 0.25s ease; }
+        .wizard-modal-content { transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), opacity 0.25s ease; }
+        .wizard-modal-overlay.open { opacity: 1 !important; }
+        .wizard-modal-content.open {
+            transform: translateY(0) scale(1) !important;
+        }
+
+        /* wiz-option selected state */
+        .wiz-option.selected {
+            border-color: #0D70C0 !important;
+            background-color: rgba(13,112,192,0.06) !important;
+        }
+        .wiz-option.selected .wiz-check {
+            background: #0D70C0 !important;
+            border-color: #0D70C0 !important;
+        }
+        .wiz-option.selected .wiz-check::after {
+            content: '';
+            width: 8px; height: 8px;
+            background: white;
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* Exchange brand / payment mode small tiles — selected */
+        .wiz-option.selected {
+            border-color: #0D70C0 !important;
+            background: rgba(13,112,192,0.08) !important;
+            box-shadow: 0 0 0 2px rgba(13,112,192,0.2);
+        }
+
+        /* Summary cards */
+        .summary-card {
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+            border: 1.5px solid rgba(13,112,192,0.2);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: summarySlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes summarySlideIn {
+            from { transform: translateY(12px) scale(0.96); opacity: 0; }
+            to   { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .summary-card .card-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .summary-card .card-body { flex: 1; min-width: 0; }
+        .summary-card .card-title {
+            font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.07em;
+            color: #4B5563; margin-bottom: 4px;
+        }
+        .summary-card .card-detail {
+            font-size: 13px; font-weight: 600; color: #1A1C1E;
+            line-height: 1.4;
+        }
+        .summary-card .card-edit-btn {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(13,112,192,0.1);
+            color: #0D70C0;
+            cursor: pointer; flex-shrink: 0;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        .summary-card .card-edit-btn:hover {
+            background: #0D70C0; color: white;
+        }
+
+        /* ── Barcode Scanner ────────────────────────────────── */
+        /* Crop the camera to a landscape barcode-sized viewport */
+        #scannerViewport {
+            width: 100%;
+            max-width: 340px;
+            height: 180px;          /* landscape: wide + short */
+            position: relative;
+            overflow: hidden;        /* hides camera area outside scan strip */
+            border-radius: 12px;
+            background: #000;
+            border: 2px solid #0D70C0;
+        }
+        /* Force html5-qrcode video to fill + center-crop */
+        #scannerReader {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+        #scannerReader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;   /* crop to fill — no wide-angle spill */
+            object-position: center center !important;
+            display: block !important;
+        }
+        /* Hide the default qrcode library shading box (we add our own) */
+        #scannerReader canvas,
+        #scannerReader #qr-shaded-region {
+            display: none !important;
+        }
+        /* Animated laser scan line */
+        #scanLine {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #EE8133 30%, #FF6B00 50%, #EE8133 70%, transparent);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(238,129,51,0.9), 0 0 18px rgba(238,129,51,0.4);
+            animation: scanLineMove 1.6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 20;
+        }
+        @keyframes scanLineMove {
+            0%   { top: 15%;  opacity: 1; }
+            45%  { top: 80%;  opacity: 1; }
+            50%  { top: 80%;  opacity: 0.3; }
+            55%  { top: 15%;  opacity: 0.3; }
+            60%  { opacity: 1; }
+            100% { top: 15%;  opacity: 1; }
+        }
+        /* Corner bracket guides */
+        #scanCorners {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 21;
+        }
+        .scan-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: #0D70C0;
+            border-style: solid;
+            opacity: 0.9;
+        }
+        .scan-corner.tl { top: 8px;  left: 8px;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+        .scan-corner.tr { top: 8px;  right: 8px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+        .scan-corner.bl { bottom: 8px; left: 8px;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+        .scan-corner.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+        /* Dark overlay strip — top & bottom — to mask outside scan zone */
+        .scan-mask-top, .scan-mask-bottom {
+            position: absolute;
+            left: 0; right: 0;
+            background: rgba(0,0,0,0.45);
+            pointer-events: none;
+            z-index: 10;
+        }
+        .scan-mask-top    { top: 0;    height: 12%; }
+        .scan-mask-bottom { bottom: 0; height: 12%; }
         .canvas-area {
             margin-top: 64px;
             min-height: calc(100vh - 64px);
@@ -354,48 +513,71 @@
     </main>
 
     <!-- ==================== BARCODE SCANNER MODAL ==================== -->
-    <div id="scannerModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
-        <div class="relative bg-white w-full max-w-sm mx-4 rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col">
+    <div id="scannerModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="relative bg-white w-full max-w-sm mx-3 rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col">
+
             <!-- Scanner Header -->
-            <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
+            <div class="px-4 py-3 bg-[#0D70C0] text-white flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-[20px] animate-pulse">barcode_scanner</span>
-                    <h3 class="text-sm sm:text-base font-bold">Scan IMEI Barcode</h3>
+                    <h3 class="text-sm font-bold tracking-wide">Scan IMEI Barcode</h3>
                 </div>
-                <button type="button" id="btnCancelScannerTop" class="text-white/80 hover:text-white transition-colors">
+                <button type="button" id="btnCancelScannerTop" class="text-white/80 hover:text-white transition-colors p-1">
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
             </div>
+
             <!-- Scanner Body -->
-            <div class="p-5 flex flex-col items-center gap-4">
-                <!-- Camera View -->
-                <div class="w-full aspect-square max-w-[280px] bg-slate-100 rounded-xl overflow-hidden border-2 border-dashed border-[#0D70C0] flex items-center justify-center relative shadow-inner">
-                    <div id="scannerReader" class="w-full h-full"></div>
-                    <div class="absolute inset-x-0 top-1/2 h-0.5 bg-[#EE8133] animate-bounce shadow-md pointer-events-none"></div>
+            <div class="px-4 py-4 flex flex-col items-center gap-3 bg-[#0a1628]">
+
+                <!-- ── Cropped landscape camera viewport ── -->
+                <div id="scannerViewport">
+                    <!-- Camera feed renders here (html5-qrcode injects <video>) -->
+                    <div id="scannerReader"></div>
+
+                    <!-- Dark masks: hide top/bottom edge of wide-angle feed -->
+                    <div class="scan-mask-top"></div>
+                    <div class="scan-mask-bottom"></div>
+
+                    <!-- Animated laser scan line -->
+                    <div id="scanLine"></div>
+
+                    <!-- Corner brackets -->
+                    <div id="scanCorners">
+                        <div class="scan-corner tl"></div>
+                        <div class="scan-corner tr"></div>
+                        <div class="scan-corner bl"></div>
+                        <div class="scan-corner br"></div>
+                    </div>
                 </div>
-                <p class="text-xs text-on-surface-variant font-medium text-center max-w-[260px]">
-                    Center the barcode inside the camera window. Scanning begins automatically.
+
+                <!-- Instruction text -->
+                <p class="text-[11px] text-white/70 font-medium text-center px-2">
+                    Hold the barcode <strong class="text-[#EE8133]">horizontally</strong> inside the orange line.
+                    Keep steady — scanning is automatic.
                 </p>
+
                 <!-- Scanner Error -->
                 <div id="scannerErrorMessage" class="hidden w-full">
                     <p id="scannerErrorText" class="text-[11px] text-[#BA1A1A] font-semibold bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg text-center"></p>
                 </div>
+
                 <!-- Action Buttons -->
-                <div class="flex flex-col gap-2 w-full">
-                    <label class="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-outline-variant hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer transition-all">
-                        <span class="material-symbols-outlined text-[18px]">image</span>
-                        Scan from Image
+                <div class="flex gap-2 w-full">
+                    <label class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white/10 border border-white/20 hover:bg-white/20 text-white text-xs font-semibold rounded-xl cursor-pointer transition-all">
+                        <span class="material-symbols-outlined text-[16px]">image</span>
+                        From Image
                         <input type="file" id="barcodeFilePicker" accept="image/*" class="hidden" />
                     </label>
-                    <button type="button" id="btnSwitchCamera" class="hidden flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-outline-variant hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl transition-all">
-                        <span class="material-symbols-outlined text-[18px]">flip_camera_android</span>
-                        Switch Camera
-                    </button>
-                    <button type="button" id="btnCancelScanner" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#0D70C0] text-[#0D70C0] hover:bg-[#0D70C0]/5 text-sm font-bold rounded-xl transition-all active:scale-95">
-                        <span class="material-symbols-outlined text-[18px]">close</span>
-                        Cancel Scan
+                    <button type="button" id="btnSwitchCamera" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white/10 border border-white/20 hover:bg-white/20 text-white text-xs font-semibold rounded-xl transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-[16px]">cameraswitch</span>
+                        <span data-cam-label>Switch</span>
                     </button>
                 </div>
+                <button type="button" id="btnCancelScanner" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 border border-white/20 hover:bg-white/15 text-white/80 text-sm font-semibold rounded-xl transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                    Cancel
+                </button>
             </div>
         </div>
     </div>

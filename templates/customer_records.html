@@ -188,18 +188,203 @@
             box-shadow: 0 0 0 2px rgba(13, 112, 192, 0.1);
         }
         
+        form label:not(.form-label-badge) {
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            color: #1A1C1E !important;
+            letter-spacing: 0.01em !important;
+            margin-bottom: 6px !important;
+            display: inline-block;
+        }
+        .form-label-badge {
+            font-size: 11.5px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            box-sizing: border-box !important;
+            margin-bottom: 4px !important;
+            min-height: 38px !important;
+            background: #2B3544 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .form-label-badge span.material-symbols-outlined {
+            font-size: 16px !important;
+            margin-right: 6px !important;
+            color: #FF7A00 !important;
+            flex-shrink: 0 !important;
+        }
+        .form-label-badge span.text-rose-600 {
+            color: #FF5A3D !important;
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            margin-left: 4px !important;
+        }
         .option-item {
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            outline: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+            background-color: #FFFFFF !important;
         }
-        .option-item:hover {
-            background-color: rgba(13, 112, 192, 0.04);
-            border-color: rgba(13, 112, 192, 0.2);
-            transform: translateX(2px);
+        .option-item:hover, .option-item:focus {
+            border-color: rgba(238, 129, 51, 0.5) !important;
+            background-color: rgba(255, 247, 237, 0.8) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 4px 12px rgba(238, 129, 51, 0.1) !important;
+        }
+        .option-item:hover span.text-slate-700, .option-item:focus span.text-slate-700 {
+            color: #EE8133 !important;
         }
         .option-item.selected {
-            background-color: rgba(13, 112, 192, 0.08);
-            border-color: #0D70C0;
+            border-color: #0D70C0 !important;
+            background-color: rgba(13, 112, 192, 0.06) !important;
+            box-shadow: 0 4px 12px rgba(13, 112, 192, 0.08) !important;
+        }
+        .option-item.selected span.text-slate-700 {
+            color: #0D70C0 !important;
+            font-weight: 700 !important;
+        }
+        form input, form select, form textarea {
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            color: #1A1C1E !important;
+            background-color: #F9FAFB !important;
+            border-width: 1px !important;
+            border-color: #D1D5DB !important;
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+            transition: background-color 0.2s ease, border-color 0.2s ease !important;
+        }
+        form input::placeholder, form select::placeholder, form textarea::placeholder {
+            font-size: 12.5px !important;
+            font-weight: 400 !important;
+            color: #9CA3AF !important;
+            opacity: 1 !important;
+        }
+        .btn-premium {
+            background: linear-gradient(135deg, #0D70C0 0%, #00569E 100%);
+            border: 1px solid rgba(238, 129, 51, 0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #ffffff;
+        }
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: 0.6s;
+        }
+        .btn-premium:hover::before { left: 150%; }
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 112, 192, 0.45), 0 0 0 2px rgba(238, 129, 51, 0.45);
+            border-color: rgba(238, 129, 51, 0.85);
+        }
+        .btn-premium:active { transform: translateY(0) scale(0.98); }
+
+        @media (max-width: 1023px) {
+            .form-label-badge {
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                padding: 9px 12px !important;
+                margin-bottom: 4px !important;
+                letter-spacing: 0.05em !important;
+                width: 100% !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                box-sizing: border-box !important;
+                min-height: 36px !important;
+                display: flex !important;
+                align-items: center !important;
+                background: #2B3544 !important;
+                color: #FFFFFF !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 8px !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 15px !important;
+                margin-right: 5px !important;
+                color: #FF7A00 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #paymentFormGrid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            #paymentFormGrid > div {
+                grid-column: span 1 / span 1 !important;
+            }
+            #remarks_container {
+                grid-column: span 2 / span 2 !important;
+            }
+            .form-label-badge {
+                font-size: 9.5px !important;
+                padding: 8px 10px !important;
+                letter-spacing: 0.04em !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                width: 100% !important;
+                display: block !important;
+                box-sizing: border-box !important;
+                min-height: 34px !important;
+                line-height: 18px !important;
+                background: #2B3544 !important;
+                color: #FFFFFF !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 8px !important;
+            }
+            .form-label-badge span.material-symbols-outlined {
+                font-size: 13px !important;
+                margin-right: 4px !important;
+                color: #FF7A00 !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+                margin-top: -2px !important;
+            }
+            form input, form select, form [readonly] {
+                min-height: 48px !important;
+                height: 48px !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                border-radius: 8px !important;
+                box-sizing: border-box !important;
+            }
+            form textarea {
+                min-height: 96px !important;
+                height: auto !important;
+                border-radius: 8px !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                box-sizing: border-box !important;
+            }
         }
     </style>
 </head>
@@ -239,17 +424,17 @@
         </div>
 
         <!-- Tab bar selectors -->
-        <div class="flex flex-wrap gap-2 mb-6 bg-white border border-outline-variant p-2 rounded-xl shadow-sm">
-            <button id="tab-btn-today" onclick="switchRecordTab('today')" class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 bg-[#0D70C0] text-white shadow">
+        <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2 mb-6 bg-white border border-outline-variant p-2 rounded-xl shadow-sm">
+            <button id="tab-btn-today" onclick="switchRecordTab('today')" class="w-full px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 bg-[#0D70C0] text-white shadow-md border-2 border-[#EE8133] scale-[1.02] transition-all duration-300 ease-out transform active:scale-95">
                 <span class="material-symbols-outlined text-[18px]">today</span> Today's Customers
             </button>
-            <button id="tab-btn-total" onclick="switchRecordTab('total')" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <button id="tab-btn-total" onclick="switchRecordTab('total')" class="w-full px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#0D70C0] bg-slate-50/40 hover:bg-[#0D70C0]/5 border border-slate-200 hover:border-[#0D70C0]/30 transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2">
                 <span class="material-symbols-outlined text-[18px]">groups</span> Total Directory
             </button>
-            <button id="tab-btn-finance" onclick="switchRecordTab('finance')" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <button id="tab-btn-finance" onclick="switchRecordTab('finance')" class="w-full px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#0D70C0] bg-slate-50/40 hover:bg-[#0D70C0]/5 border border-slate-200 hover:border-[#0D70C0]/30 transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2">
                 <span class="material-symbols-outlined text-[18px]">account_balance</span> Finance EMI Ledgers
             </button>
-            <button id="tab-btn-payments" onclick="switchRecordTab('payments')" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <button id="tab-btn-payments" onclick="switchRecordTab('payments')" class="w-full px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#0D70C0] bg-slate-50/40 hover:bg-[#0D70C0]/5 border border-slate-200 hover:border-[#0D70C0]/30 transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2">
                 <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> Payment Tracker
             </button>
         </div>
@@ -276,23 +461,23 @@
                             <div class="flex items-center gap-2 w-full sm:w-auto justify-between">
                                 <div class="flex items-center gap-1 flex-1 sm:flex-initial">
                                     <span class="text-[10px] uppercase font-bold text-on-surface-variant/60 tracking-wider">From</span>
-                                    <input type="date" id="filterStartDateCustomers" class="px-2 py-1 bg-slate-50 border border-outline-variant rounded-lg text-xs font-semibold focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer w-full sm:w-32 transition-all" title="Start Date" />
+                                    <input type="date" id="filterStartDateCustomers" class="px-2 py-1 bg-slate-50 border border-outline-variant rounded-lg text-xs font-semibold focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer w-full sm:w-32 transition-all" title="Start Date" placeholder="From Date" />
                                 </div>
                                 <span class="text-xs text-on-surface-variant/40 font-bold">to</span>
                                 <div class="flex items-center gap-1 flex-1 sm:flex-initial">
                                     <span class="text-[10px] uppercase font-bold text-on-surface-variant/60 tracking-wider">To</span>
-                                    <input type="date" id="filterEndDateCustomers" class="px-2 py-1 bg-slate-50 border border-outline-variant rounded-lg text-xs font-semibold focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer w-full sm:w-32 transition-all" title="End Date" />
+                                    <input type="date" id="filterEndDateCustomers" class="px-2 py-1 bg-slate-50 border border-outline-variant rounded-lg text-xs font-semibold focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer w-full sm:w-32 transition-all" title="End Date" placeholder="To Date" />
                                 </div>
                                 <button type="button" id="btnClearDateFiltersCustomers" class="flex text-on-surface-variant/40 hover:text-error transition-colors items-center justify-center p-1 rounded-md hover:bg-slate-100" title="Clear Date Filters">
                                     <span class="material-symbols-outlined text-[16px]">close</span>
                                 </button>
                             </div>
                         </div>
-
+ 
                         <!-- Search -->
                         <div class="relative w-full md:w-64">
                             <span class="absolute left-3 top-2.5 material-symbols-outlined text-on-surface-variant/40">search</span>
-                            <input id="ledgerSearch" class="pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Search records..." type="text" />
+                            <input id="ledgerSearch" class="pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Search Customer Records..." type="text" />
                         </div>
 
                         {% if session.get('role') in ['super_admin', 'admin'] %}
@@ -568,34 +753,9 @@
             </div>
             <div class="p-4 overflow-y-auto flex-grow" id="list-sales_person">
                 <div class="flex flex-col gap-2">
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('sales_person', 'Bharath Kumar - Manager')">
-                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">BK</span>
-                        <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('sales_person', 'Ramesh T - Cashier')">
-                        <span class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RT</span>
-                        <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('sales_person', 'Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FS</span>
-                        <span class="text-sm font-semibold text-slate-700">Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('sales_person', 'Abhishek - OPPO')">
-                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AB</span>
-                        <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('sales_person', 'Azeem - Vivo')">
-                        <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AZ</span>
-                        <span class="text-sm font-semibold text-slate-700">Azeem - Vivo</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('sales_person', 'Rabiya - Xiaomi')">
-                        <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RB</span>
-                        <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance Promoter" onclick="selectPopupOption('sales_person', 'Finance Promoter')">
-                        <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FP</span>
-                        <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
-                    </button>
+                    <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                        <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                    </div>
                 </div>
             </div>
         </div>
@@ -780,13 +940,13 @@
                     <!-- Amount Received -->
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-bold text-slate-700" for="partial_amount_added">Amount Added (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                        <input id="partial_amount_added" name="amount_added" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Enter amount to add" type="number" step="0.01" min="0.01" required />
+                        <input id="partial_amount_added" name="amount_added" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Enter Payment Amount" type="number" step="0.01" min="0.01" required />
                     </div>
                     
                     <!-- Remarks -->
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-bold text-slate-700" for="partial_remarks">Remarks / History Notes</label>
-                        <textarea id="partial_remarks" name="remarks" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none" placeholder="E.g., Second installment paid by GPay" maxlength="200" rows="3"></textarea>
+                        <textarea id="partial_remarks" name="remarks" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none" placeholder="Enter Additional Remarks (Optional)" maxlength="200" rows="3"></textarea>
                     </div>
                 </div>
                 

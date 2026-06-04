@@ -6,7 +6,7 @@ client = a.app.test_client()
 a.app.config['TESTING'] = True
 
 print("=== STEP 1: ROUTE AUDIT ===")
-client.post('/api/login', json={'employee_id':'22913','password':'Bharathroy@03'})
+client.post('/api/login', json={'employee_id':'22913','password':'Sang@1974'})
 routes = ['/dashboard','/customer-entry','/customer-records','/customer-history','/crm-walkin-customers','/crm-data','/payment-tracker','/admin/users','/admin/database-editor','/admin/edit-requests']
 for r in routes:
     resp = client.get(r)

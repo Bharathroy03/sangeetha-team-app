@@ -105,7 +105,7 @@ def run_tests():
     print("\n--- 4. Testing Super Admin (22913) & Admin (6909) Access ---")
     
     # Login as Super Admin
-    res = super_admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '22913', 'password': 'Bharathroy@03'})
+    res = super_admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '22913', 'password': 'Sang@1974'})
     print(f"Super Admin Login: Status {res.status_code}, Body {res.json()}")
     assert res.status_code == 200
     print("[PASS] Super Admin logged in successfully.")
@@ -132,7 +132,7 @@ def run_tests():
     print("[PASS] GET /api/users returned users list and stripped password hashes.")
 
     # Login as Admin
-    res = admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '6909', 'password': 'Ramesh@6909'})
+    res = admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '6909', 'password': 'Sang@1974'})
     print(f"Admin Login: Status {res.status_code}, Body {res.json()}")
     assert res.status_code == 200
     print("[PASS] Admin logged in successfully.")

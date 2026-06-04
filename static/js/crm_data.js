@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateStats = () => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const d = new Date();
+        const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
         let todayCount = 0;
         let enquiryCount = 0;
         let pricingCount = 0;
@@ -631,6 +632,53 @@ document.addEventListener('DOMContentLoaded', () => {
             closeCrmModal();
         }
     });
+
+    // --- LOAD DYNAMIC STAFF LISTS ---
+    const loadStaffListForCrm = async () => {
+        try {
+            const res = await fetch('/api/staff-list');
+            const json = await res.json();
+            if (!res.ok || !json.success) throw new Error(json.message || 'Failed');
+            const staffList = json.data || [];
+            
+            // Populate modal-crm_sales_person
+            const listEl = document.querySelector('#modal-crm_sales_person .option-list');
+            if (listEl) {
+                listEl.innerHTML = staffList.map(u => {
+                    const display = u.display || u.username || '';
+                    const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
+                    const safe = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="${safe}" onclick="selectPopupOption('crm_sales_person', '${safe}')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">${initials}</span>
+                        <span class="text-xs font-semibold text-slate-700">${display}</span>
+                    </button>`;
+                }).join('');
+            }
+
+            // Populate modal-crmFilterSalesPerson
+            const filterListEl = document.querySelector('#modal-crmFilterSalesPerson .option-list');
+            if (filterListEl) {
+                const defaultOption = `<button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-dashed border-slate-300 text-left bg-slate-50" data-value="" onclick="selectPopupOption('crmFilterSalesPerson', '')">
+                    <span class="text-xs font-bold text-slate-500">Show All Sales People</span>
+                </button>`;
+                filterListEl.innerHTML = defaultOption + staffList.map(u => {
+                    const display = u.display || u.username || '';
+                    const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
+                    const safe = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="${safe}" onclick="selectPopupOption('crmFilterSalesPerson', '${safe}')">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">${initials}</span>
+                        <span class="text-xs font-semibold text-slate-700">${display}</span>
+                    </button>`;
+                }).join('');
+            }
+        } catch (e) {
+            console.error('Failed to load CRM staff list:', e);
+        }
+    };
+
+    loadStaffListForCrm();
+
+    if (crmFilterSalesPerson) crmFilterSalesPerson.addEventListener('change', renderCrmTable);
 
     // Initialize Page Data
     fetchCrmData();

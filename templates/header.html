@@ -111,12 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Global Mobile Sidebar Toggle (for pages missing it like customer-entry) ---
+    // --- Global Mobile Sidebar Toggle (for pages missing it like customer-entry and records) ---
     const menuToggle = document.getElementById('mobile-menu-toggle');
     const sidebar = document.getElementById('side-nav');
     const overlay = document.getElementById('sidebar-overlay');
     
-    if (window.location.pathname.startsWith('/customer-entry') && menuToggle && sidebar && overlay) {
+    const missingTogglePaths = ['/customer-entry'];
+    const needsToggleBinding = missingTogglePaths.some(p => window.location.pathname.startsWith(p));
+    
+    if (needsToggleBinding && menuToggle && sidebar && overlay) {
         if (!menuToggle.dataset.sidebarBound) {
             menuToggle.dataset.sidebarBound = "true";
             

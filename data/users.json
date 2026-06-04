@@ -1,32 +1,84 @@
 [
-    {
-        "user_id": "USR-1001",
-        "username": "Bharath Kumar R",
-        "employee_id": "22913",
-        "password_hash": "scrypt:32768:8:1$6Tb1rpBPMqFxfVgb$c935af86facfbd7a03aecf38b5e47b77633750af873036d7d35dbddec4efa22532270e0b341630f0f87f061bae9acb20468f8b6c86079aec946fe7097ab6f355",
-        "role": "super_admin",
-        "status": "active",
-        "created_at": "2026-06-02 21:07:44",
-        "updated_at": "2026-06-02 21:07:44"
-    },
-    {
-        "user_id": "USR-1002",
-        "username": "Admin",
-        "employee_id": "6909",
-        "password_hash": "scrypt:32768:8:1$dhfQ5Jz7Ejv8ZUFG$5e647b5b97a5117ecb9c6cd2376cca8095f9dcc4e06b5ca2e3c881a068a719763778de5c3595e507f8877f3deb2ed0216c147abcad07781596db65db9b9507c5",
-        "role": "admin",
-        "status": "active",
-        "created_at": "2026-06-02 21:07:45",
-        "updated_at": "2026-06-02 21:07:45"
-    },
-    {
-        "user_id": "USR-1003",
-        "username": "Sangeetha",
-        "employee_id": "SMPL",
-        "password_hash": "scrypt:32768:8:1$E7FAidDPDv8Lh8y0$8befa77cfc183c2a6b216737e74cff94e1bd2052339cac7f895b7262f4ae9e63c37b9fb1e019d55c2c7728e7875f27271c8b6d540e460536c27b2072714c7434",
-        "role": "store_employee",
-        "status": "active",
-        "created_at": "2026-06-02 21:07:45",
-        "updated_at": "2026-06-02 21:07:45"
-    }
+  {
+    "user_id": "USR-1001",
+    "username": "Bharath Kumar R",
+    "employee_id": "22913",
+    "password_hash": "scrypt:32768:8:1$FVtSvuLq81b3Zdki$3e932d230d80c797fd6c0318ee58368ec8aee4d7c79471b82b80b75ad5136dfb1a8aa902b28a33c37d6082156df4bc4ca3c08e3b0792e428b5eb3c61a4ba1cb5",
+    "role": "super_admin",
+    "status": "active",
+    "created_at": "2026-06-02 21:07:44",
+    "updated_at": "2026-06-02 21:07:44",
+    "job_title": "Manager"
+  },
+  {
+    "user_id": "USR-1003",
+    "username": "Sangeetha",
+    "employee_id": "SMPL",
+    "password_hash": "scrypt:32768:8:1$AjA6ECQM9nGMZ71c$c0140f4170edcee417d74360eccc3a220b768d1b91d58d1ad8a796b7c11aaf69ad6083cd707e2d83d5872c5ee57ec9285bdbf7a0e9be7a2c2fe213452b8dddbb",
+    "role": "store_employee",
+    "status": "active",
+    "created_at": "2026-06-02 21:07:45",
+    "updated_at": "2026-06-02 21:07:45",
+    "job_title": "Store Account"
+  },
+  {
+    "id": "USR-F52D2ACF",
+    "username": "Ramesh T",
+    "employee_id": "6909",
+    "role": "admin",
+    "job_title": "Cashier",
+    "password_hash": "scrypt:32768:8:1$oEhdaJxVye6iBCko$b8ba0a725ed106d9f177ce634254fe102ea1c39c1efa1a3158b92a69eb3d2840b54ca1c66b671632f699830441709fb52b362a7d8aec854a70db8915be5def52",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:07.460615"
+  },
+  {
+    "id": "USR-841F83F9",
+    "username": "Mohammad Farooq",
+    "employee_id": "Sangeetha Staff",
+    "role": "store_employee",
+    "job_title": "Staff",
+    "password_hash": "scrypt:32768:8:1$7HBpbOoaOUNodjzl$d85fd8d18280f5cce38d479f9e7e3885fd5e5024ac4de37f9db5a7aee81fb9d8496838f80ece96657249c6b89ebae993986f0cea0881c12754cc7237d9c878c0",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:07.755017"
+  },
+  {
+    "id": "USR-7E4840C7",
+    "username": "Abhishek",
+    "employee_id": "OPPO",
+    "role": "store_employee",
+    "job_title": "Promoter",
+    "password_hash": "scrypt:32768:8:1$dlJc5RnROqL8hQa6$0bc12993efc49537108145aa1bc7e2c7511128903a67e060ed2c178edb92c3eb1d7b4fdcfd92ae36bbfd91af5e0dd9204f9d1ac235771d7a24ae83e843921335",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:08.044578"
+  },
+  {
+    "id": "USR-2C12AE9F",
+    "username": "Azeem",
+    "employee_id": "VIVO",
+    "role": "store_employee",
+    "job_title": "Promoter",
+    "password_hash": "scrypt:32768:8:1$xe9wsUa2gCNALHkE$5b58c7dfd90a49baca98fe49b284bc30490a887b03328ad0960bcf821ad408771f4fe6c54d7ad3f47be238d6c94687ed529f2237be3d41df6ee6b616385b633c",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:08.333557"
+  },
+  {
+    "id": "USR-C935DBFA",
+    "username": "Rabiya",
+    "employee_id": "Xiaomi",
+    "role": "store_employee",
+    "job_title": "Promoter",
+    "password_hash": "scrypt:32768:8:1$Bnlf9FPsTfBoYoIr$c27436defe5eab873560fabe7067f0fd8f20305b6873bf759aba8f964d1a5e9ff5af0fb0a002da5b97630e6011e0a43d571979ecd1e3f464f8d242b3e3f54941",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:08.619713"
+  },
+  {
+    "id": "USR-7828222E",
+    "username": "Others",
+    "employee_id": "All Finance",
+    "role": "store_employee",
+    "job_title": "Promoter",
+    "password_hash": "scrypt:32768:8:1$uL9lTRCjPX2p9tVI$a24e35f4fa555f132cb49d82b25279375229f17eaa909b501c2109194cb68336cc9205565f2be0c8105d8b311164f2b57870f9272b11881e0b9cc083e56da5ef",
+    "status": "active",
+    "created_at": "2026-06-04T07:58:08.936505"
+  }
 ]

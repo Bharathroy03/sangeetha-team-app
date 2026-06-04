@@ -309,7 +309,7 @@
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" for="crmSearchInput">Search Query</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                        <input type="text" id="crmSearchInput" placeholder="Name, Mobile, Model..." class="w-full pl-9 pr-4 py-2 border border-outline-variant rounded-lg text-sm bg-white focus:ring-1 focus:ring-primary focus:border-primary text-slate-800" />
+                        <input type="text" id="crmSearchInput" placeholder="Search CRM Records..." class="w-full pl-9 pr-4 py-2 border border-outline-variant rounded-lg text-sm bg-white focus:ring-1 focus:ring-primary focus:border-primary text-slate-800" />
                     </div>
                 </div>
                 <!-- Start Date -->
@@ -459,19 +459,19 @@
                     <!-- Customer Name -->
                     <div class="flex flex-col gap-1">
                         <label class="form-label-badge" for="crm_customer_name">Customer Name <span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                        <input id="crm_customer_name" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="Name" type="text" maxlength="100" required />
+                        <input id="crm_customer_name" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="Enter Customer Name" type="text" maxlength="100" required />
                     </div>
                     <!-- Mobile Number -->
                     <div class="flex flex-col gap-1">
                         <label class="form-label-badge" for="crm_mobile_number">Mobile Number (10 Digits) <span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                        <input id="crm_mobile_number" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="e.g. 9876543210" type="tel" maxlength="10" required />
+                        <input id="crm_mobile_number" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium text-slate-800" placeholder="Enter 10-Digit Mobile Number" type="tel" maxlength="10" required />
                     </div>
                 </div>
 
                 <!-- Model / Item Enquired -->
                 <div class="flex flex-col gap-1">
                     <label class="form-label-badge" for="crm_model_item">Model / Item Enquired <span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                    <input id="crm_model_item" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium w-full text-slate-800" placeholder="e.g. Oppo F33 6/128 White" type="text" maxlength="200" required />
+                    <input id="crm_model_item" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium w-full text-slate-800" placeholder="Enter Interested Model / Item" type="text" maxlength="200" required />
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -479,7 +479,7 @@
                     <div class="flex flex-col gap-1">
                         <label class="form-label-badge">Walk-in / Walkout Reason <span class="text-rose-600 font-bold ml-0.5">*</span></label>
                         <div class="relative w-full" onclick="openPopupModal('crm_walkout_reason')">
-                            <input type="text" id="crm_walkout_reason" readonly class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Reason" required />
+                            <input type="text" id="crm_walkout_reason" readonly class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Walk-in Reason" required />
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none text-[18px]">arrow_drop_down</span>
                         </div>
                     </div>
@@ -487,7 +487,7 @@
                     <div class="flex flex-col gap-1">
                         <label class="form-label-badge">Sales Person <span class="text-rose-600 font-bold ml-0.5">*</span></label>
                         <div class="relative w-full" onclick="openPopupModal('crm_sales_person')">
-                            <input type="text" id="crm_sales_person" readonly class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Employee" required />
+                            <input type="text" id="crm_sales_person" readonly class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm cursor-pointer placeholder:text-slate-400 pr-8 text-slate-800 font-medium" placeholder="Select Sales Person" required />
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none text-[18px]">arrow_drop_down</span>
                         </div>
                     </div>
@@ -496,7 +496,7 @@
                 <!-- Remarks -->
                 <div class="flex flex-col gap-1">
                     <label class="form-label-badge" for="crm_remarks">Remarks (Optional)</label>
-                    <textarea id="crm_remarks" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium resize-none h-20 w-full text-slate-800" placeholder="Additional details..." maxlength="500"></textarea>
+                    <textarea id="crm_remarks" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium resize-none h-20 w-full text-slate-800" placeholder="Enter CRM Remarks (Optional)" maxlength="500"></textarea>
                 </div>
 
                 <!-- Buttons -->
@@ -582,42 +582,9 @@
             </div>
             <div class="p-4 overflow-y-auto flex-grow">
                 <div class="flex flex-col gap-2 option-list">
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('crm_sales_person', 'Bharath Kumar - Manager')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">BM</span>
-                        <span class="text-xs font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('crm_sales_person', 'Ramesh T - Cashier')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RT</span>
-                        <span class="text-xs font-semibold text-slate-700">Ramesh T - Cashier</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Mohammad Farooq - Staff" onclick="selectPopupOption('crm_sales_person', 'Mohammad Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">MF</span>
-                        <span class="text-xs font-semibold text-slate-700">Mohammad Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('crm_sales_person', 'Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">FS</span>
-                        <span class="text-xs font-semibold text-slate-700">Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('crm_sales_person', 'Abhishek - OPPO')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AO</span>
-                        <span class="text-xs font-semibold text-slate-700">Abhishek - OPPO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - VIVO" onclick="selectPopupOption('crm_sales_person', 'Azeem - VIVO')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AV</span>
-                        <span class="text-xs font-semibold text-slate-700">Azeem - VIVO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('crm_sales_person', 'Azeem - Vivo')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">av</span>
-                        <span class="text-xs font-semibold text-slate-700">Azeem - Vivo</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('crm_sales_person', 'Rabiya - Xiaomi')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RX</span>
-                        <span class="text-xs font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Finance Promoter" onclick="selectPopupOption('crm_sales_person', 'Finance Promoter')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">FP</span>
-                        <span class="text-xs font-semibold text-slate-700">Finance Promoter</span>
-                    </button>
+                    <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                        <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                    </div>
                 </div>
             </div>
         </div>
@@ -648,42 +615,9 @@
                     <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-dashed border-slate-300 text-left bg-slate-50" data-value="" onclick="selectPopupOption('crmFilterSalesPerson', '')">
                         <span class="text-xs font-bold text-slate-500">Show All Sales People</span>
                     </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('crmFilterSalesPerson', 'Bharath Kumar - Manager')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">BM</span>
-                        <span class="text-xs font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('crmFilterSalesPerson', 'Ramesh T - Cashier')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RT</span>
-                        <span class="text-xs font-semibold text-slate-700">Ramesh T - Cashier</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Mohammad Farooq - Staff" onclick="selectPopupOption('crmFilterSalesPerson', 'Mohammad Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">MF</span>
-                        <span class="text-xs font-semibold text-slate-700">Mohammad Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('crmFilterSalesPerson', 'Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">FS</span>
-                        <span class="text-xs font-semibold text-slate-700">Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('crmFilterSalesPerson', 'Abhishek - OPPO')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AO</span>
-                        <span class="text-xs font-semibold text-slate-700">Abhishek - OPPO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - VIVO" onclick="selectPopupOption('crmFilterSalesPerson', 'Azeem - VIVO')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">AV</span>
-                        <span class="text-xs font-semibold text-slate-700">Azeem - VIVO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('crmFilterSalesPerson', 'Azeem - Vivo')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">av</span>
-                        <span class="text-xs font-semibold text-slate-700">Azeem - Vivo</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('crmFilterSalesPerson', 'Rabiya - Xiaomi')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">RX</span>
-                        <span class="text-xs font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Finance Promoter" onclick="selectPopupOption('crmFilterSalesPerson', 'Finance Promoter')">
-                        <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">FP</span>
-                        <span class="text-xs font-semibold text-slate-700">Finance Promoter</span>
-                    </button>
+                    <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                        <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                    </div>
                 </div>
             </div>
         </div>

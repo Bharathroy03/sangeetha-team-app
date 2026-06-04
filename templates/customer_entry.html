@@ -1,5 +1,6 @@
-<!-- Customer Entry Form Sub-template -->
+<!-- Customer Entry Form Sub-template — Wizard Popup Redesign -->
 <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
+
     <!-- Form Header -->
     <div class="px-4 py-3.5 sm:px-6 sm:py-4.5 border-b border-[#0D70C0] bg-[#0D70C0] flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div class="flex items-center gap-2.5">
@@ -12,7 +13,9 @@
     </div>
 
     <form id="customerForm" class="p-4 sm:p-6">
+        <!-- ===== MAIN FORM GRID (8 core fields only) ===== -->
         <div id="customerFormGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4 md:gap-x-6 md:gap-y-6">
+
             <!-- 1. Customer Name -->
             <div class="flex flex-col gap-1 col-span-1" id="customer_name_container">
                 <label class="form-label-badge" for="customer_name">
@@ -30,7 +33,7 @@
                 </label>
                 <input id="mobile_number" name="mobile_number"
                     class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full"
-                    maxlength="10" placeholder="10-digit mobile number" type="tel" required />
+                    maxlength="10" placeholder="Enter 10-Digit Mobile Number" type="tel" required />
             </div>
 
             <!-- 3. Item / Model -->
@@ -40,7 +43,7 @@
                 </label>
                 <input id="item_model" name="item_model"
                     class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full"
-                    placeholder="e.g. Oppo F33 6/128 White" type="text" maxlength="200" required />
+                    placeholder="Enter Item/Model as in APX" type="text" maxlength="200" required />
             </div>
 
             <!-- 4. IMEI Number -->
@@ -51,7 +54,7 @@
                 <div class="relative w-full">
                     <input id="imei_number" name="imei_number"
                         class="w-full pl-3 pr-12 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary"
-                        placeholder="15-digit IMEI number" type="text" minlength="15" maxlength="15" required />
+                        placeholder="Scan or Enter 15-Digit IMEI Number" type="text" required />
                     <button id="btnScanBarcode" type="button" title="Scan Barcode via Camera"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-all hover:scale-110 active:scale-90 flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">barcode_scanner</span>
@@ -59,7 +62,7 @@
                 </div>
             </div>
 
-            <!-- 5. Transaction Mode -->
+            <!-- 5. Transaction Mode — clicking opens wizard -->
             <div class="flex flex-col gap-1 col-span-1" id="transaction_mode_container">
                 <label class="form-label-badge" for="transaction_mode">
                     <span class="material-symbols-outlined text-[12px] mr-1">payments</span>Transaction Mode<span class="text-rose-600 font-bold ml-0.5">*</span>
@@ -67,105 +70,12 @@
                 <div class="relative w-full" onclick="openPopupModal('transaction_mode')">
                     <input type="text" id="transaction_mode" name="transaction_mode" readonly
                         class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
-                        placeholder="Select Mode" required />
+                        placeholder="Select Transaction Mode" required />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
                 </div>
             </div>
 
-            <!-- ================= FINANCE FIELDS (CONDITIONAL) ================= -->
-            <!-- Finance Provider -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="finance_provider_container">
-                <label class="form-label-badge" for="finance_provider">
-                    <span class="material-symbols-outlined text-[12px] mr-1">account_balance</span>Finance Provider<span class="text-rose-600 font-bold ml-0.5">*</span>
-                </label>
-                <div class="relative w-full" onclick="openPopupModal('finance_provider')">
-                    <input type="text" id="finance_provider" name="finance_provider" readonly
-                        class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
-                        placeholder="Select Finance Provider" />
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                </div>
-            </div>
-
-            <!-- Down Payment Mode -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="down_payment_mode_container">
-                <label class="form-label-badge" for="down_payment_mode">
-                    <span class="material-symbols-outlined text-[12px] mr-1">credit_card</span>Down Payment Mode<span class="text-rose-600 font-bold ml-0.5">*</span>
-                </label>
-                <div class="relative w-full" onclick="openPopupModal('down_payment_mode')">
-                    <input type="text" id="down_payment_mode" name="down_payment_mode" readonly
-                        class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
-                        placeholder="Select Payment Mode" />
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                </div>
-            </div>
-
-            <!-- Down Payment Value -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="down_payment_value_container">
-                <label class="form-label-badge" for="down_payment_value">
-                    <span class="material-symbols-outlined text-[12px] mr-1">payments</span>Down Payment Value<span class="text-rose-600 font-bold ml-0.5">*</span>
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
-                    <input id="down_payment_value" name="down_payment_value"
-                        class="w-full pl-7 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary"
-                        placeholder="0.00" type="number" step="0.01" min="0" />
-                </div>
-            </div>
-
-            <!-- ================= NON-FINANCE FIELDS (CONDITIONAL) ================= -->
-            <!-- Cash Amount -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="cash_amount_container">
-                <label class="form-label-badge" for="cash_amount">
-                    <span class="material-symbols-outlined text-[12px] mr-1">payments</span>Cash Amount
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
-                    <input id="cash_amount" name="cash_amount"
-                        class="w-full pl-7 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary split-amount"
-                        placeholder="0.00" type="number" step="0.01" min="0" />
-                </div>
-            </div>
-
-            <!-- Card Amount -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="card_amount_container">
-                <label class="form-label-badge" for="card_amount">
-                    <span class="material-symbols-outlined text-[12px] mr-1">credit_card</span>Card Amount
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
-                    <input id="card_amount" name="card_amount"
-                        class="w-full pl-7 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary split-amount"
-                        placeholder="0.00" type="number" step="0.01" min="0" />
-                </div>
-            </div>
-
-            <!-- E-Wallet Amount -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="ewallet_amount_container">
-                <label class="form-label-badge" for="ewallet_amount">
-                    <span class="material-symbols-outlined text-[12px] mr-1">account_balance_wallet</span>E-Wallet Amount
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
-                    <input id="ewallet_amount" name="ewallet_amount"
-                        class="w-full pl-7 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary split-amount"
-                        placeholder="0.00" type="number" step="0.01" min="0" />
-                </div>
-            </div>
-
-            <!-- Total Amount Received -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="total_amount_received_container">
-                <label class="form-label-badge" for="total_amount_received">
-                    <span class="material-symbols-outlined text-[12px] mr-1">monetization_on</span>Total Received
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 font-bold text-sm">₹</span>
-                    <input id="total_amount_received" name="total_amount_received" readonly
-                        class="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-outline-variant rounded-lg text-body-md font-bold text-primary focus:ring-0 focus:border-outline-variant cursor-not-allowed"
-                        placeholder="0.00" type="text" />
-                </div>
-            </div>
-
-            <!-- 6. Exchange Status -->
+            <!-- 6. Exchange? — clicking opens wizard -->
             <div class="flex flex-col gap-1 col-span-1" id="exchange_status_container">
                 <label class="form-label-badge" for="exchange_status">
                     <span class="material-symbols-outlined text-[12px] mr-1">swap_horiz</span>Exchange?<span class="text-rose-600 font-bold ml-0.5">*</span>
@@ -173,43 +83,17 @@
                 <div class="relative w-full" onclick="openPopupModal('exchange_status')">
                     <input type="text" id="exchange_status" name="exchange_status" readonly
                         class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
-                        placeholder="Exchange Involved?" required />
+                        placeholder="Select Exchange Status" required />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
                 </div>
             </div>
 
-            <!-- Exchange Brand -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="exchange_brand_container">
-                <label class="form-label-badge" for="exchange_brand">
-                    <span class="material-symbols-outlined text-[12px] mr-1">inventory_2</span>Exchange Brand<span class="text-rose-600 font-bold ml-0.5">*</span>
-                </label>
-                <div class="relative w-full" onclick="openPopupModal('exchange_brand')">
-                    <input type="text" id="exchange_brand" name="exchange_brand" readonly
-                        class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
-                        placeholder="Select Brand" />
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                </div>
-            </div>
-
-            <!-- Exchange Value -->
-            <div class="flex flex-col gap-1 col-span-1 hidden" id="exchange_value_container">
-                <label class="form-label-badge" for="exchange_value">
-                    <span class="material-symbols-outlined text-[12px] mr-1">price_change</span>Exchange Value<span class="text-rose-600 font-bold ml-0.5">*</span>
-                </label>
-                <div class="relative w-full">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">₹</span>
-                    <input id="exchange_value" name="exchange_value"
-                        class="w-full pl-7 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary"
-                        placeholder="0.00" type="number" step="0.01" min="0" />
-                </div>
-            </div>
-
-            <!-- 7. Sales Person -->
+            <!-- 7. Sales Person — clicking opens searchable list (dynamic) -->
             <div class="flex flex-col gap-1 col-span-1" id="sales_person_container">
                 <label class="form-label-badge">
                     <span class="material-symbols-outlined text-[12px] mr-1">badge</span>Sales Person<span class="text-rose-600 font-bold ml-0.5">*</span>
                 </label>
-                <div class="relative w-full" onclick="openPopupModal('sales_person')">
+                <div class="relative w-full" onclick="openSalesPersonModal()">
                     <input type="text" id="sales_person" name="sales_person" readonly
                         class="w-full pl-3 pr-10 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40"
                         placeholder="Select Sales Person" required />
@@ -224,8 +108,28 @@
                 </label>
                 <textarea id="remarks" name="remarks"
                     class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md resize-none focus:ring-1 focus:ring-primary focus:border-primary w-full"
-                    placeholder="Enter notes or additional comments..." maxlength="500" rows="3"></textarea>
+                    placeholder="Enter Additional Remarks (Optional)" maxlength="500" rows="3"></textarea>
             </div>
+        </div>
+
+        <!-- ===== HIDDEN INPUTS — hold wizard-collected values for form submit ===== -->
+        <input type="hidden" id="finance_provider"    name="finance_provider"    value="" />
+        <input type="hidden" id="down_payment_mode"   name="down_payment_mode"   value="" />
+        <input type="hidden" id="down_payment_value"  name="down_payment_value"  value="" />
+        <input type="hidden" id="cash_amount"         name="cash_amount"         value="" />
+        <input type="hidden" id="card_amount"         name="card_amount"         value="" />
+        <input type="hidden" id="ewallet_amount"      name="ewallet_amount"      value="" />
+        <input type="hidden" id="total_amount_received" name="total_amount_received" value="" />
+        <input type="hidden" id="exchange_brand"      name="exchange_brand"      value="" />
+        <input type="hidden" id="exchange_value"      name="exchange_value"      value="" />
+
+        <!-- ===== SELECTED DETAILS SUMMARY SECTION ===== -->
+        <div id="selectedDetailsSummary" class="mt-5 hidden">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-[#0D70C0] text-[18px]">checklist</span>
+                <h3 class="text-xs font-bold text-slate-600 uppercase tracking-widest">Selected Details</h3>
+            </div>
+            <div id="summaryCardsContainer" class="flex flex-col gap-3"></div>
         </div>
 
         <!-- Form Buttons -->
@@ -263,99 +167,331 @@
         </div>
         <div class="p-4 overflow-y-auto">
             <div class="flex flex-col gap-2">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance" onclick="selectPopupOption('transaction_mode', 'Finance')">
-                    <span class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                        <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3.5 rounded-xl border border-slate-100 transition-all text-left group hover:border-[#0D70C0]/30 hover:bg-blue-50/50" data-value="Finance" onclick="selectTransactionMode('Finance')">
+                    <span class="w-10 h-10 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[20px]">account_balance</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">Finance — EMI Transactions</span>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Finance</p>
+                        <p class="text-[11px] text-slate-500">EMI / Loan transactions</p>
+                    </div>
+                    <span class="ml-auto material-symbols-outlined text-slate-300 text-[18px]">chevron_right</span>
                 </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Non-Finance" onclick="selectPopupOption('transaction_mode', 'Non-Finance')">
-                    <span class="w-8 h-8 rounded-full bg-green-100 text-emerald-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                        <span class="material-symbols-outlined text-[18px]">money</span>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3.5 rounded-xl border border-slate-100 transition-all text-left group hover:border-emerald-300/50 hover:bg-emerald-50/50" data-value="Non-Finance" onclick="selectTransactionMode('Non-Finance')">
+                    <span class="w-10 h-10 rounded-full bg-green-100 text-emerald-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[20px]">money</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">Non-Finance — Direct Splits</span>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Non-Finance</p>
+                        <p class="text-[11px] text-slate-500">Cash / Card / E-Wallet splits</p>
+                    </div>
+                    <span class="ml-auto material-symbols-outlined text-slate-300 text-[18px]">chevron_right</span>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Finance Provider Searchable Selection Modal -->
-<div id="modal-finance_provider" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
-    <div class="absolute inset-0" onclick="closePopupModal('finance_provider')"></div>
-    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
-        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
-            <div class="flex items-center gap-2">
+<!-- ======================================================== -->
+<!-- WIZARD MODAL 1: Finance Details                          -->
+<!-- ======================================================== -->
+<div id="modal-finance-details" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 wizard-modal-overlay">
+    <div class="absolute inset-0" onclick="closeWizardModal('finance-details', false)"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[92vh] wizard-modal-content">
+        <!-- Header -->
+        <div class="px-5 py-4 bg-gradient-to-r from-[#0D70C0] to-[#0a5a9e] text-white flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                 <span class="material-symbols-outlined text-[20px]">account_balance</span>
-                <h3 class="text-sm sm:text-base font-bold">Select Finance Provider</h3>
+            </span>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold">Finance Details</h3>
+                <p class="text-[11px] text-white/70">Complete all 3 fields to continue</p>
             </div>
-            <button type="button" onclick="closePopupModal('finance_provider')" class="text-white/80 hover:text-white transition-colors">
+            <button type="button" onclick="closeWizardModal('finance-details', false)" class="text-white/80 hover:text-white transition-colors p-1">
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
-        <div class="p-3 border-b border-outline-variant bg-slate-50 flex-shrink-0">
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                <input type="text" placeholder="Search Finance Provider..." oninput="filterPopupOptions('finance_provider', this.value)"
-                    class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl text-xs focus:ring-1 focus:ring-primary focus:border-primary" />
+        <!-- Progress strip -->
+        <div class="h-1 bg-white/20 bg-slate-100">
+            <div class="h-1 bg-[#EE8133] transition-all duration-500" id="financeProgressBar" style="width:0%"></div>
+        </div>
+        <!-- Body -->
+        <div class="p-5 overflow-y-auto flex flex-col gap-5">
+            <!-- Finance Provider -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px] text-[#0D70C0]">account_balance</span>
+                    Finance Provider <span class="text-rose-500">*</span>
+                </label>
+                <div class="flex flex-col gap-2" id="financeProviderOptions">
+                    <button type="button" class="wiz-option flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 text-left transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-[0.98]"
+                        data-field="finance_provider" data-value="Bajaj Finserv Lending Financier" onclick="selectWizOption(this)">
+                        <span class="wiz-check w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center transition-all"></span>
+                        <span class="text-sm font-semibold text-slate-700">Bajaj Finserv Lending Financier</span>
+                    </button>
+                    <button type="button" class="wiz-option flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 text-left transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-[0.98]"
+                        data-field="finance_provider" data-value="DMI Consumer Credit (Samsung, Oppo, Vivo)" onclick="selectWizOption(this)">
+                        <span class="wiz-check w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center transition-all"></span>
+                        <span class="text-sm font-semibold text-slate-700">DMI Consumer Credit</span>
+                        <span class="text-[11px] text-slate-400">(Samsung, Oppo, Vivo)</span>
+                    </button>
+                    <button type="button" class="wiz-option flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 text-left transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-[0.98]"
+                        data-field="finance_provider" data-value="HDB Financial Services Ltd (Financier)" onclick="selectWizOption(this)">
+                        <span class="wiz-check w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center transition-all"></span>
+                        <span class="text-sm font-semibold text-slate-700">HDB Financial Services Ltd</span>
+                    </button>
+                    <button type="button" class="wiz-option flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 text-left transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-[0.98]"
+                        data-field="finance_provider" data-value="IDFC First Bank Ltd (Financier)" onclick="selectWizOption(this)">
+                        <span class="wiz-check w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center transition-all"></span>
+                        <span class="text-sm font-semibold text-slate-700">IDFC First Bank Ltd</span>
+                    </button>
+                    <button type="button" class="wiz-option flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-200 text-left transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-[0.98]"
+                        data-field="finance_provider" data-value="TVS Credit Services Limited (Financier)" onclick="selectWizOption(this)">
+                        <span class="wiz-check w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center transition-all"></span>
+                        <span class="text-sm font-semibold text-slate-700">TVS Credit Services Limited</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Down Payment Mode -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px] text-[#0D70C0]">credit_card</span>
+                    Down Payment Mode <span class="text-rose-500">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-2" id="downPaymentModeOptions">
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-amber-400/50 hover:bg-amber-50/40 active:scale-95"
+                        data-field="down_payment_mode" data-value="Cash" onclick="selectWizOption(this)">
+                        <span class="material-symbols-outlined text-[22px] text-amber-500">payments</span>
+                        <span class="text-xs font-bold text-slate-700">Cash</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-[#0D70C0]/40 hover:bg-blue-50/40 active:scale-95"
+                        data-field="down_payment_mode" data-value="Card" onclick="selectWizOption(this)">
+                        <span class="material-symbols-outlined text-[22px] text-[#0D70C0]">credit_card</span>
+                        <span class="text-xs font-bold text-slate-700">Card</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-purple-400/50 hover:bg-purple-50/40 active:scale-95"
+                        data-field="down_payment_mode" data-value="E-Wallet" onclick="selectWizOption(this)">
+                        <span class="material-symbols-outlined text-[22px] text-purple-500">account_balance_wallet</span>
+                        <span class="text-xs font-bold text-slate-700">E-Wallet</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Down Payment Value -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px] text-[#0D70C0]">currency_rupee</span>
+                    Down Payment Value <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0D70C0] font-bold text-lg">₹</span>
+                    <input id="wiz_down_payment_value" type="number" step="0.01" min="0"
+                        class="w-full pl-9 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold text-slate-800 focus:ring-0 focus:border-[#0D70C0] focus:bg-white transition-all"
+                        placeholder="Enter Down Payment Amount" oninput="updateFinanceProgress()" />
+                </div>
             </div>
         </div>
-        <div class="p-4 overflow-y-auto flex-grow">
-            <div class="flex flex-col gap-2 option-list">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Bajaj Finserv Lending Financier" onclick="selectPopupOption('finance_provider', 'Bajaj Finserv Lending Financier')">
-                    <span class="text-sm font-semibold text-slate-700">Bajaj Finserv Lending Financier</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="DMI Consumer Credit (Samsung, Oppo, Vivo)" onclick="selectPopupOption('finance_provider', 'DMI Consumer Credit (Samsung, Oppo, Vivo)')">
-                    <span class="text-sm font-semibold text-slate-700">DMI Consumer Credit (Samsung, Oppo, Vivo)</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="HDB Financial Services Ltd (Financier)" onclick="selectPopupOption('finance_provider', 'HDB Financial Services Ltd (Financier)')">
-                    <span class="text-sm font-semibold text-slate-700">HDB Financial Services Ltd (Financier)</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="IDFC First Bank Ltd (Financier)" onclick="selectPopupOption('finance_provider', 'IDFC First Bank Ltd (Financier)')">
-                    <span class="text-sm font-semibold text-slate-700">IDFC First Bank Ltd (Financier)</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="TVS Credit Services Limited (Financier)" onclick="selectPopupOption('finance_provider', 'TVS Credit Services Limited (Financier)')">
-                    <span class="text-sm font-semibold text-slate-700">TVS Credit Services Limited (Financier)</span>
-                </button>
-            </div>
+        <!-- Footer -->
+        <div class="px-5 py-4 border-t border-slate-100 flex gap-3">
+            <button type="button" onclick="closeWizardModal('finance-details', false)"
+                class="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-all active:scale-95">
+                Cancel
+            </button>
+            <button type="button" id="btnSaveFinance" onclick="saveFinanceDetails()"
+                class="flex-2 flex-grow py-2.5 bg-[#0D70C0] text-white font-bold rounded-xl text-sm hover:bg-[#0a5a9e] transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Save Finance Details
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Down Payment Mode Selection Modal -->
-<div id="modal-down_payment_mode" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
-    <div class="absolute inset-0" onclick="closePopupModal('down_payment_mode')"></div>
-    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
-        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px]">credit_card</span>
-                <h3 class="text-sm sm:text-base font-bold">Select Down Payment Mode</h3>
+<!-- ======================================================== -->
+<!-- WIZARD MODAL 2: Payment Details (Non-Finance)            -->
+<!-- ======================================================== -->
+<div id="modal-payment-details" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 wizard-modal-overlay">
+    <div class="absolute inset-0" onclick="closeWizardModal('payment-details', false)"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[92vh] wizard-modal-content">
+        <!-- Header -->
+        <div class="px-5 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">money</span>
+            </span>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold">Payment Details</h3>
+                <p class="text-[11px] text-white/70">Enter amount split — at least one required</p>
             </div>
-            <button type="button" onclick="closePopupModal('down_payment_mode')" class="text-white/80 hover:text-white transition-colors">
+            <button type="button" onclick="closeWizardModal('payment-details', false)" class="text-white/80 hover:text-white transition-colors p-1">
                 <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
         </div>
-        <div class="p-4 overflow-y-auto">
-            <div class="flex flex-col gap-2">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Cash" onclick="selectPopupOption('down_payment_mode', 'Cash')">
-                    <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+        <!-- Body -->
+        <div class="p-5 overflow-y-auto flex flex-col gap-4">
+            <!-- Amount inputs -->
+            <div class="grid grid-cols-1 gap-3">
+                <div class="flex items-center gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                    <span class="w-9 h-9 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
                         <span class="material-symbols-outlined text-[18px]">payments</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">Cash Payment</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Card" onclick="selectPopupOption('down_payment_mode', 'Card')">
-                    <span class="w-8 h-8 rounded-full bg-blue-100 text-primary flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                    <div class="flex-1">
+                        <label class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Cash Amount</label>
+                        <div class="relative mt-1">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-600 font-bold text-lg">₹</span>
+                            <input id="wiz_cash_amount" type="number" step="0.01" min="0" placeholder="Enter Cash Amount"
+                                class="w-full pl-9 pr-4 py-3 bg-white border-2 border-amber-100 rounded-xl text-base font-bold text-slate-800 focus:ring-0 focus:border-amber-500 transition-all outline-none"
+                                oninput="updatePaymentTotal()" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
+                    <span class="w-9 h-9 rounded-full bg-blue-100 text-[#0D70C0] flex items-center justify-center flex-shrink-0">
                         <span class="material-symbols-outlined text-[18px]">credit_card</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">Card Terminal Payment</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="E-Wallet" onclick="selectPopupOption('down_payment_mode', 'E-Wallet')">
-                    <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                    <div class="flex-1">
+                        <label class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Card Amount</label>
+                        <div class="relative mt-1">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-600 font-bold text-lg">₹</span>
+                            <input id="wiz_card_amount" type="number" step="0.01" min="0" placeholder="Enter Card Amount"
+                                class="w-full pl-9 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl text-base font-bold text-slate-800 focus:ring-0 focus:border-[#0D70C0] transition-all outline-none"
+                                oninput="updatePaymentTotal()" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3.5 bg-purple-50 border border-purple-200 rounded-xl">
+                    <span class="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
                         <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">E-Wallet / UPI Payment</span>
-                </button>
+                    <div class="flex-1">
+                        <label class="text-[11px] font-bold text-purple-700 uppercase tracking-wider">E-Wallet / UPI</label>
+                        <div class="relative mt-1">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-600 font-bold text-lg">₹</span>
+                            <input id="wiz_ewallet_amount" type="number" step="0.01" min="0" placeholder="Enter E-Wallet Amount"
+                                class="w-full pl-9 pr-4 py-3 bg-white border-2 border-purple-100 rounded-xl text-base font-bold text-slate-800 focus:ring-0 focus:border-purple-500 transition-all outline-none"
+                                oninput="updatePaymentTotal()" />
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Auto-calculated total -->
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-[#0D70C0]/10 to-[#0a5a9e]/5 border border-[#0D70C0]/30 rounded-xl">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px] text-[#0D70C0]">monetization_on</span>
+                    <span class="text-sm font-bold text-slate-700">Total Received</span>
+                </div>
+                <span id="wiz_payment_total_display" class="text-xl font-extrabold text-[#0D70C0]">₹0.00</span>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 py-4 border-t border-slate-100 flex gap-3">
+            <button type="button" onclick="closeWizardModal('payment-details', false)"
+                class="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-all active:scale-95">
+                Cancel
+            </button>
+            <button type="button" onclick="savePaymentDetails()"
+                class="flex-grow py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Save Payment Details
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- WIZARD MODAL 3: Exchange Details                         -->
+<!-- ======================================================== -->
+<div id="modal-exchange-details" class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 wizard-modal-overlay">
+    <div class="absolute inset-0" onclick="closeWizardModal('exchange-details', false)"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[92vh] wizard-modal-content">
+        <!-- Header -->
+        <div class="px-5 py-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+            </span>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold">Exchange Details</h3>
+                <p class="text-[11px] text-white/70">Select brand and enter exchange value</p>
+            </div>
+            <button type="button" onclick="closeWizardModal('exchange-details', false)" class="text-white/80 hover:text-white transition-colors p-1">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <!-- Body -->
+        <div class="p-5 overflow-y-auto flex flex-col gap-5">
+            <!-- Exchange Brand -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px] text-teal-600">inventory_2</span>
+                    Exchange Brand <span class="text-rose-500">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-2" id="exchangeBrandOptions">
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Samsung" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Samsung</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Apple" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Apple</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Oppo" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Oppo</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Vivo" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Vivo</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Redmi" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Redmi</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="OnePlus" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">OnePlus</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Realme" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Realme</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Motorola" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Motorola</span>
+                    </button>
+                    <button type="button" class="wiz-option flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 border-slate-200 text-center transition-all hover:border-teal-400/50 hover:bg-teal-50/40 active:scale-95"
+                        data-field="exchange_brand" data-value="Other" onclick="selectWizOption(this)">
+                        <span class="text-[11px] font-bold text-slate-700">Other</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Exchange Value -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px] text-teal-600">price_change</span>
+                    Exchange Value <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-600 font-bold text-lg">₹</span>
+                    <input id="wiz_exchange_value" type="number" step="0.01" min="0"
+                        class="w-full pl-9 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold text-slate-800 focus:ring-0 focus:border-teal-500 focus:bg-white transition-all"
+                        placeholder="Enter Exchange Value" />
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 py-4 border-t border-slate-100 flex gap-3">
+            <button type="button" onclick="closeWizardModal('exchange-details', false)"
+                class="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-all active:scale-95">
+                Cancel
+            </button>
+            <button type="button" onclick="saveExchangeDetails()"
+                class="flex-grow py-2.5 bg-teal-600 text-white font-bold rounded-xl text-sm hover:bg-teal-700 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Save Exchange Details
+            </button>
         </div>
     </div>
 </div>
@@ -367,7 +503,7 @@
         <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
-                <h3 class="text-sm sm:text-base font-bold">Select Exchange Status</h3>
+                <h3 class="text-sm sm:text-base font-bold">Exchange Involved?</h3>
             </div>
             <button type="button" onclick="closePopupModal('exchange_status')" class="text-white/80 hover:text-white transition-colors">
                 <span class="material-symbols-outlined text-[20px]">close</span>
@@ -375,62 +511,31 @@
         </div>
         <div class="p-4 overflow-y-auto">
             <div class="flex flex-col gap-2">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Yes" onclick="selectPopupOption('exchange_status', 'Yes')">
-                    <span class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3.5 rounded-xl border border-slate-100 transition-all text-left group hover:border-teal-300/50 hover:bg-teal-50/50" data-value="Yes" onclick="selectExchangeStatus('Yes')">
+                    <span class="w-10 h-10 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">Yes — Exchange Involved</span>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Yes — Exchange Involved</p>
+                        <p class="text-[11px] text-slate-500">Customer is exchanging an old device</p>
+                    </div>
+                    <span class="ml-auto material-symbols-outlined text-slate-300 text-[18px]">chevron_right</span>
                 </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="No" onclick="selectPopupOption('exchange_status', 'No')">
-                    <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                        <span class="material-symbols-outlined text-[18px]">cancel</span>
+                <button type="button" class="option-item flex items-center gap-3 px-4 py-3.5 rounded-xl border border-slate-100 transition-all text-left group hover:border-slate-300 hover:bg-slate-50" data-value="No" onclick="selectExchangeStatus('No')">
+                    <span class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
                     </span>
-                    <span class="text-sm font-semibold text-slate-700">No — Direct Purchase</span>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">No — Direct Purchase</p>
+                        <p class="text-[11px] text-slate-500">No device exchange</p>
+                    </div>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Exchange Brand Selection Modal -->
-<div id="modal-exchange_brand" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
-    <div class="absolute inset-0" onclick="closePopupModal('exchange_brand')"></div>
-    <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
-        <div class="px-5 py-4 bg-[#0D70C0] text-white flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
-                <h3 class="text-sm sm:text-base font-bold">Select Exchange Brand</h3>
-            </div>
-            <button type="button" onclick="closePopupModal('exchange_brand')" class="text-white/80 hover:text-white transition-colors">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        </div>
-        <div class="p-4 overflow-y-auto">
-            <div class="flex flex-col gap-2">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Samsung" onclick="selectPopupOption('exchange_brand', 'Samsung')">
-                    <span class="text-sm font-semibold text-slate-700">Samsung</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Oppo" onclick="selectPopupOption('exchange_brand', 'Oppo')">
-                    <span class="text-sm font-semibold text-slate-700">Oppo</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Vivo" onclick="selectPopupOption('exchange_brand', 'Vivo')">
-                    <span class="text-sm font-semibold text-slate-700">Vivo</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Redmi" onclick="selectPopupOption('exchange_brand', 'Redmi')">
-                    <span class="text-sm font-semibold text-slate-700">Redmi</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="OnePlus" onclick="selectPopupOption('exchange_brand', 'OnePlus')">
-                    <span class="text-sm font-semibold text-slate-700">OnePlus</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 text-left" data-value="Realme" onclick="selectPopupOption('exchange_brand', 'Realme')">
-                    <span class="text-sm font-semibold text-slate-700">Realme</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Sales Person Searchable Selection Modal -->
+<!-- Sales Person Dynamic Modal -->
 <div id="modal-sales_person" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm hidden opacity-0 popup-modal-overlay">
     <div class="absolute inset-0" onclick="closePopupModal('sales_person')"></div>
     <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border border-outline-variant flex flex-col transform translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 max-h-[85vh] sm:max-h-[80vh] popup-modal-content">
@@ -446,40 +551,16 @@
         <div class="p-3 border-b border-outline-variant bg-slate-50 flex-shrink-0">
             <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                <input type="text" placeholder="Search Sales Person..." oninput="filterPopupOptions('sales_person', this.value)"
+                <input type="text" placeholder="Search staff..." id="salesPersonSearch" oninput="filterSalesPersonList(this.value)"
                     class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl text-xs focus:ring-1 focus:ring-primary focus:border-primary" />
             </div>
         </div>
-        <div class="p-4 overflow-y-auto flex-grow">
-            <div class="flex flex-col gap-2 option-list">
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('sales_person', 'Bharath Kumar - Manager')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">BM</span>
-                    <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('sales_person', 'Ramesh T - Cashier')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">RT</span>
-                    <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Mohammad Farooq - Staff" onclick="selectPopupOption('sales_person', 'Mohammad Farooq - Staff')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">MF</span>
-                    <span class="text-sm font-semibold text-slate-700">Mohammad Farooq - Staff</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('sales_person', 'Abhishek - OPPO')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">AO</span>
-                    <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Azeem - VIVO" onclick="selectPopupOption('sales_person', 'Azeem - VIVO')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">AV</span>
-                    <span class="text-sm font-semibold text-slate-700">Azeem - VIVO</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('sales_person', 'Rabiya - Xiaomi')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">RX</span>
-                    <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                </button>
-                <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 text-left group" data-value="Finance Promoter" onclick="selectPopupOption('sales_person', 'Finance Promoter')">
-                    <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">FP</span>
-                    <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
-                </button>
+        <div class="p-3 overflow-y-auto flex-grow">
+            <div id="salesPersonList" class="flex flex-col gap-1.5">
+                <!-- Populated dynamically by JS -->
+                <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                    <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                </div>
             </div>
         </div>
     </div>

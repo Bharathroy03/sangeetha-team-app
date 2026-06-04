@@ -4,7 +4,7 @@ import app as a
 
 client = a.app.test_client()
 a.app.config['TESTING'] = True
-client.post('/api/login', json={'employee_id':'22913','password':'Bharathroy@03'})
+client.post('/api/login', json={'employee_id':'22913','password':'Sang@1974'})
 
 print("=== FINAL POST-FIX VERIFICATION ===")
 print()

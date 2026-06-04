@@ -27,7 +27,7 @@ def run_tests():
         print("\n[Test 1] Logging in as Super Admin...")
         login_resp = client.post('/api/login', json={
             'employee_id': '22913',
-            'password': 'Bharathroy@03'
+            'password': 'Sang@1974'
         })
         print(f"Login Response: {login_resp.status_code}")
         assert login_resp.status_code == 200, "Super Admin login failed"

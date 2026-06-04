@@ -8,7 +8,8 @@
     <title>Login | Sangeetha Mobiles</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
         rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
@@ -165,6 +166,7 @@
             pointer-events: none;
             transition: opacity 0.3s ease-out;
         }
+
         #toastBackdrop.active {
             opacity: 1;
             pointer-events: auto;
@@ -288,6 +290,7 @@
                 transform: scale(0.7);
                 opacity: 0;
             }
+
             to {
                 transform: scale(1);
                 opacity: 1;
@@ -299,6 +302,7 @@
                 transform: scale(1);
                 opacity: 1;
             }
+
             to {
                 transform: scale(0.7);
                 opacity: 0;
@@ -306,8 +310,13 @@
         }
 
         @keyframes toastProgressRun {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
+            from {
+                transform: scaleX(1);
+            }
+
+            to {
+                transform: scaleX(0);
+            }
         }
 
         /* Premium Shimmer Button styling */
@@ -326,12 +335,10 @@
             left: -150%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.15),
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.15),
+                    transparent);
             transition: 0.6s;
         }
 
@@ -361,10 +368,27 @@
         }
 
         @keyframes premiumShake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
     </style>
 </head>
@@ -376,7 +400,8 @@
         <!-- Dark Overlay -->
         <div class="absolute inset-0 bg-black/60 z-10"></div>
     </div>
-    <main class="min-h-screen w-full flex items-center justify-center px-margin-mobile md:px-margin-desktop py-6 relative z-20">
+    <main
+        class="min-h-screen w-full flex items-center justify-center px-margin-mobile md:px-margin-desktop py-6 relative z-20">
         <div class="w-full max-w-[420px] flex flex-col items-center">
             <!-- Global Logo -->
             <div class="mb-4 animate-container-fade-up" style="animation-delay: 0.1s;">
@@ -395,10 +420,12 @@
                 <div class="p-6 md:p-8">
                     <div class="mb-4 text-center animate-stagger-1">
                         <h1 class="font-headline-md text-headline-md text-heritage-maroon mb-1">Welcome Back</h1>
-                        <p class="font-label-md text-label-md text-on-surface-variant">Access your account and celebrate with us.</p>
+                        <p class="font-label-md text-label-md text-on-surface-variant">Access your account and celebrate
+                            with us.</p>
                     </div>
                     <!-- Error Message Block -->
-                    <div id="loginErrorMessage" class="hidden mb-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-[#ba1a1a] rounded-xl text-label-md font-label-md flex items-center gap-2.5">
+                    <div id="loginErrorMessage"
+                        class="hidden mb-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-[#ba1a1a] rounded-xl text-label-md font-label-md flex items-center gap-2.5">
                         <span class="material-symbols-outlined text-[#ba1a1a] text-[20px]">error</span>
                         <span id="errorMessageText"></span>
                     </div>
@@ -412,7 +439,8 @@
                                     class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-heritage-maroon">badge</span>
                                 <input
                                     class="w-full pl-12 pr-4 py-2.5 bg-white rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-on-surface placeholder:text-on-surface-variant/40"
-                                    id="employee_id" name="employee_id" placeholder="Employee ID" type="text" required />
+                                    id="employee_id" name="employee_id" placeholder="Enter Employee ID" type="text"
+                                    required />
                             </div>
                         </div>
                         <!-- Password Field -->
@@ -424,20 +452,21 @@
                                     class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-heritage-maroon">lock</span>
                                 <input
                                     class="w-full pl-12 pr-4 py-2.5 bg-white rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-on-surface placeholder:text-on-surface-variant/40"
-                                    id="password" name="password" placeholder="Password" type="password" autocomplete="current-password" required />
+                                    id="password" name="password" placeholder="Enter Password" type="password"
+                                    autocomplete="current-password" required />
                             </div>
                         </div>
                         <!-- Actions -->
                         <div class="pt-2 animate-stagger-4">
-                            <button
-                                id="btnSignIn"
+                            <button id="btnSignIn"
                                 class="w-full py-3 btn-premium text-white font-headline-md text-label-md rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] duration-200 flex items-center justify-center gap-3"
                                 type="submit">
                                 SIGN IN
                                 <span class="material-symbols-outlined text-[20px]">login</span>
                             </button>
                             <div class="mt-3 flex justify-center">
-                                <a id="forgotPasswordLink" class="font-label-md text-label-md text-on-surface-variant hover:text-heritage-maroon transition-colors hover:underline underline-offset-4 decoration-prestige-gold"
+                                <a id="forgotPasswordLink"
+                                    class="font-label-md text-label-md text-on-surface-variant hover:text-heritage-maroon transition-colors hover:underline underline-offset-4 decoration-prestige-gold"
                                     href="#">
                                     Forgot Password?
                                 </a>
@@ -456,7 +485,8 @@
             <!-- Supporting Info -->
             <div class="mt-4 text-center animate-container-fade-up" style="animation-delay: 0.4s;">
                 <p class="font-label-sm text-label-sm text-white/60 tracking-wide">
-                    © 2024 SANGEETHA MOBILES. 52 YEARS OF EXCELLENCE.
+                    © 2026 Bharath Kumar - Store Manager
+
                 </p>
             </div>
         </div>
@@ -481,4 +511,5 @@
     </script>
     <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 100000) | random }}"></script>
 </body>
+
 </html>

@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 # In production, this secret key should be loaded from environment variables
-app.secret_key = 'sangeetha_super_secret_session_key'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'sangeetha_super_secret_session_key')
 
 # Path to our customers JSON database
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -25,49 +25,87 @@ WHITELIST_FILES = {
     'payments.json': PAYMENTS_FILE
 }
 
+# SQLAlchemy imports and initialization
+from database import db, User, Customer, CRMWalkin, Payment, PaymentHistory, EditRequest, AuditLog, seed_database_from_json
+
+# Database Configuration
+db_url = os.environ.get('DATABASE_URL')
+if db_url:
+    if db_url.startswith('postgres://'):
+        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(DATA_DIR, 'sangeetha.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+    seed_database_from_json(DATA_DIR)
+
+
 from permissions import ROLE_PERMISSIONS
 
 def load_users():
-    """Load user list from users.json. Auto-seed missing default users."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    users = []
-    if os.path.exists(USERS_FILE):
-        try:
-            with open(USERS_FILE, 'r') as f:
-                users = json.load(f)
-        except Exception:
-            users = []
-            
-    # Check/seed defaults
-    defaults = [
-        ("USR-1001", "Bharath Kumar R", "22913", "Bharathroy@03", "super_admin"),
-        ("USR-1002", "Admin", "6909", "Ramesh@6909", "admin"),
-        ("USR-1003", "Sangeetha", "SMPL", "Sang@1974", "store_employee")
-    ]
-    modified = False
-    for uid, name, emp_id, pwd, role in defaults:
-        if not any(u.get('employee_id') == emp_id for u in users):
-            users.append({
-                "user_id": uid,
-                "username": name,
-                "employee_id": emp_id,
-                "password_hash": generate_password_hash(pwd),
-                "role": role,
-                "status": "active",
-                "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "updated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            })
-            modified = True
-            
-    if modified:
-        save_users(users)
-    return users
+    """Load user list from SQL database."""
+    users = User.query.all()
+    if not users:
+        # Check/seed defaults
+        defaults = [
+            ("USR-1001", "Bharath Kumar R", "22913", "Sang@1974", "super_admin"),
+            ("USR-1002", "Admin", "6909", "Sang@1974", "admin"),
+            ("USR-1003", "Sangeetha", "SMPL", "Sang@1974", "store_employee")
+        ]
+        for uid, name, emp_id, pwd, role in defaults:
+            db.session.add(User(
+                user_id=uid,
+                username=name,
+                employee_id=emp_id,
+                password_hash=generate_password_hash(pwd),
+                role=role,
+                status="active",
+                created_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                updated_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            ))
+        db.session.commit()
+        users = User.query.all()
+    return [u.to_dict() for u in users]
 
-def save_users(users):
-    """Save user list to users.json."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users, f, indent=4)
+def save_users(users_list):
+    """Save user list to SQL database by syncing it."""
+    existing_ids = {u.user_id for u in User.query.all()}
+    input_ids = {u['user_id'] for u in users_list}
+    
+    # Delete removed users
+    for uid in existing_ids - input_ids:
+        u = db.session.get(User, uid)
+        if u:
+            db.session.delete(u)
+            
+    # Add or update users
+    for u in users_list:
+        db_user = db.session.get(User, u['user_id'])
+        if db_user:
+            db_user.username = u['username']
+            db_user.employee_id = u['employee_id']
+            db_user.password_hash = u['password_hash']
+            db_user.role = u['role']
+            db_user.job_title = u.get('job_title')
+            db_user.status = u.get('status', 'active')
+            db_user.updated_at = u.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        else:
+            db.session.add(User(
+                user_id=u['user_id'],
+                username=u['username'],
+                employee_id=u['employee_id'],
+                password_hash=u['password_hash'],
+                role=u['role'],
+                job_title=u.get('job_title'),
+                status=u.get('status', 'active'),
+                created_at=u.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                updated_at=u.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            ))
+    db.session.commit()
 
 def login_required(f):
     @wraps(f)
@@ -117,44 +155,110 @@ def permission_required(permission_name):
     return decorator
 
 def load_customers():
-    """Load customer list from customers.json."""
-    if not os.path.exists(CUSTOMERS_FILE):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(CUSTOMERS_FILE, 'w') as f:
-            json.dump([], f)
-        return []
-    
-    try:
-        with open(CUSTOMERS_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return []
+    """Load customer list from SQL database."""
+    customers = Customer.query.all()
+    return [c.to_dict() for c in customers]
 
-def save_customers(customers):
-    """Save customer list to customers.json."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(CUSTOMERS_FILE, 'w') as f:
-        json.dump(customers, f, indent=4)
+def save_customers(customers_list):
+    """Save customer list to SQL database by syncing it."""
+    existing_ids = {c.customer_id for c in Customer.query.all()}
+    input_ids = {c['customer_id'] for c in customers_list}
+    
+    # Delete removed
+    for cid in existing_ids - input_ids:
+        c = db.session.get(Customer, cid)
+        if c:
+            db.session.delete(c)
+            
+    # Add/Update
+    for c in customers_list:
+        db_cust = db.session.get(Customer, c['customer_id'])
+        if db_cust:
+            db_cust.customer_name = c['customer_name']
+            db_cust.mobile_number = c['mobile_number']
+            db_cust.item_model = c['item_model']
+            db_cust.imei_number = c['imei_number']
+            db_cust.transaction_mode = c['transaction_mode']
+            db_cust.finance_provider = c.get('finance_provider')
+            db_cust.down_payment_mode = c.get('down_payment_mode')
+            db_cust.down_payment_value = float(c.get('down_payment_value', 0.0))
+            db_cust.cash_amount = float(c.get('cash_amount', 0.0))
+            db_cust.card_amount = float(c.get('card_amount', 0.0))
+            db_cust.ewallet_amount = float(c.get('ewallet_amount', 0.0))
+            db_cust.total_amount_received = float(c.get('total_amount_received', 0.0))
+            db_cust.exchange_status = c['exchange_status']
+            db_cust.exchange_brand = c.get('exchange_brand')
+            db_cust.exchange_value = float(c.get('exchange_value', 0.0))
+            db_cust.sales_person = c['sales_person']
+            db_cust.remarks = c.get('remarks')
+            db_cust.created_by = c.get('created_by')
+            db_cust.updated_at = c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        else:
+            db.session.add(Customer(
+                customer_id=c['customer_id'],
+                customer_name=c['customer_name'],
+                mobile_number=c['mobile_number'],
+                item_model=c['item_model'],
+                imei_number=c['imei_number'],
+                transaction_mode=c['transaction_mode'],
+                finance_provider=c.get('finance_provider'),
+                down_payment_mode=c.get('down_payment_mode'),
+                down_payment_value=float(c.get('down_payment_value', 0.0)),
+                cash_amount=float(c.get('cash_amount', 0.0)),
+                card_amount=float(c.get('card_amount', 0.0)),
+                ewallet_amount=float(c.get('ewallet_amount', 0.0)),
+                total_amount_received=float(c.get('total_amount_received', 0.0)),
+                exchange_status=c['exchange_status'],
+                exchange_brand=c.get('exchange_brand'),
+                exchange_value=float(c.get('exchange_value', 0.0)),
+                sales_person=c['sales_person'],
+                remarks=c.get('remarks'),
+                created_by=c.get('created_by', 'admin'),
+                created_at=c.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                updated_at=c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            ))
+    db.session.commit()
 
 def load_crm_customers():
-    """Load CRM walkin customer list from crm_walkin_customers.json."""
-    if not os.path.exists(CRM_WALKIN_CUSTOMERS_FILE):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(CRM_WALKIN_CUSTOMERS_FILE, 'w') as f:
-            json.dump([], f)
-        return []
-    
-    try:
-        with open(CRM_WALKIN_CUSTOMERS_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return []
+    """Load CRM walkin customer list from SQL database."""
+    crm = CRMWalkin.query.all()
+    return [c.to_dict() for c in crm]
 
-def save_crm_customers(customers):
-    """Save CRM walkin customer list to crm_walkin_customers.json."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(CRM_WALKIN_CUSTOMERS_FILE, 'w') as f:
-        json.dump(customers, f, indent=4)
+def save_crm_customers(crm_list):
+    """Save CRM walkin customer list to SQL database by syncing it."""
+    existing_ids = {c.crm_customer_id for c in CRMWalkin.query.all()}
+    input_ids = {c['crm_customer_id'] for c in crm_list}
+    
+    for cid in existing_ids - input_ids:
+        c = db.session.get(CRMWalkin, cid)
+        if c:
+            db.session.delete(c)
+            
+    for c in crm_list:
+        db_crm = db.session.get(CRMWalkin, c['crm_customer_id'])
+        if db_crm:
+            db_crm.customer_name = c['customer_name']
+            db_crm.mobile_number = c['mobile_number']
+            db_crm.model_item = c['model_item']
+            db_crm.walkout_reason = c['walkout_reason']
+            db_crm.remarks = c.get('remarks')
+            db_crm.sales_person = c['sales_person']
+            db_crm.updated_at = c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        else:
+            db.session.add(CRMWalkin(
+                crm_customer_id=c['crm_customer_id'],
+                customer_name=c['customer_name'],
+                mobile_number=c['mobile_number'],
+                model_item=c['model_item'],
+                walkout_reason=c['walkout_reason'],
+                remarks=c.get('remarks'),
+                sales_person=c['sales_person'],
+                created_by=c.get('created_by', 'admin'),
+                created_at=c.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                updated_at=c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            ))
+    db.session.commit()
+
 
 @app.before_request
 def make_session_permanent():
@@ -235,6 +339,59 @@ def api_logout():
     session.clear()
     return jsonify({"success": True, "message": "Logged out successfully!"})
 
+@app.route('/api/session', methods=['GET'])
+@login_required
+def api_session():
+    users = load_users()
+    user = next((u for u in users if u.get('employee_id') == session.get('employee_id')), None)
+    if not user:
+        return jsonify({"success": False, "message": "User not found."}), 404
+    return jsonify({
+        "success": True,
+        "data": {
+            "employee_id": user['employee_id'],
+            "username": user['username'],
+            "role": user['role'],
+            "user_id": user['user_id'],
+            "job_title": user.get('job_title', ''),
+            "status": user.get('status', 'active')
+        }
+    })
+
+@app.route('/api/customers/today', methods=['GET'])
+@login_required
+@permission_required('customer_history_view')
+def api_get_customers_today():
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    customers = Customer.query.filter(Customer.created_at.like(f"{today_str}%")).all()
+    return jsonify({"success": True, "data": [c.to_dict() for c in customers]})
+
+@app.route('/api/customers/finance', methods=['GET'])
+@login_required
+@permission_required('customer_history_view')
+def api_get_customers_finance():
+    customers = Customer.query.filter_by(transaction_mode='Finance').all()
+    return jsonify({"success": True, "data": [c.to_dict() for c in customers]})
+
+@app.route('/api/customers/<customer_id>', methods=['GET'])
+@login_required
+@permission_required('customer_history_view')
+def api_get_customer_detail(customer_id):
+    customer = db.session.get(Customer, customer_id)
+    if not customer:
+        return jsonify({"success": False, "message": "Customer not found."}), 404
+    return jsonify({"success": True, "data": customer.to_dict()})
+
+@app.route('/403')
+def route_403():
+    return render_template('403.html', message="Forbidden: Access is denied."), 403
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({"success": False, "message": "Forbidden: You do not have permission to access this resource."}), 403
+    return render_template('403.html', message="You do not have permission to access this page."), 403
+
 @app.route('/api/customers', methods=['GET'])
 @login_required
 @permission_required('customer_history_view')
@@ -251,9 +408,6 @@ def api_verify_imei():
 
     if not imei:
         return jsonify({"success": False, "message": "IMEI is required."}), 400
-
-    if len(imei) != 15 or not imei.isdigit():
-        return jsonify({"success": False, "message": "IMEI must be exactly 15 numeric digits."}), 400
 
     return jsonify({"success": True, "message": "IMEI verified successfully."})
 
@@ -306,8 +460,6 @@ def api_add_customer():
 
     if not imei_number:
         return jsonify({"success": False, "message": "IMEI Number is required."}), 400
-    if len(imei_number) != 15 or not imei_number.isdigit():
-        return jsonify({"success": False, "message": "IMEI Number must be exactly 15 numeric digits."}), 400
 
     # Transaction Mode validation
     if transaction_mode not in ['Finance', 'Non-Finance', 'Non Finance']:
@@ -380,17 +532,7 @@ def api_add_customer():
         exchange_value = 0.0
 
     # Salesperson validation
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Mohammad Farooq - Staff",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - VIVO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+    allowed_salespeople = get_allowed_salespeople()
     if not sales_person or sales_person not in allowed_salespeople:
         return jsonify({"success": False, "message": "Invalid Sales Person selected."}), 400
 
@@ -453,14 +595,20 @@ def api_get_raw_data():
     if file_param not in WHITELIST_FILES:
         return jsonify({"success": False, "message": "Invalid file parameter"}), 400
         
-    file_path = WHITELIST_FILES[file_param]
-    if not os.path.exists(file_path):
-        return jsonify({"success": True, "raw": "[]"})
-        
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            raw_text = f.read()
-        return jsonify({"success": True, "raw": raw_text})
+        if file_param == 'customers.json':
+            data = load_customers()
+        elif file_param == 'crm_walkin_customers.json':
+            data = load_crm_customers()
+        elif file_param == 'customer_edit_requests.json':
+            data = load_edit_requests()
+        elif file_param == 'users.json':
+            data = load_users()
+        elif file_param == 'payments.json':
+            data = load_payments()
+        else:
+            data = []
+        return jsonify({"success": True, "raw": json.dumps(data, indent=4)})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -483,10 +631,17 @@ def api_save_raw_data():
         if not isinstance(parsed_json, list):
             return jsonify({"success": False, "message": "JSON must be a list (array) of objects."}), 400
             
-        file_path = WHITELIST_FILES[file_param]
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(parsed_json, f, indent=4)
+        if file_param == 'customers.json':
+            save_customers(parsed_json)
+        elif file_param == 'crm_walkin_customers.json':
+            save_crm_customers(parsed_json)
+        elif file_param == 'customer_edit_requests.json':
+            save_edit_requests(parsed_json)
+        elif file_param == 'users.json':
+            save_users(parsed_json)
+        elif file_param == 'payments.json':
+            save_payments(parsed_json)
+            
         return jsonify({"success": True, "message": f"{file_param} database file saved successfully!"})
     except json.JSONDecodeError as err:
         return jsonify({"success": False, "message": f"Invalid JSON syntax: {str(err)}"}), 400
@@ -514,26 +669,24 @@ def api_clear_all_customers():
     customers = load_customers()
     records_deleted = len(customers)
 
-    # Write audit log entry
-    AUDIT_LOG_FILE = os.path.join(DATA_DIR, 'audit_log.json')
-    audit_entry = {
-        "action": "clear_all_customers",
-        "performed_by": session.get('username', ''),
-        "employee_id": session.get('employee_id', ''),
-        "role": session.get('role', ''),
-        "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "records_deleted": records_deleted
-    }
+    # Write audit log entry to SQL database
     try:
-        audit_log = []
-        if os.path.exists(AUDIT_LOG_FILE):
-            with open(AUDIT_LOG_FILE, 'r') as f:
-                audit_log = json.load(f)
-        audit_log.append(audit_entry)
-        with open(AUDIT_LOG_FILE, 'w') as f:
-            json.dump(audit_log, f, indent=4)
+        audit_entry = AuditLog(
+            action="clear_all_customers",
+            performed_by=session.get('username', ''),
+            employee_id=session.get('employee_id', ''),
+            role=session.get('role', ''),
+            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            records_deleted=records_deleted
+        )
+        db.session.add(audit_entry)
+
+        
+        db.session.commit()
     except Exception:
+        db.session.rollback()
         pass  # Audit log failure should not block the operation
+
 
     # Clear all customers
     save_customers([])
@@ -625,17 +778,7 @@ def api_add_crm_customer():
     if not walkout_reason or walkout_reason not in allowed_reasons:
         return jsonify({"success": False, "message": "Invalid or missing Walk-in / Walkout Reason."}), 400
         
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Mohammad Farooq - Staff",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - VIVO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+    allowed_salespeople = get_allowed_salespeople()
     if not sales_person or sales_person not in allowed_salespeople:
         return jsonify({"success": False, "message": "Invalid or missing Sales Person."}), 400
         
@@ -712,17 +855,7 @@ def api_update_crm_customer(crm_customer_id):
     if not walkout_reason or walkout_reason not in allowed_reasons:
         return jsonify({"success": False, "message": "Invalid or missing Walk-in / Walkout Reason."}), 400
         
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Mohammad Farooq - Staff",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - VIVO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+    allowed_salespeople = get_allowed_salespeople()
     if not sales_person or sales_person not in allowed_salespeople:
         return jsonify({"success": False, "message": "Invalid or missing Sales Person."}), 400
         
@@ -826,8 +959,6 @@ def api_update_customer(customer_id):
 
     if not imei_number:
         return jsonify({"success": False, "message": "IMEI Number is required."}), 400
-    if len(imei_number) != 15 or not imei_number.isdigit():
-        return jsonify({"success": False, "message": "IMEI Number must be exactly 15 numeric digits."}), 400
 
     # Transaction Mode validation
     if transaction_mode not in ['Finance', 'Non-Finance', 'Non Finance']:
@@ -900,17 +1031,7 @@ def api_update_customer(customer_id):
         exchange_value = 0.0
 
     # Salesperson validation
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Mohammad Farooq - Staff",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - VIVO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+    allowed_salespeople = get_allowed_salespeople()
     if not sales_person or sales_person not in allowed_salespeople:
         return jsonify({"success": False, "message": "Invalid Sales Person selected."}), 400
 
@@ -952,24 +1073,87 @@ def api_update_customer(customer_id):
     return jsonify({"success": True, "message": "Customer record updated successfully!", "customer": customers[customer_index]})
 
 def load_payments():
-    """Load payment list from payments.json."""
-    if not os.path.exists(PAYMENTS_FILE):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(PAYMENTS_FILE, 'w') as f:
-            json.dump([], f)
-        return []
-    
-    try:
-        with open(PAYMENTS_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return []
+    """Load payment list from SQL database."""
+    payments = Payment.query.all()
+    return [p.to_dict() for p in payments]
 
-def save_payments(payments):
-    """Save payment list to payments.json."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(PAYMENTS_FILE, 'w') as f:
-        json.dump(payments, f, indent=4)
+def save_payments(payments_list):
+    """Save payment list to SQL database by syncing it."""
+    existing_ids = {p.payment_id for p in Payment.query.all()}
+    input_ids = {p['payment_id'] for p in payments_list}
+    
+    for pid in existing_ids - input_ids:
+        p = db.session.get(Payment, pid)
+        if p:
+            db.session.delete(p)
+            
+    for p in payments_list:
+        db_pay = db.session.get(Payment, p['payment_id'])
+        if db_pay:
+            db_pay.customer_name = p['customer_name']
+            db_pay.mobile_number = p['mobile_number']
+            db_pay.invoice_number = p['invoice_number']
+            db_pay.item_model = p['item_model']
+            db_pay.imei_number = p['imei_number']
+            db_pay.sales_person = p['sales_person']
+            db_pay.payment_mode = p['payment_mode']
+            db_pay.total_bill_amount = float(p.get('total_bill_amount', 0.0))
+            db_pay.amount_received = float(p.get('amount_received', 0.0))
+            db_pay.pending_amount = float(p.get('pending_amount', 0.0))
+            db_pay.pending_from = p.get('pending_from')
+            db_pay.pending_person_name = p.get('pending_person_name')
+            db_pay.due_date = p.get('due_date')
+            db_pay.payment_status = p['payment_status']
+            db_pay.settlement_status = p['settlement_status']
+            db_pay.remarks = p.get('remarks')
+            db_pay.updated_at = p.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            
+            # Rebuild payment history
+            PaymentHistory.query.filter_by(payment_id=p['payment_id']).delete()
+            for h in p.get('payment_history', []):
+                db.session.add(PaymentHistory(
+                    payment_id=p['payment_id'],
+                    date_time=h.get('date_time'),
+                    amount_added=float(h.get('amount_added', 0.0)),
+                    received_by=h.get('received_by'),
+                    remarks=h.get('remarks')
+                ))
+        else:
+            new_pay = Payment(
+                payment_id=p['payment_id'],
+                customer_name=p['customer_name'],
+                mobile_number=p['mobile_number'],
+                invoice_number=p['invoice_number'],
+                item_model=p['item_model'],
+                imei_number=p['imei_number'],
+                sales_person=p['sales_person'],
+                payment_mode=p['payment_mode'],
+                total_bill_amount=float(p.get('total_bill_amount', 0.0)),
+                amount_received=float(p.get('amount_received', 0.0)),
+                pending_amount=float(p.get('pending_amount', 0.0)),
+                pending_from=p.get('pending_from'),
+                pending_person_name=p.get('pending_person_name'),
+                due_date=p.get('due_date'),
+                payment_status=p['payment_status'],
+                settlement_status=p['settlement_status'],
+                remarks=p.get('remarks'),
+                created_by=p.get('created_by', 'admin'),
+                created_at=p.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                updated_at=p.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            )
+            db.session.add(new_pay)
+            db.session.flush()
+            
+            for h in p.get('payment_history', []):
+                db.session.add(PaymentHistory(
+                    payment_id=new_pay.payment_id,
+                    date_time=h.get('date_time'),
+                    amount_added=float(h.get('amount_added', 0.0)),
+                    received_by=h.get('received_by'),
+                    remarks=h.get('remarks')
+                ))
+    db.session.commit()
+
 
 @app.route('/payment-tracker')
 @login_required
@@ -1099,7 +1283,14 @@ def api_get_payments():
             mobile = p.get('mobile_number', '').lower()
             invoice = p.get('invoice_number', '').lower()
             imei = p.get('imei_number', '').lower()
-            if search_lower not in c_name and search_lower not in mobile and search_lower not in invoice and search_lower not in imei:
+            s_person = p.get('sales_person', '').lower()
+            p_person = p.get('pending_person_name', '').lower()
+            if (search_lower not in c_name and 
+                search_lower not in mobile and 
+                search_lower not in invoice and 
+                search_lower not in imei and 
+                search_lower not in s_person and 
+                search_lower not in p_person):
                 continue
                 
         filtered_payments.append(p)
@@ -1146,19 +1337,9 @@ def api_add_payment():
     if item_model and len(item_model) > 200:
         return jsonify({"success": False, "message": "Item / Model must not exceed 200 characters."}), 400
 
-    if imei_number:
-        if len(imei_number) != 15 or not imei_number.isdigit():
-            return jsonify({"success": False, "message": "IMEI Number must be exactly 15 digits."}), 400
 
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+
+    allowed_salespeople = get_allowed_salespeople()
     if sales_person:
         if sales_person not in allowed_salespeople:
             return jsonify({"success": False, "message": "Invalid Sales Person selected."}), 400
@@ -1326,19 +1507,9 @@ def api_update_payment(payment_id):
     if item_model and len(item_model) > 200:
         return jsonify({"success": False, "message": "Item / Model must not exceed 200 characters."}), 400
 
-    if imei_number:
-        if len(imei_number) != 15 or not imei_number.isdigit():
-            return jsonify({"success": False, "message": "IMEI Number must be exactly 15 digits."}), 400
 
-    allowed_salespeople = [
-        "Bharath Kumar - Manager",
-        "Ramesh T - Cashier",
-        "Farooq - Staff",
-        "Abhishek - OPPO",
-        "Azeem - Vivo",
-        "Rabiya - Xiaomi",
-        "Finance Promoter"
-    ]
+
+    allowed_salespeople = get_allowed_salespeople()
     if sales_person:
         if sales_person not in allowed_salespeople:
             return jsonify({"success": False, "message": "Invalid Sales Person selected."}), 400
@@ -1567,6 +1738,66 @@ def admin_users_view():
 def database_editor_view():
     return render_template('database_editor.html', username=session['username'], role=session['role'])
 
+def get_allowed_salespeople():
+    users = load_users()
+    allowed = []
+    for u in users:
+        if u.get('status', 'active') != 'active':
+            continue
+        job_title = u.get('job_title', '').strip()
+        if not job_title:
+            continue
+        name = u.get('username', '')
+        employee_id = u.get('employee_id', '')
+        if job_title.lower() == 'promoter':
+            display = f"{name} \u2014 {employee_id}"
+        else:
+            display = f"{name} \u2014 {job_title}"
+        allowed.append(display)
+    
+    # Generate fallback/compatibility values with standard hyphens
+    extra_allowed = []
+    for s in allowed:
+        extra_allowed.append(s.replace('\u2014', '-'))
+        extra_allowed.append(s.replace('\u2014', '\u2013'))
+    
+    # Keep legacy hardcoded values for backward compatibility
+    legacy = [
+        "Bharath Kumar - Manager",
+        "Ramesh T - Cashier",
+        "Mohammad Farooq - Staff",
+        "Farooq - Staff",
+        "Abhishek - OPPO",
+        "Azeem - VIVO",
+        "Azeem - Vivo",
+        "Rabiya - Xiaomi",
+        "Finance Promoter"
+    ]
+    return list(set(allowed + extra_allowed + legacy))
+
+# Staff list — accessible to any logged-in user, no admin permission required
+@app.route('/api/staff-list', methods=['GET'])
+@login_required
+def api_staff_list():
+    """Return active staff with job_title/employee_id for the Sales Person dropdown.
+    Excludes generic admin accounts (those without a job_title)."""
+    users = load_users()
+    staff = []
+    for u in users:
+        if u.get('status', 'active') != 'active':
+            continue
+        job_title = u.get('job_title', '').strip()
+        if not job_title:
+            continue   # skip generic admin / system accounts with no job title
+        name = u.get('username', '')
+        employee_id = u.get('employee_id', '')
+        if job_title.lower() == 'promoter':
+            display = f"{name} \u2014 {employee_id}"
+        else:
+            display = f"{name} \u2014 {job_title}"
+        staff.append({'username': name, 'role': u.get('role',''), 'job_title': job_title, 'display': display})
+    return jsonify({'success': True, 'data': staff})
+
 @app.route('/api/users', methods=['GET'])
 @login_required
 @permission_required('settings_access')
@@ -1589,6 +1820,7 @@ def api_create_user():
     employee_id = data.get('employee_id', '').strip()
     password = data.get('password', '').strip()
     role = data.get('role', '').strip()
+    job_title = data.get('job_title', '').strip() or None
     
     if not username or not employee_id or not password or not role:
         return jsonify({"success": False, "message": "All fields (Username, Employee ID, Password, Role) are required."}), 400
@@ -1620,6 +1852,7 @@ def api_create_user():
         "employee_id": employee_id,
         "password_hash": generate_password_hash(password),
         "role": role,
+        "job_title": job_title,
         "status": "active",
         "created_at": now_str,
         "updated_at": now_str
@@ -1642,6 +1875,7 @@ def api_update_user(user_id):
     role = data.get('role', '').strip()
     status = data.get('status', '').strip()
     password = data.get('password', '').strip() # Optional password reset
+    job_title = data.get('job_title')
     
     users = load_users()
     user = next((u for u in users if u.get('user_id') == user_id), None)
@@ -1668,6 +1902,8 @@ def api_update_user(user_id):
         user['status'] = status
     if password:
         user['password_hash'] = generate_password_hash(password)
+    if job_title is not None:
+        user['job_title'] = job_title.strip() or None
         
     user['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     save_users(users)
@@ -1694,24 +1930,54 @@ def api_delete_user(user_id):
     return jsonify({"success": True, "message": "User deleted successfully!"})
 
 def load_edit_requests():
-    """Load edit requests list from customer_edit_requests.json."""
-    if not os.path.exists(EDIT_REQUESTS_FILE):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(EDIT_REQUESTS_FILE, 'w') as f:
-            json.dump([], f)
-        return []
-    
-    try:
-        with open(EDIT_REQUESTS_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return []
+    """Load edit requests list from SQL database."""
+    reqs = EditRequest.query.all()
+    return [r.to_dict() for r in reqs]
 
 def save_edit_requests(requests_list):
-    """Save edit requests list to customer_edit_requests.json."""
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(EDIT_REQUESTS_FILE, 'w') as f:
-        json.dump(requests_list, f, indent=4)
+    """Save edit requests list to SQL database by syncing it."""
+    existing_ids = {r.request_id for r in EditRequest.query.all()}
+    input_ids = {r['request_id'] for r in requests_list}
+    
+    for rid in existing_ids - input_ids:
+        r = db.session.get(EditRequest, rid)
+        if r:
+            db.session.delete(r)
+            
+    for r in requests_list:
+        db_req = db.session.get(EditRequest, r['request_id'])
+        if db_req:
+            db_req.customer_id = r['customer_id']
+            db_req.requested_by = r['requested_by']
+            db_req.requested_role = r['requested_role']
+            db_req.original_data = json.dumps(r.get('original_data', {}))
+            db_req.proposed_data = json.dumps(r.get('proposed_data', {}))
+            db_req.reason = r['reason']
+            db_req.status = r.get('status', 'pending')
+            db_req.admin_remarks = r.get('admin_remarks')
+            db_req.approved_by = r.get('approved_by')
+            db_req.approved_at = r.get('approved_at')
+            db_req.rejected_by = r.get('rejected_by')
+            db_req.rejected_at = r.get('rejected_at')
+        else:
+            db.session.add(EditRequest(
+                request_id=r['request_id'],
+                customer_id=r['customer_id'],
+                requested_by=r['requested_by'],
+                requested_role=r['requested_role'],
+                original_data=json.dumps(r.get('original_data', {})),
+                proposed_data=json.dumps(r.get('proposed_data', {})),
+                reason=r['reason'],
+                status=r.get('status', 'pending'),
+                admin_remarks=r.get('admin_remarks'),
+                approved_by=r.get('approved_by'),
+                approved_at=r.get('approved_at'),
+                rejected_by=r.get('rejected_by'),
+                rejected_at=r.get('rejected_at'),
+                created_at=r.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            ))
+    db.session.commit()
+
 
 @app.route('/admin/edit-requests')
 @login_required
@@ -1768,8 +2034,7 @@ def api_create_edit_request(customer_id):
     if len(p_mobile) != 10 or not p_mobile.isdigit():
         return jsonify({"success": False, "message": "Proposed Mobile Number must be exactly 10 digits."}), 400
 
-    if len(p_imei) != 15 or not p_imei.isdigit():
-        return jsonify({"success": False, "message": "Proposed IMEI Number must be exactly 15 numeric digits."}), 400
+
 
     p_name = ' '.join(word.capitalize() for word in p_name.split())
     proposed_data['customer_name'] = p_name
@@ -2085,7 +2350,6 @@ def migrate_customers_db():
         print(f"Error migrating database: {e}")
 
 if __name__ == '__main__':
-    # Initialize the database file
-    load_customers()
-    migrate_customers_db()
+    with app.app_context():
+        migrate_customers_db()
     app.run(host='0.0.0.0', port=5000, debug=True)

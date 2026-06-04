@@ -21,7 +21,7 @@ def run_tests():
     assert res.status_code == 200, f"Employee login failed: {res.text}"
     print("[PASS] Store employee (SMPL) logged in.")
 
-    res = admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '6909', 'password': 'Ramesh@6909'})
+    res = admin_session.post(f'{BASE_URL}/api/login', json={'employee_id': '6909', 'password': 'Sang@1974'})
     assert res.status_code == 200, f"Admin login failed: {res.text}"
     print("[PASS] Admin (6909) logged in.")
 

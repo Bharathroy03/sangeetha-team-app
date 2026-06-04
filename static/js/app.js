@@ -95,6 +95,8 @@ const initApp = () => {
                 dismissToast();
             }
         }, 4000);
+    };
+
     // --- LOGIN FORM ---
     if (loginForm) {
         const userIn = document.getElementById('employee_id');
@@ -421,7 +423,8 @@ const initApp = () => {
         ledgerTitle.textContent = filterTitles[currentLedgerFilter] || 'Customer Ledgers';
 
         // Filter data
-        const todayStr = new Date().toISOString().split('T')[0];
+        const d = new Date();
+        const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
         let filtered = [];
 
         if (currentLedgerFilter === 'TOTAL') {
@@ -898,7 +901,8 @@ const initApp = () => {
         const countTodayEl = document.getElementById('countToday');
         const countFinanceEl = document.getElementById('countFinance');
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const d = new Date();
+        const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
 
         let todayCount = 0;
         let financeCount = 0;

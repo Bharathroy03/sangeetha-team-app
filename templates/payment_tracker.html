@@ -438,53 +438,7 @@
     {% include 'header.html' %}
 
     <!-- SideNavBar -->
-    <aside class="fixed left-0 top-16 bottom-0 w-64 flex flex-col p-unit bg-white border-r border-outline-variant dark:border-outline shadow-sm overflow-y-auto z-40 transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0" id="side-nav">
-        <div class="px-stack-md py-stack-lg mb-stack-lg">
-            <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface leading-tight">Sangeetha Gadgets</h2>
-            <p class="text-body-sm font-body-sm text-on-surface-variant">Doddaballapur -2- (Lions Bhavan Complex)</p>
-        </div>
-        <nav class="flex-1 space-y-1">
-            <a href="/dashboard?view=FORM" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">person_add</span>
-                <span class="text-label-md font-label-md">New Customer Entry</span>
-            </a>
-            <a href="/dashboard?view=TOTAL" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">group</span>
-                <span class="text-label-md font-label-md">Total Customers</span>
-            </a>
-            <a href="/dashboard?view=TODAY" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">today</span>
-                <span class="text-label-md font-label-md">Today's Customers</span>
-            </a>
-            <a href="/dashboard?view=FINANCE" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">payments</span>
-                <span class="text-label-md font-label-md">Finance customers</span>
-            </a>
-            <a href="/crm-walkin-customers" id="btn-nav-crm" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">support_agent</span>
-                <span class="text-label-md font-label-md">CRM Walk-in Customers</span>
-            </a>
-            {% if role in ['super_admin', 'admin'] %}
-            <a href="/dashboard?view=EDITOR" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">edit_note</span>
-                <span class="text-label-md font-label-md">Database Text Editor</span>
-            </a>
-            <a href="/payment-tracker" class="w-full flex items-center gap-3 px-stack-md py-3 bg-[#0D70C0] text-white border-l-4 border-[#EE8133] shadow-sm transition-all rounded-lg group scale-[1.02] duration-300">
-                <span class="material-symbols-outlined text-white">account_balance_wallet</span>
-                <span class="text-label-md font-label-md font-bold">Payment Tracker</span>
-            </a>
-            <a href="/admin/users" class="w-full flex items-center gap-3 px-stack-md py-3 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant hover:text-[#EE8133] hover:translate-x-1 transition-all rounded-lg group">
-                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-[#EE8133] transition-colors">manage_accounts</span>
-                <span class="text-label-md font-label-md">User Management</span>
-            </a>
-            {% endif %}
-        </nav>
-        <div class="mt-auto p-stack-md flex flex-col gap-2">
-            <button id="btnLogoutMobile" class="lg:hidden w-full py-3 px-4 bg-rose-50 border border-rose-200 text-[#BA1A1A] hover:bg-rose-100/50 text-label-md font-label-md rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">logout</span> Logout
-            </button>
-        </div>
-    </aside>
+    {% include 'sidebar.html' %}
 
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
@@ -525,324 +479,7 @@
             </div>
         </div>
 
-        <!-- 1. PAYMENT SUMMARY CARDS GRID -->
-        <div class="mb-8">
-            <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                <!-- Customer Pending -->
-                <div class="bg-white border border-[#E5E7EB] p-3.5 sm:p-5 rounded-2xl shadow-sm hover:shadow transition-all">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="p-1.5 sm:p-2 bg-amber-50 text-amber-700 rounded-lg">
-                            <span class="material-symbols-outlined text-[18px] sm:text-[24px]">person</span>
-                        </div>
-                        <span class="text-[9px] sm:text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Customers</span>
-                    </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Customer Pending</p>
-                    <h3 id="cardCustomerPending" class="text-xl sm:text-2xl font-bold mt-1 text-amber-600">₹0</h3>
-                </div>
-                <!-- Employee Pending -->
-                <div class="bg-white border border-[#E5E7EB] p-3.5 sm:p-5 rounded-2xl shadow-sm hover:shadow transition-all">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="p-1.5 sm:p-2 bg-orange-50 text-orange-700 rounded-lg">
-                            <span class="material-symbols-outlined text-[18px] sm:text-[24px]">badge</span>
-                        </div>
-                        <span class="text-[9px] sm:text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">Employees</span>
-                    </div>
-                    <p class="text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wider">Employee Pending</p>
-                    <h3 id="cardEmployeePending" class="text-xl sm:text-2xl font-bold mt-1 text-orange-600">₹0</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. PAYMENT ENTRY FORM SECTION -->
-        <div id="view-payment-form-section" class="mb-8 scroll-mt-20">
-            <section class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
-                <div class="px-4 py-3.5 sm:px-6 sm:py-4.5 border-b border-[#0D70C0] bg-[#0D70C0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div class="flex items-center gap-2.5">
-                        <span class="material-symbols-outlined text-[#EE8133] text-[22px] font-bold">add_shopping_cart</span>
-                        <h2 id="formTitle" class="text-base sm:text-lg font-bold text-white tracking-wide">Record Sales Payment</h2>
-                    </div>
-                    <span class="text-[11px] sm:text-xs text-white/95 font-semibold bg-white/15 px-2.5 py-1 rounded-full w-max">Fields marked * are mandatory</span>
-                </div>
-                <form id="paymentForm" class="p-4 sm:p-6">
-                    <!-- Hidden fields for Edit Mode -->
-                    <input type="hidden" id="edit_payment_id" name="payment_id" value="" />
-                    
-                    <div id="paymentFormGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4 md:gap-x-6 md:gap-y-6">
-                        <!-- Customer Name -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="customer_name"><span class="material-symbols-outlined text-[12px] mr-1">person</span>Customer Name<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <input id="customer_name" name="customer_name" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Customer Name" type="text" maxlength="100" required />
-                        </div>
-                        <!-- Mobile Number -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="mobile_number"><span class="material-symbols-outlined text-[12px] mr-1">call</span>Mobile Number<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <input id="mobile_number" name="mobile_number" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="10 Digit Mobile Number" type="tel" maxlength="10" required />
-                        </div>
-                        <!-- Invoice Number -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="invoice_number"><span class="material-symbols-outlined text-[12px] mr-1">receipt</span>Invoice Number</label>
-                            <input id="invoice_number" name="invoice_number" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Invoice Number" type="text" maxlength="50" />
-                        </div>
-                        <!-- Hidden fields for compatibility -->
-                        <input type="hidden" id="item_model" name="item_model" value="" />
-                        <input type="hidden" id="imei_number" name="imei_number" value="" />
-                        <!-- Hidden field for compatibility -->
-                        <input type="hidden" id="sales_person" name="sales_person" value="" />
-                        <!-- Payment Mode (Modal trigger) -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">credit_card</span>Payment Mode<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <div class="relative w-full" onclick="openPopupModal('payment_mode')">
-                                <input type="text" id="payment_mode" name="payment_mode" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Payment Mode" required />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                            </div>
-                        </div>
-                        <!-- Total Bill Amount -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="total_bill_amount"><span class="material-symbols-outlined text-[12px] mr-1">payments</span>Total Bill Amount (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <input id="total_bill_amount" name="total_bill_amount" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Total Sale Price" type="number" step="0.01" min="0.01" required />
-                        </div>
-                        <!-- Amount Received -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="amount_received"><span class="material-symbols-outlined text-[12px] mr-1">savings</span>Amount Received (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <input id="amount_received" name="amount_received" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Collected Amount" type="number" step="0.01" min="0" required />
-                        </div>
-                        <!-- Pending Amount (Auto Calculated) -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge" for="pending_amount"><span class="material-symbols-outlined text-[12px] mr-1">money_off</span>Pending Amount (₹)</label>
-                            <input id="pending_amount" name="pending_amount" readonly class="px-3 py-2.5 bg-slate-100 border border-outline-variant rounded-lg text-body-md focus:ring-0 text-slate-600 w-full" placeholder="0.00" type="text" value="0.00" />
-                        </div>
-                        
-                        <!-- CONDITIONAL PENDING SECTIONS (Revealed if pending amount > 0) -->
-                        <!-- Pending From (Modal trigger) -->
-                        <div class="flex-col gap-1 hidden" id="pendingFromSection">
-                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">help</span>Pending From<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <div class="relative w-full" onclick="openPopupModal('pending_from')">
-                                <input type="text" id="pending_from" name="pending_from" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Pending Debtor" />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                            </div>
-                        </div>
-                        <!-- Pending Person Name (Modal trigger) -->
-                        <div class="flex-col gap-1 hidden" id="pendingPersonNameSection">
-                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">person_search</span>Pending Person Name</label>
-                            <div class="relative w-full" onclick="openPopupModal('pending_person_name')">
-                                <input type="text" id="pending_person_name" name="pending_person_name" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Employee Name" />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                            </div>
-                        </div>
-                        <!-- Due Date -->
-                        <div class="flex-col gap-1 hidden" id="dueDateSection">
-                            <label class="form-label-badge" for="due_date"><span class="material-symbols-outlined text-[12px] mr-1">calendar_today</span>Due Date<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                            <input id="due_date" name="due_date" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary w-full" type="date" />
-                        </div>
-                        
-                        <!-- Status Fields (Modal triggers) -->
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">grading</span>Payment Status</label>
-                            <div class="relative w-full" onclick="openPopupModal('payment_status')">
-                                <input type="text" id="payment_status" name="payment_status" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Status" value="Fully Paid" />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="form-label-badge"><span class="material-symbols-outlined text-[12px] mr-1">lock</span>Settlement Status</label>
-                            <div class="relative w-full" onclick="openPopupModal('settlement_status')">
-                                <input type="text" id="settlement_status" name="settlement_status" readonly class="w-full px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer placeholder:text-on-surface-variant/40" placeholder="Select Settlement" value="Settled" />
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/40 pointer-events-none">arrow_drop_down</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Remarks -->
-                        <div id="remarks_container" class="flex flex-col gap-1 col-span-2 lg:col-span-3">
-                            <label class="form-label-badge" for="remarks"><span class="material-symbols-outlined text-[12px] mr-1">rate_review</span>Remarks</label>
-                            <textarea id="remarks" name="remarks" class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-body-md resize-none focus:ring-1 focus:ring-primary focus:border-primary w-full" placeholder="Add payment breakdown comments, notes, or explanations" maxlength="500" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 pt-4">
-                        <button id="btnSubmit" class="order-1 sm:order-3 w-full sm:w-auto px-8 py-3 btn-premium text-label-md font-label-md rounded-lg shadow-lg active:scale-95 transition-all" type="submit">
-                            Save Payment Record
-                        </button>
-                        <button id="btnClearForm" class="order-2 sm:order-2 w-full sm:w-auto px-6 py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-label-md font-label-md rounded-lg transition-all active:scale-95" type="button">
-                            Clear Form
-                        </button>
-                        <button id="btnCancelForm" class="order-3 sm:order-1 w-full sm:w-auto px-6 py-3 bg-white border border-[#0D70C0] text-[#0D70C0] hover:bg-[#0D70C0]/5 text-label-md font-label-md rounded-lg transition-all active:scale-95" type="button">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </section>
-        </div>
-
-        <!-- 3. MAIN LEDGER VIEW AND TRACKING TAB PANEL -->
-        <div class="mb-8">
-            <div class="bg-white border border-outline-variant rounded-2xl shadow-[0px_2px_4px_rgba(0,0,0,0.05)] overflow-hidden">
-                <!-- Tab Headers -->
-                <div class="flex border-b border-outline-variant bg-slate-50">
-                    <button id="tabBtnAll" onclick="switchTrackerTab('all')" class="tab-btn active px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">receipt_long</span> All Payments
-                    </button>
-                    <button id="tabBtnCustomer" onclick="switchTrackerTab('customer')" class="tab-btn px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">support_agent</span> Customer Debts
-                    </button>
-                    <button id="tabBtnEmployee" onclick="switchTrackerTab('employee')" class="tab-btn px-6 py-4 text-sm font-semibold border-b-2 border-transparent transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">badge</span> Salesperson Pending
-                    </button>
-                </div>
-
-                <!-- Tab content for ALL payments ledger -->
-                <div id="tabContentAll" class="tab-pane p-4">
-                    <!-- Filters Grid -->
-                    <div class="mb-4 bg-slate-50 border border-outline-variant rounded-xl p-4 flex flex-col gap-4">
-                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            <!-- Search -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</label>
-                                <div class="relative">
-                                    <input type="text" id="filterSearch" class="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs" placeholder="Name, Mobile, Invoice, IMEI..." />
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">search</span>
-                                </div>
-                            </div>
-                            <!-- Payment Mode -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mode</label>
-                                <select id="filterMode" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
-                                    <option value="">All Modes</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Card">Card</option>
-                                    <option value="E-Wallet">E-Wallet</option>
-                                </select>
-                            </div>
-                            <!-- Payment Status -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Payment Status</label>
-                                <select id="filterStatus" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
-                                    <option value="">All Statuses</option>
-                                    <option value="Fully Paid">Fully Paid</option>
-                                    <option value="Partially Paid">Partially Paid</option>
-                                    <option value="Pending">Pending</option>
-                                </select>
-                            </div>
-                            <!-- Settlement Status -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Settlement</label>
-                                <select id="filterSettlement" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
-                                    <option value="">All Settlements</option>
-                                    <option value="Settled">Settled</option>
-                                    <option value="Unsettled">Unsettled</option>
-                                </select>
-                            </div>
-                            <!-- Pending From -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending From</label>
-                                <select id="filterPendingFrom" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
-                                    <option value="">All Debts</option>
-                                    <option value="Customer">Customer</option>
-                                    <option value="Employee / Salesperson">Employee / Salesperson</option>
-                                    <option value="No Pending">No Pending</option>
-                                </select>
-                            </div>
-                            <!-- Sales Person -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sales Person</label>
-                                <select id="filterSalesperson" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold bg-white cursor-pointer">
-                                    <option value="">All Salespersons</option>
-                                    <option value="Bharath Kumar - Manager">Bharath Kumar</option>
-                                    <option value="Ramesh T - Cashier">Ramesh T</option>
-                                    <option value="Farooq - Staff">Farooq</option>
-                                    <option value="Abhishek - OPPO">Abhishek</option>
-                                    <option value="Azeem - Vivo">Azeem</option>
-                                    <option value="Rabiya - Xiaomi">Rabiya</option>
-                                    <option value="Finance Promoter">Finance Promoter</option>
-                                </select>
-                            </div>
-                            <!-- Date From -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">From Date</label>
-                                <input type="date" id="filterStartDate" class="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white" />
-                            </div>
-                            <!-- Date To -->
-                            <div class="flex flex-col gap-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">To Date</label>
-                                <div class="relative flex items-center">
-                                    <input type="date" id="filterEndDate" class="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white" />
-                                    <button type="button" id="btnClearDateFilters" class="absolute right-2 text-slate-400 hover:text-red-500" title="Clear dates">
-                                        <span class="material-symbols-outlined text-[16px]">close</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ledger Table -->
-                    <div class="overflow-x-auto border border-outline-variant rounded-xl hidden md:block">
-                        <table class="w-full border-collapse text-left text-xs bg-white">
-                            <thead>
-                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                    <th class="px-4 py-3">CUSTOMER NAME</th>
-                                    <th class="px-4 py-3">MOBILE NUMBER</th>
-                                    <th class="px-4 py-3">INVOICE NUMBER</th>
-                                    <th class="px-4 py-3 text-right text-emerald-600">RECEIVED AMOUNT</th>
-                                    <th class="px-4 py-3 text-right text-rose-600">PENDING AMOUNT</th>
-                                    <th class="px-4 py-3">PENDING FROM</th>
-                                    <th class="px-4 py-3">STATUS</th>
-                                    <th class="px-4 py-3 text-right">ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="paymentTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Mobile Responsive Cards View -->
-                    <div id="paymentMobileCards" class="grid grid-cols-1 gap-3 md:hidden">
-                        <!-- Dynamic Mobile Cards -->
-                    </div>
-                </div>
-
-                <!-- Tab content for CUSTOMER pending debts -->
-                <div id="tabContentCustomer" class="tab-pane p-4 hidden">
-                    <div class="overflow-x-auto border border-outline-variant rounded-xl">
-                        <table class="w-full border-collapse text-left text-xs bg-white">
-                            <thead>
-                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                    <th class="px-4 py-3">CUSTOMER NAME</th>
-                                    <th class="px-4 py-3">MOBILE NUMBER</th>
-                                    <th class="px-4 py-3 text-right text-rose-600">PENDING AMOUNT</th>
-                                    <th class="px-4 py-3">DUE DATE</th>
-                                    <th class="px-4 py-3">FOLLOW-UP / REMARKS</th>
-                                    <th class="px-4 py-3 text-right">ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customerDebtTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tab content for EMPLOYEE pending tracking -->
-                <div id="tabContentEmployee" class="tab-pane p-4 hidden">
-                    <div class="overflow-x-auto border border-outline-variant rounded-xl">
-                        <table class="w-full border-collapse text-left text-xs bg-white">
-                            <thead>
-                                <tr class="bg-slate-100 border-b border-outline-variant text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                    <th class="px-4 py-3">SALESPERSON NAME</th>
-                                    <th class="px-4 py-3 text-center">PENDING CASES</th>
-                                    <th class="px-4 py-3 text-right text-rose-600">TOTAL PENDING AMOUNT</th>
-                                    <th class="px-4 py-3">OLDEST DUE DATE</th>
-                                    <th class="px-4 py-3">STATUS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="employeeDebtTableBody" class="divide-y divide-outline-variant font-medium text-slate-700">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'payment_tracker_body.html' %}
     </main>
 
     <!-- POPUP DIALOGS & OVERLAYS -->
@@ -912,34 +549,9 @@
             </div>
             <div class="p-4 overflow-y-auto flex-grow" id="list-sales_person">
                 <div class="flex flex-col gap-2">
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('sales_person', 'Bharath Kumar - Manager')">
-                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">BK</span>
-                        <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('sales_person', 'Ramesh T - Cashier')">
-                        <span class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RT</span>
-                        <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('sales_person', 'Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FS</span>
-                        <span class="text-sm font-semibold text-slate-700">Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('sales_person', 'Abhishek - OPPO')">
-                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AB</span>
-                        <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('sales_person', 'Azeem - Vivo')">
-                        <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AZ</span>
-                        <span class="text-sm font-semibold text-slate-700">Azeem - Vivo</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('sales_person', 'Rabiya - Xiaomi')">
-                        <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RB</span>
-                        <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance Promoter" onclick="selectPopupOption('sales_person', 'Finance Promoter')">
-                        <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FP</span>
-                        <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
-                    </button>
+                    <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                        <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                    </div>
                 </div>
             </div>
         </div>
@@ -1124,13 +736,13 @@
                     <!-- Amount Received -->
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-bold text-slate-700" for="partial_amount_added">Amount Added (₹)<span class="text-rose-600 font-bold ml-0.5">*</span></label>
-                        <input id="partial_amount_added" name="amount_added" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Enter amount to add" type="number" step="0.01" min="0.01" required />
+                        <input id="partial_amount_added" name="amount_added" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Enter Payment Amount" type="number" step="0.01" min="0.01" required />
                     </div>
                     
                     <!-- Remarks -->
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-bold text-slate-700" for="partial_remarks">Remarks / History Notes</label>
-                        <textarea id="partial_remarks" name="remarks" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none" placeholder="E.g., Second installment paid by GPay" maxlength="200" rows="3"></textarea>
+                        <textarea id="partial_remarks" name="remarks" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none" placeholder="Enter Additional Remarks (Optional)" maxlength="200" rows="3"></textarea>
                     </div>
                 </div>
                 
@@ -1167,34 +779,9 @@
             </div>
             <div class="p-4 overflow-y-auto flex-grow" id="list-pending_person_name">
                 <div class="flex flex-col gap-2">
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Bharath Kumar - Manager" onclick="selectPopupOption('pending_person_name', 'Bharath Kumar - Manager')">
-                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">BK</span>
-                        <span class="text-sm font-semibold text-slate-700">Bharath Kumar - Manager</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Ramesh T - Cashier" onclick="selectPopupOption('pending_person_name', 'Ramesh T - Cashier')">
-                        <span class="w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RT</span>
-                        <span class="text-sm font-semibold text-slate-700">Ramesh T - Cashier</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Farooq - Staff" onclick="selectPopupOption('pending_person_name', 'Farooq - Staff')">
-                        <span class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FS</span>
-                        <span class="text-sm font-semibold text-slate-700">Farooq - Staff</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Abhishek - OPPO" onclick="selectPopupOption('pending_person_name', 'Abhishek - OPPO')">
-                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AB</span>
-                        <span class="text-sm font-semibold text-slate-700">Abhishek - OPPO</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Azeem - Vivo" onclick="selectPopupOption('pending_person_name', 'Azeem - Vivo')">
-                        <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">AZ</span>
-                        <span class="text-sm font-semibold text-slate-700">Azeem - Vivo</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Rabiya - Xiaomi" onclick="selectPopupOption('pending_person_name', 'Rabiya - Xiaomi')">
-                        <span class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">RB</span>
-                        <span class="text-sm font-semibold text-slate-700">Rabiya - Xiaomi</span>
-                    </button>
-                    <button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="Finance Promoter" onclick="selectPopupOption('pending_person_name', 'Finance Promoter')">
-                        <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">FP</span>
-                        <span class="text-sm font-semibold text-slate-700">Finance Promoter</span>
-                    </button>
+                    <div class="flex items-center justify-center py-6 text-slate-400 text-sm">
+                        <span class="material-symbols-outlined animate-spin mr-2 text-[20px]">sync</span>Loading...
+                    </div>
                 </div>
             </div>
         </div>

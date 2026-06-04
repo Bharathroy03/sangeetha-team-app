@@ -7,6 +7,7 @@ __pycache__/
 # Local environment and secret files
 .env
 .env.*
+.flaskenv
 
 # Editor and system files
 .vscode/
@@ -19,3 +20,22 @@ Thumbs.db
 .antigravity-ide/
 browser_recordings/
 html_artifacts/
+
+# ngrok tunnel binary and zip
+ngrok.exe
+ngrok.zip
+ngrok
+
+# SQLite local database (not committed — use PostgreSQL in production)
+data/sangeetha.db
+
+# Scratch / temporary log files
+scratch/tunnel.log
+
+# Standard environments and dependencies
+venv/
+env/
+instance/
+node_modules/
+logs/
+*.log

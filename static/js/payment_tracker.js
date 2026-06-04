@@ -139,6 +139,18 @@ const initApp = () => {
     // --- TAB NAVIGATION SWITCHER ---
     window.switchTrackerTab = (tab) => {
         activeTab = tab;
+        
+        // Sync filters with tab to prevent active filter interference
+        const filterPendingFrom = document.getElementById('filterPendingFrom');
+        const filterSettlement = document.getElementById('filterSettlement');
+        if (tab === 'customer') {
+            if (filterPendingFrom) filterPendingFrom.value = 'Customer';
+            if (filterSettlement) filterSettlement.value = 'Unsettled';
+        } else if (tab === 'employee') {
+            if (filterPendingFrom) filterPendingFrom.value = 'Employee / Salesperson';
+            if (filterSettlement) filterSettlement.value = 'Unsettled';
+        }
+
         const tabs = {
             'all': { btn: 'tabBtnAll', content: 'tabContentAll' },
             'customer': { btn: 'tabBtnCustomer', content: 'tabContentCustomer' },
@@ -148,15 +160,82 @@ const initApp = () => {
         Object.keys(tabs).forEach(t => {
             const btnEl = document.getElementById(tabs[t].btn);
             const contentEl = document.getElementById(tabs[t].content);
-            if (t === tab) {
-                btnEl.classList.add('active');
-                contentEl.classList.remove('hidden');
-            } else {
-                btnEl.classList.remove('active');
-                contentEl.classList.add('hidden');
+            if (btnEl && contentEl) {
+                if (t === tab) {
+                    btnEl.classList.add('active');
+                    contentEl.classList.remove('hidden');
+                } else {
+                    btnEl.classList.remove('active');
+                    contentEl.classList.add('hidden');
+                }
             }
         });
         
+        fetchPayments();
+    };
+
+    window.filterByEmployeePending = (employeeName) => {
+        // Switch to the 'all' payments tab
+        window.switchTrackerTab('all');
+
+        // Clear active filters that could block displaying the employee's records
+        const filtersToClear = [
+            'filterStartDate', 'filterEndDate', 
+            'filterStartDatePayments', 'filterEndDatePayments', 
+            'filterMode', 'filterStatus', 'filterSalesperson'
+        ];
+        filtersToClear.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (el) el.value = '';
+        });
+
+        // Set filters to target this employee's pending payments
+        const filterPendingFrom = document.getElementById('filterPendingFrom');
+        if (filterPendingFrom) {
+            filterPendingFrom.value = 'Employee / Salesperson';
+        }
+        
+        const filterSettlement = document.getElementById('filterSettlement');
+        if (filterSettlement) {
+            filterSettlement.value = 'Unsettled';
+        }
+
+        const filterSearch = document.getElementById('filterSearch');
+        if (filterSearch) {
+            filterSearch.value = employeeName;
+        }
+
+        // Fetch payments with the new filters applied
+        fetchPayments();
+    };
+
+    window.filterAllEmployeePending = () => {
+        // Switch to the 'all' payments tab
+        window.switchTrackerTab('all');
+
+        // Clear active filters that could block displaying employee records
+        const filtersToClear = [
+            'filterStartDate', 'filterEndDate', 
+            'filterStartDatePayments', 'filterEndDatePayments', 
+            'filterMode', 'filterStatus', 'filterSalesperson', 'filterSearch'
+        ];
+        filtersToClear.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (el) el.value = '';
+        });
+
+        // Set filters to target all employee pending payments
+        const filterPendingFrom = document.getElementById('filterPendingFrom');
+        if (filterPendingFrom) {
+            filterPendingFrom.value = 'Employee / Salesperson';
+        }
+        
+        const filterSettlement = document.getElementById('filterSettlement');
+        if (filterSettlement) {
+            filterSettlement.value = 'Unsettled';
+        }
+
+        // Fetch payments with the new filters applied
         fetchPayments();
     };
 
@@ -282,8 +361,11 @@ const initApp = () => {
             dueDateInput.removeAttribute('required');
 
             pendingFromSection.classList.add('hidden');
+            pendingFromSection.style.display = 'none';
             pendingPersonNameSection.classList.add('hidden');
+            pendingPersonNameSection.style.display = 'none';
             dueDateSection.classList.add('hidden');
+            dueDateSection.style.display = 'none';
         } else {
             // Partially Paid / Unsettled
             if (!keepExistingStatus) {
@@ -314,9 +396,11 @@ const initApp = () => {
             openPopupModal('pending_person_name');
         } else if (from === 'Customer') {
             pendingPersonNameSection.classList.add('hidden');
+            pendingPersonNameSection.style.display = 'none';
             pendingPersonInput.value = customerNameInput.value;
         } else {
             pendingPersonNameSection.classList.add('hidden');
+            pendingPersonNameSection.style.display = 'none';
             pendingPersonInput.value = '';
         }
     }
@@ -341,8 +425,11 @@ const initApp = () => {
         
         // Hide conditional sections
         pendingFromSection.classList.add('hidden');
+        pendingFromSection.style.display = 'none';
         pendingPersonNameSection.classList.add('hidden');
+        pendingPersonNameSection.style.display = 'none';
         dueDateSection.classList.add('hidden');
+        dueDateSection.style.display = 'none';
 
         // Clear error classes
         const inputs = [customerNameInput, mobileInput, itemModelInput, imeiInput, salesPersonInput, paymentModeInput, totalBillInput, amountReceivedInput, pendingFromInput, dueDateInput];
@@ -380,10 +467,11 @@ const initApp = () => {
                 mobileInput.classList.add('border-rose-500');
                 valid = false;
             }
-            if (imei && (imei.length !== 15 || !/^\d+$/.test(imei))) {
-                imeiInput.classList.add('border-rose-500');
-                valid = false;
-            }
+            // Removed 15-digit numeric constraint on IMEI validation to allow arbitrary barcode/serial scanning
+            // if (imei && (imei.length !== 15 || !/^\d+$/.test(imei))) {
+            //     imeiInput.classList.add('border-rose-500');
+            //     valid = false;
+            // }
             if (totalVal <= 0) {
                 totalBillInput.classList.add('border-rose-500');
                 valid = false;
@@ -453,96 +541,499 @@ const initApp = () => {
     }
 
     // --- BARCODE SCANNER IMPLEMENTATION ---
-    const startScanning = async () => {
-        const modal = document.getElementById('modal-barcode');
-        if (!modal) return;
+    let barcodeFilePicker = document.getElementById('barcodeFilePicker-tracker');
+    if (!barcodeFilePicker) {
+        barcodeFilePicker = document.createElement('input');
+        barcodeFilePicker.type = 'file';
+        barcodeFilePicker.id = 'barcodeFilePicker-tracker';
+        barcodeFilePicker.accept = 'image/*';
+        barcodeFilePicker.className = 'hidden';
+        document.body.appendChild(barcodeFilePicker);
+    }
+    barcodeFilePicker.setAttribute('capture', 'environment');
 
-        modal.classList.remove('hidden');
-        modal.offsetHeight;
-        modal.classList.add('active');
-        modal.style.opacity = '1';
-        modal.querySelector('.popup-modal-content').style.transform = 'translateY(0) scale(1)';
+    let dummyReader = document.getElementById('interactive-reader');
+    if (!dummyReader) {
+        dummyReader = document.createElement('div');
+        dummyReader.id = 'interactive-reader';
+        dummyReader.style.display = 'none';
+        document.body.appendChild(dummyReader);
+    }
 
-        const errorDiv = document.getElementById('scannerErrorMessage');
-        if (errorDiv) errorDiv.classList.add('hidden');
+    function showBarcodeCroppingModal(file, onCropAndScan, onCancel) {
+        const modalId = 'barcode-crop-modal';
+        let modal = document.getElementById(modalId);
+        if (modal) modal.remove();
+        
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+        modal.style.backdropFilter = 'blur(8px)';
+        modal.style.webkitBackdropFilter = 'blur(8px)';
+        modal.style.zIndex = '99999';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.color = '#fff';
+        modal.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.3s ease';
+        
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.padding = '0 20px';
+        header.innerHTML = `
+            <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 700; color: #f97316; letter-spacing: 0.5px;">Align Barcode</h3>
+            <p style="margin: 0; font-size: 0.875rem; color: #94a3b8;">Ensure the target barcode is centered inside the orange box</p>
+        `;
+        modal.appendChild(header);
 
-        try {
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode('interactive-reader');
+        const container = document.createElement('div');
+        container.style.width = '90%';
+        container.style.maxWidth = '500px';
+        container.style.display = 'flex';
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+        modal.appendChild(container);
+
+        const imageWrapper = document.createElement('div');
+        imageWrapper.style.position = 'relative';
+        imageWrapper.style.display = 'inline-block';
+        imageWrapper.style.maxWidth = '100%';
+        imageWrapper.style.maxHeight = '60vh';
+        imageWrapper.style.borderRadius = '12px';
+        imageWrapper.style.overflow = 'hidden';
+        imageWrapper.style.backgroundColor = '#000';
+        imageWrapper.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.5)';
+        container.appendChild(imageWrapper);
+        
+        const loader = document.createElement('div');
+        loader.style.padding = '40px';
+        loader.style.fontSize = '0.9rem';
+        loader.style.color = '#94a3b8';
+        loader.innerText = 'Loading preview...';
+        imageWrapper.appendChild(loader);
+
+
+        const zoomControl = document.createElement('div');
+        zoomControl.style.width = '90%';
+        zoomControl.style.maxWidth = '500px';
+        zoomControl.style.marginTop = '16px';
+        zoomControl.style.display = 'flex';
+        zoomControl.style.alignItems = 'center';
+        zoomControl.style.gap = '12px';
+        
+        const zoomLabel = document.createElement('span');
+        zoomLabel.style.fontSize = '0.85rem';
+        zoomLabel.style.color = '#94a3b8';
+        zoomLabel.style.fontWeight = '600';
+        zoomLabel.innerText = '🔍 Zoom';
+        
+        const zoomSlider = document.createElement('input');
+        zoomSlider.type = 'range';
+        zoomSlider.min = '1';
+        zoomSlider.max = '4';
+        zoomSlider.step = '0.05';
+        zoomSlider.value = '1';
+        zoomSlider.style.flex = '1';
+        zoomSlider.style.accentColor = '#f97316';
+        zoomSlider.style.height = '6px';
+        zoomSlider.style.borderRadius = '3px';
+        zoomSlider.style.cursor = 'pointer';
+        
+        const zoomValueText = document.createElement('span');
+        zoomValueText.style.fontSize = '0.85rem';
+        zoomValueText.style.color = '#f97316';
+        zoomValueText.style.fontWeight = '700';
+        zoomValueText.style.minWidth = '35px';
+        zoomValueText.style.textAlign = 'right';
+        zoomValueText.innerText = '1.0x';
+        
+        zoomControl.appendChild(zoomLabel);
+        zoomControl.appendChild(zoomSlider);
+        zoomControl.appendChild(zoomValueText);
+
+        const controls = document.createElement('div');
+        controls.style.display = 'flex';
+        controls.style.gap = '12px';
+        controls.style.marginTop = '24px';
+        controls.style.width = '90%';
+        controls.style.maxWidth = '500px';
+        
+        const btnCancel = document.createElement('button');
+        btnCancel.type = 'button';
+        btnCancel.innerText = 'Cancel';
+        btnCancel.style.flex = '1';
+        btnCancel.style.padding = '14px 20px';
+        btnCancel.style.borderRadius = '12px';
+        btnCancel.style.border = '1px solid #334155';
+        btnCancel.style.backgroundColor = 'transparent';
+        btnCancel.style.color = '#94a3b8';
+        btnCancel.style.fontSize = '0.95rem';
+        btnCancel.style.fontWeight = '600';
+        btnCancel.style.cursor = 'pointer';
+        btnCancel.style.transition = 'all 0.2s ease';
+        btnCancel.addEventListener('mouseenter', () => { btnCancel.style.backgroundColor = 'rgba(255,255,255,0.05)'; btnCancel.style.color = '#fff'; });
+        btnCancel.addEventListener('mouseleave', () => { btnCancel.style.backgroundColor = 'transparent'; btnCancel.style.color = '#94a3b8'; });
+        btnCancel.addEventListener('click', () => {
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.remove(); onCancel(); }, 300);
+        });
+
+        const btnScan = document.createElement('button');
+        btnScan.type = 'button';
+        btnScan.innerText = 'Scan Aligned Area';
+        btnScan.style.flex = '2';
+        btnScan.style.padding = '14px 20px';
+        btnScan.style.borderRadius = '12px';
+        btnScan.style.border = 'none';
+        btnScan.style.backgroundColor = '#f97316';
+        btnScan.style.color = '#fff';
+        btnScan.style.fontSize = '0.95rem';
+        btnScan.style.fontWeight = '600';
+        btnScan.style.cursor = 'pointer';
+        btnScan.style.transition = 'all 0.2s ease';
+        btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
+        btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; btnScan.style.boxShadow = '0 6px 16px rgba(249, 115, 22, 0.4)'; });
+        btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)'; });
+
+        controls.appendChild(btnCancel);
+        controls.appendChild(btnScan);
+        
+        modal.appendChild(zoomControl);
+        modal.appendChild(controls);
+
+        document.body.appendChild(modal);
+        
+        requestAnimationFrame(() => modal.style.opacity = '1');
+
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        img.onload = function() {
+            loader.remove();
+            
+            img.style.display = 'block';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '60vh';
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            imageWrapper.appendChild(img);
+
+            const wrapperWidth = img.offsetWidth;
+            const wrapperHeight = img.offsetHeight;
+            imageWrapper.style.width = wrapperWidth + 'px';
+            imageWrapper.style.height = wrapperHeight + 'px';
+
+            let isDragging = false;
+            let startY = 0;
+            let startTopPercent = 35;
+            const cropHeightPercent = 30;
+            let currentTopPercent = 35;
+
+            let scale = 1.0;
+            let panX = 0;
+            let panY = 0;
+            let isPanning = false;
+            let panStartX = 0;
+            let panStartY = 0;
+            let startPanX = 0;
+            let startPanY = 0;
+
+            img.style.transformOrigin = 'center center';
+            img.style.transition = 'none';
+
+            zoomSlider.addEventListener('input', (e) => {
+                scale = parseFloat(e.target.value);
+                zoomValueText.innerText = scale.toFixed(1) + 'x';
+                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            });
+
+            const topShade = document.createElement('div');
+            topShade.style.position = 'absolute';
+            topShade.style.top = '0';
+            topShade.style.left = '0';
+            topShade.style.width = '100%';
+            topShade.style.height = '35%';
+            topShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
+            topShade.style.pointerEvents = 'none';
+            
+            const bottomShade = document.createElement('div');
+            bottomShade.style.position = 'absolute';
+            bottomShade.style.bottom = '0';
+            bottomShade.style.left = '0';
+            bottomShade.style.width = '100%';
+            bottomShade.style.height = '35%';
+            bottomShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
+            bottomShade.style.pointerEvents = 'none';
+            
+            const alignmentTarget = document.createElement('div');
+            alignmentTarget.style.position = 'absolute';
+            alignmentTarget.style.top = '35%';
+            alignmentTarget.style.left = '0';
+            alignmentTarget.style.width = '100%';
+            alignmentTarget.style.height = '30%';
+            alignmentTarget.style.borderTop = '2px solid #f97316';
+            alignmentTarget.style.borderBottom = '2px solid #f97316';
+            alignmentTarget.style.boxSizing = 'border-box';
+            alignmentTarget.style.pointerEvents = 'auto';
+            alignmentTarget.style.cursor = 'ns-resize';
+            alignmentTarget.style.touchAction = 'none';
+            alignmentTarget.style.boxShadow = 'inset 0 0 10px rgba(249, 115, 22, 0.1)';
+
+            const dragTip = document.createElement('div');
+            dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
+            dragTip.style.position = 'absolute';
+            dragTip.style.top = '50%';
+            dragTip.style.left = '50%';
+            dragTip.style.transform = 'translate(-50%, -50%)';
+            dragTip.style.fontSize = '12px';
+            dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
+            dragTip.style.textTransform = 'uppercase';
+            dragTip.style.letterSpacing = '1px';
+            dragTip.style.fontWeight = 'bold';
+            dragTip.style.pointerEvents = 'none';
+            dragTip.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
+            alignmentTarget.appendChild(dragTip);
+
+            const laser = document.createElement('div');
+            laser.style.position = 'absolute';
+            laser.style.top = '50%';
+            laser.style.left = '5%';
+            laser.style.width = '90%';
+            laser.style.height = '2px';
+            laser.style.backgroundColor = '#ef4444';
+            laser.style.boxShadow = '0 0 8px #ef4444';
+            laser.style.pointerEvents = 'none';
+            laser.style.animation = 'laserMove 2s infinite ease-in-out';
+            alignmentTarget.appendChild(laser);
+            
+            const styleId = 'laser-animation-style';
+            if (!document.getElementById(styleId)) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = `
+                    @keyframes laserMove {
+                        0% { top: 10%; }
+                        50% { top: 90%; }
+                        100% { top: 10%; }
+                    }
+                `;
+                document.head.appendChild(style);
             }
 
-            const config = {
-                fps: 10,
-                qrbox: (w, h) => ({ width: Math.min(Math.floor(w * 0.85), 260), height: 100 }),
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            imageWrapper.appendChild(topShade);
+            imageWrapper.appendChild(bottomShade);
+            imageWrapper.appendChild(alignmentTarget);
+
+            const getEventXAndY = (ev) => {
+                if (ev.touches && ev.touches.length > 0) {
+                    return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+                }
+                return { x: ev.clientX, y: ev.clientY };
             };
 
-            await html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                async (decodedText) => {
-                    // verify imei
-                    try {
-                        const res = await fetch('/api/verify-imei', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imei: decodedText.trim() })
+            const startDrag = (e) => {
+                isDragging = true;
+                startY = getEventXAndY(e).y;
+                startTopPercent = currentTopPercent;
+                alignmentTarget.style.borderTopColor = '#38bdf8';
+                alignmentTarget.style.borderBottomColor = '#38bdf8';
+                dragTip.style.color = '#38bdf8';
+                dragTip.innerText = '↕ Aligning... ↕';
+                e.preventDefault();
+            };
+
+            const doDrag = (e) => {
+                if (!isDragging) return;
+                const currentY = getEventXAndY(e).y;
+                const diffY = currentY - startY;
+                if (wrapperHeight > 0) {
+                    const diffPercent = (diffY / wrapperHeight) * 100;
+                    let newTop = startTopPercent + diffPercent;
+                    newTop = Math.max(0, Math.min(100 - cropHeightPercent, newTop));
+                    currentTopPercent = newTop;
+                    
+                    topShade.style.height = currentTopPercent + '%';
+                    alignmentTarget.style.top = currentTopPercent + '%';
+                    bottomShade.style.height = (100 - currentTopPercent - cropHeightPercent) + '%';
+                }
+                e.preventDefault();
+            };
+
+            const stopDrag = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                alignmentTarget.style.borderTopColor = '#f97316';
+                alignmentTarget.style.borderBottomColor = '#f97316';
+                dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
+                dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
+            };
+
+            alignmentTarget.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', doDrag);
+            window.addEventListener('mouseup', stopDrag);
+
+            alignmentTarget.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('touchmove', doDrag, { passive: false });
+            window.addEventListener('touchend', stopDrag);
+
+            const startImagePan = (e) => {
+                if (e.target === alignmentTarget || alignmentTarget.contains(e.target)) return;
+                
+                isPanning = true;
+                const coords = getEventXAndY(e);
+                panStartX = coords.x;
+                panStartY = coords.y;
+                startPanX = panX;
+                startPanY = panY;
+                imageWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            };
+
+            const doImagePan = (e) => {
+                if (!isPanning) return;
+                const coords = getEventXAndY(e);
+                const diffX = coords.x - panStartX;
+                const diffY = coords.y - panStartY;
+                
+                panX = startPanX + diffX;
+                panY = startPanY + diffY;
+                
+                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+                e.preventDefault();
+            };
+
+            const stopImagePan = () => {
+                if (!isPanning) return;
+                isPanning = false;
+                imageWrapper.style.cursor = 'default';
+            };
+
+            imageWrapper.addEventListener('mousedown', startImagePan);
+            window.addEventListener('mousemove', doImagePan);
+            window.addEventListener('mouseup', stopImagePan);
+
+            imageWrapper.addEventListener('touchstart', startImagePan, { passive: false });
+            window.addEventListener('touchmove', doImagePan, { passive: false });
+            window.addEventListener('touchend', stopImagePan);
+            
+            btnScan.addEventListener('click', () => {
+                btnScan.disabled = true;
+                btnScan.innerText = 'Processing...';
+                btnScan.style.backgroundColor = '#d97706';
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const cx = wrapperWidth / 2;
+                const cy = wrapperHeight / 2;
+                
+                const y_v_start = (currentTopPercent / 100) * wrapperHeight;
+                const y_v_end = ((currentTopPercent + cropHeightPercent) / 100) * wrapperHeight;
+                
+                const x_i_start = cx + (0 - cx - panX) / scale;
+                const x_i_end = cx + (wrapperWidth - cx - panX) / scale;
+                
+                const y_i_start = cy + (y_v_start - cy - panY) / scale;
+                const y_i_end = cy + (y_v_end - cy - panY) / scale;
+                
+                let sX = x_i_start * (img.naturalWidth / wrapperWidth);
+                let sY = y_i_start * (img.naturalHeight / wrapperHeight);
+                let sWidth = (x_i_end - x_i_start) * (img.naturalWidth / wrapperWidth);
+                let sHeight = (y_i_end - y_i_start) * (img.naturalHeight / wrapperHeight);
+                
+                sX = Math.max(0, Math.min(img.naturalWidth, sX));
+                sY = Math.max(0, Math.min(img.naturalHeight, sY));
+                sWidth = Math.max(1, Math.min(img.naturalWidth - sX, sWidth));
+                sHeight = Math.max(1, Math.min(img.naturalHeight - sY, sHeight));
+                
+                canvas.width = sWidth;
+                canvas.height = sHeight;
+                
+                ctx.drawImage(img, sX, sY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const croppedFile = new File([blob], "cropped_barcode.png", { type: "image/png" });
+                        onCropAndScan(croppedFile, () => {
+                            modal.style.opacity = '0';
+                            setTimeout(() => modal.remove(), 300);
+                        }, () => {
+                            btnScan.disabled = false;
+                            btnScan.innerText = 'Scan Aligned Area';
+                            btnScan.style.backgroundColor = '#f97316';
                         });
-                        const verification = await res.json();
-                        if (res.ok && verification.success) {
-                            imeiInput.value = decodedText.trim();
-                            imeiInput.classList.remove('border-rose-500');
-                            closeBarcodeScanner();
-                            showToast('IMEI verified successfully: ' + decodedText.trim(), 'success');
-                        } else {
-                            if (errorDiv) {
-                                errorDiv.textContent = verification.message || 'Scanned IMEI is invalid.';
-                                errorDiv.classList.remove('hidden');
-                            }
-                        }
-                    } catch (err) {
-                        if (errorDiv) {
-                            errorDiv.textContent = 'Verification error.';
-                            errorDiv.classList.remove('hidden');
-                        }
+                    } else {
+                        btnScan.disabled = false;
+                        btnScan.innerText = 'Scan Aligned Area';
+                        btnScan.style.backgroundColor = '#f97316';
+                        alert("Error processing photo canvas.");
                     }
-                },
-                (errorMessage) => {}
-            );
-            isScannerRunning = true;
-        } catch (err) {
-            isScannerRunning = false;
-            if (errorDiv) {
-                errorDiv.textContent = 'Camera unavailable: ' + err;
-                errorDiv.classList.remove('hidden');
-            }
-        }
-    };
+                }, "image/png");
+            });
+        };
+    }
 
-    const closeBarcodeScanner = async () => {
-        const modal = document.getElementById('modal-barcode');
-        if (!modal) return;
+    if (barcodeFilePicker) {
+        barcodeFilePicker.addEventListener('change', async (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            showToast('Preparing preview...', 'success');
+            
+            showBarcodeCroppingModal(file, async (croppedFile, onSuccess, onError) => {
+                showToast('Scanning aligned area...', 'success');
+                if (!html5QrCode) html5QrCode = new Html5Qrcode('interactive-reader');
+                try {
+                    const decodedText = await html5QrCode.scanFile(croppedFile, true);
+                    const trimmed = decodedText.trim();
+                    
+                    const res = await fetch('/api/verify-imei', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imei: trimmed })
+                    });
+                    const verification = await res.json();
+                    if (res.ok && verification.success) {
+                        if (imeiInput) {
+                            imeiInput.value = trimmed;
+                            imeiInput.classList.remove('border-rose-500');
+                            imeiInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        showToast('IMEI verified successfully: ' + trimmed, 'success');
+                        onSuccess();
+                    } else {
+                        showToast(verification.message || 'Scanned IMEI is invalid.', 'error');
+                        onError();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Could not decode a barcode from the aligned region. Please align and try again.', 'error');
+                    onError();
+                }
+            }, () => {
+                showToast('Scanning cancelled.', 'info');
+            });
 
-        modal.style.opacity = '0';
-        modal.querySelector('.popup-modal-content').style.transform = 'translateY(100%) scale(0.95)';
-        
-        if (html5QrCode && isScannerRunning) {
-            try {
-                await html5QrCode.stop();
-                html5QrCode.clear();
-            } catch (e) {}
-            html5QrCode = null;
-            isScannerRunning = false;
-        }
-        
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('active');
-        }, 300);
-    };
+            barcodeFilePicker.value = '';
+        });
+    }
 
-    if (btnScanBarcode) btnScanBarcode.addEventListener('click', startScanning);
-    window.closeBarcodeModal = closeBarcodeScanner;
+    if (btnScanBarcode) {
+        btnScanBarcode.addEventListener('click', () => {
+            if (barcodeFilePicker) barcodeFilePicker.click();
+        });
+    }
 
     // --- FETCH PAYMENTS & STATISTICS ---
     async function fetchPayments() {
@@ -739,7 +1230,7 @@ const initApp = () => {
         const employeeDebts = allPayments.filter(p => p.pending_from === 'Employee / Salesperson' && p.settlement_status === 'Unsettled');
 
         if (employeeDebts.length === 0) {
-            body.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400 font-medium bg-slate-50/50">No employee pending amounts found.</td></tr>`;
+            body.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium bg-slate-50/50">No employee pending amounts found.</td></tr>`;
             return;
         }
 
@@ -764,13 +1255,16 @@ const initApp = () => {
 
         Object.values(aggregated).forEach(emp => {
             const tr = document.createElement('tr');
-            tr.className = 'hover:bg-slate-50/50 border-b border-slate-100 transition-colors';
+            tr.className = 'cursor-pointer hover:bg-slate-100 border-b border-slate-100 transition-colors';
             
-            const todayStr = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
             const isOverdue = emp.oldestDue < todayStr;
             const dueBadge = isOverdue 
                 ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Overdue</span>`
                 : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Active</span>`;
+
+            tr.onclick = () => window.filterByEmployeePending(emp.name);
 
             tr.innerHTML = `
                 <td class="px-4 py-3.5 font-bold text-slate-800">${escapeHtml(emp.name)}</td>
@@ -778,6 +1272,11 @@ const initApp = () => {
                 <td class="px-4 py-3.5 text-right font-bold text-rose-600">₹${emp.totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3.5 font-bold text-slate-800 font-data-mono">${emp.oldestDue === '9999-12-31' ? '--' : emp.oldestDue}</td>
                 <td class="px-4 py-3.5">${dueBadge}</td>
+                <td class="px-4 py-3.5 text-right">
+                    <button class="px-3 py-1.5 border border-primary text-primary bg-primary/5 hover:bg-primary/10 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ml-auto">
+                        <span class="material-symbols-outlined text-[16px]">visibility</span> View Details
+                    </button>
+                </td>
             `;
             body.appendChild(tr);
         });
@@ -1032,6 +1531,58 @@ const initApp = () => {
             fetchPayments();
         });
     }
+
+    // --- LOAD DYNAMIC STAFF LISTS ---
+    const loadStaffListForModals = async () => {
+        try {
+            const res = await fetch('/api/staff-list');
+            const json = await res.json();
+            if (!res.ok || !json.success) throw new Error(json.message || 'Failed');
+            const staffList = json.data || [];
+            
+            // Populate list-sales_person
+            const salesPersonListEl = document.getElementById('list-sales_person');
+            if (salesPersonListEl) {
+                salesPersonListEl.innerHTML = staffList.map(u => {
+                    const display = u.display || u.username || '';
+                    const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
+                    const safe = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="${safe}" onclick="selectPopupOption('sales_person', '${safe}')">
+                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">${initials}</span>
+                        <span class="text-sm font-semibold text-slate-700">${display}</span>
+                    </button>`;
+                }).join('');
+            }
+
+            // Populate list-pending_person_name
+            const pendingPersonListEl = document.getElementById('list-pending_person_name');
+            if (pendingPersonListEl) {
+                pendingPersonListEl.innerHTML = staffList.map(u => {
+                    const display = u.display || u.username || '';
+                    const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
+                    const safe = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="${safe}" onclick="selectPopupOption('pending_person_name', '${safe}')">
+                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">${initials}</span>
+                        <span class="text-sm font-semibold text-slate-700">${display}</span>
+                    </button>`;
+                }).join('');
+            }
+
+            // Populate filterSalesperson select
+            const filterSalespersonSelect = document.getElementById('filterSalesperson');
+            if (filterSalespersonSelect) {
+                filterSalespersonSelect.innerHTML = '<option value="">All Salespersons</option>' + staffList.map(u => {
+                    const display = u.display || u.username || '';
+                    return `<option value="${display}">${display}</option>`;
+                }).join('');
+            }
+        } catch (e) {
+            console.error('Failed to load staff list:', e);
+        }
+    };
+
+    // Load staff list
+    loadStaffListForModals();
 
     // --- INITIAL LOADING ---
     fetchPayments();

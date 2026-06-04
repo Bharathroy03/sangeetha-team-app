@@ -138,8 +138,8 @@ All payment records are stored inside `data/payments.json` using the following s
 ## User Roles & Permission System (RBAC)
 
 The application supports three levels of role-based credentials:
-1. **super_admin** (Employee ID: `22913` / Password: `Bharathroy@03`): Full system access, CRUD operations on users, customer records, database, edit requests, and settings.
-2. **admin** (Employee ID: `6909` / Password: `Ramesh@6909`): Full system access, similar to super admin.
+1. **super_admin** (Employee ID: `22913` / Password: `Sang@1974`): Full system access, CRUD operations on users, customer records, database, edit requests, and settings.
+2. **admin** (Employee ID: `6909` / Password: `Sang@1974`): Full system access, similar to super admin.
 3. **store_employee** (Employee ID: `SMPL` / Password: `Sang@1974`): Limited to viewing the dashboard, entering customers, and reading customer history. Direct edit/delete is blocked.
 
 ---
