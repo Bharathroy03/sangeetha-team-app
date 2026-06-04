@@ -25,37 +25,21 @@ WHITELIST_FILES = {
     'payments.json': PAYMENTS_FILE
 }
 
-# SQLAlchemy imports and initialization
-from database import db, User, Customer, CRMWalkin, Payment, PaymentHistory, EditRequest, AuditLog, seed_database_from_json
-
-# Database Configuration
-db_url = os.environ.get('DATABASE_URL')
-if not db_url:
-    # Supabase PostgreSQL direct database is default (uumcsdvssgejpygxuxmj)
-    import urllib.parse
-    escaped_password = urllib.parse.quote_plus("s,4U9JX!R_t&!cj")
-    db_url = f"postgresql://postgres:{escaped_password}@db.uumcsdvssgejpygxuxmj.supabase.co:5432/postgres"
-
-if db_url.startswith('postgres://'):
-    db_url = db_url.replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-
-try:
-    with app.app_context():
-        db.create_all()
-        seed_database_from_json(DATA_DIR)
-except Exception as e:
-    print(f"[CRITICAL] Database initialization failed at startup: {e}")
+# Supabase HTTP DB client imports
+from database import (
+    db_load_users, db_save_users, db_load_customers, db_save_customers,
+    db_get_customers_created_today, db_get_finance_customers,
+    db_load_crm_walkin, db_save_crm_walkin, db_load_payments, db_save_payments,
+    db_delete_payment_history, db_load_edit_requests, db_save_edit_requests,
+    db_load_audit_log, db_add_audit_log, db_count_audit_logs
+)
 
 
 from permissions import ROLE_PERMISSIONS
 
 def load_users():
-    """Load user list from SQL database."""
-    users = User.query.all()
+    """Load user list from Supabase."""
+    users = db_load_users()
     if not users:
         # Check/seed defaults
         defaults = [
@@ -63,56 +47,25 @@ def load_users():
             ("USR-1002", "Admin", "6909", "Sang@1974", "admin"),
             ("USR-1003", "Sangeetha", "SMPL", "Sang@1974", "store_employee")
         ]
+        users_to_save = []
         for uid, name, emp_id, pwd, role in defaults:
-            db.session.add(User(
-                user_id=uid,
-                username=name,
-                employee_id=emp_id,
-                password_hash=generate_password_hash(pwd),
-                role=role,
-                status="active",
-                created_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                updated_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            ))
-        db.session.commit()
-        users = User.query.all()
-    return [u.to_dict() for u in users]
+            users_to_save.append({
+                "user_id": uid,
+                "username": name,
+                "employee_id": emp_id,
+                "password_hash": generate_password_hash(pwd),
+                "role": role,
+                "status": "active",
+                "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "updated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            })
+        db_save_users(users_to_save)
+        users = db_load_users()
+    return users
 
 def save_users(users_list):
-    """Save user list to SQL database by syncing it."""
-    existing_ids = {u.user_id for u in User.query.all()}
-    input_ids = {u['user_id'] for u in users_list}
-    
-    # Delete removed users
-    for uid in existing_ids - input_ids:
-        u = db.session.get(User, uid)
-        if u:
-            db.session.delete(u)
-            
-    # Add or update users
-    for u in users_list:
-        db_user = db.session.get(User, u['user_id'])
-        if db_user:
-            db_user.username = u['username']
-            db_user.employee_id = u['employee_id']
-            db_user.password_hash = u['password_hash']
-            db_user.role = u['role']
-            db_user.job_title = u.get('job_title')
-            db_user.status = u.get('status', 'active')
-            db_user.updated_at = u.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        else:
-            db.session.add(User(
-                user_id=u['user_id'],
-                username=u['username'],
-                employee_id=u['employee_id'],
-                password_hash=u['password_hash'],
-                role=u['role'],
-                job_title=u.get('job_title'),
-                status=u.get('status', 'active'),
-                created_at=u.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                updated_at=u.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            ))
-    db.session.commit()
+    """Save user list to Supabase."""
+    db_save_users(users_list)
 
 def login_required(f):
     @wraps(f)
@@ -162,109 +115,20 @@ def permission_required(permission_name):
     return decorator
 
 def load_customers():
-    """Load customer list from SQL database."""
-    customers = Customer.query.all()
-    return [c.to_dict() for c in customers]
+    """Load customer list from Supabase."""
+    return db_load_customers()
 
 def save_customers(customers_list):
-    """Save customer list to SQL database by syncing it."""
-    existing_ids = {c.customer_id for c in Customer.query.all()}
-    input_ids = {c['customer_id'] for c in customers_list}
-    
-    # Delete removed
-    for cid in existing_ids - input_ids:
-        c = db.session.get(Customer, cid)
-        if c:
-            db.session.delete(c)
-            
-    # Add/Update
-    for c in customers_list:
-        db_cust = db.session.get(Customer, c['customer_id'])
-        if db_cust:
-            db_cust.customer_name = c['customer_name']
-            db_cust.mobile_number = c['mobile_number']
-            db_cust.item_model = c['item_model']
-            db_cust.imei_number = c['imei_number']
-            db_cust.transaction_mode = c['transaction_mode']
-            db_cust.finance_provider = c.get('finance_provider')
-            db_cust.down_payment_mode = c.get('down_payment_mode')
-            db_cust.down_payment_value = float(c.get('down_payment_value', 0.0))
-            db_cust.cash_amount = float(c.get('cash_amount', 0.0))
-            db_cust.card_amount = float(c.get('card_amount', 0.0))
-            db_cust.ewallet_amount = float(c.get('ewallet_amount', 0.0))
-            db_cust.total_amount_received = float(c.get('total_amount_received', 0.0))
-            db_cust.exchange_status = c['exchange_status']
-            db_cust.exchange_brand = c.get('exchange_brand')
-            db_cust.exchange_value = float(c.get('exchange_value', 0.0))
-            db_cust.sales_person = c['sales_person']
-            db_cust.remarks = c.get('remarks')
-            db_cust.created_by = c.get('created_by')
-            db_cust.updated_at = c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        else:
-            db.session.add(Customer(
-                customer_id=c['customer_id'],
-                customer_name=c['customer_name'],
-                mobile_number=c['mobile_number'],
-                item_model=c['item_model'],
-                imei_number=c['imei_number'],
-                transaction_mode=c['transaction_mode'],
-                finance_provider=c.get('finance_provider'),
-                down_payment_mode=c.get('down_payment_mode'),
-                down_payment_value=float(c.get('down_payment_value', 0.0)),
-                cash_amount=float(c.get('cash_amount', 0.0)),
-                card_amount=float(c.get('card_amount', 0.0)),
-                ewallet_amount=float(c.get('ewallet_amount', 0.0)),
-                total_amount_received=float(c.get('total_amount_received', 0.0)),
-                exchange_status=c['exchange_status'],
-                exchange_brand=c.get('exchange_brand'),
-                exchange_value=float(c.get('exchange_value', 0.0)),
-                sales_person=c['sales_person'],
-                remarks=c.get('remarks'),
-                created_by=c.get('created_by', 'admin'),
-                created_at=c.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                updated_at=c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            ))
-    db.session.commit()
+    """Save customer list to Supabase."""
+    db_save_customers(customers_list)
 
 def load_crm_customers():
-    """Load CRM walkin customer list from SQL database."""
-    crm = CRMWalkin.query.all()
-    return [c.to_dict() for c in crm]
+    """Load CRM walkin customer list from Supabase."""
+    return db_load_crm_walkin()
 
 def save_crm_customers(crm_list):
-    """Save CRM walkin customer list to SQL database by syncing it."""
-    existing_ids = {c.crm_customer_id for c in CRMWalkin.query.all()}
-    input_ids = {c['crm_customer_id'] for c in crm_list}
-    
-    for cid in existing_ids - input_ids:
-        c = db.session.get(CRMWalkin, cid)
-        if c:
-            db.session.delete(c)
-            
-    for c in crm_list:
-        db_crm = db.session.get(CRMWalkin, c['crm_customer_id'])
-        if db_crm:
-            db_crm.customer_name = c['customer_name']
-            db_crm.mobile_number = c['mobile_number']
-            db_crm.model_item = c['model_item']
-            db_crm.walkout_reason = c['walkout_reason']
-            db_crm.remarks = c.get('remarks')
-            db_crm.sales_person = c['sales_person']
-            db_crm.updated_at = c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        else:
-            db.session.add(CRMWalkin(
-                crm_customer_id=c['crm_customer_id'],
-                customer_name=c['customer_name'],
-                mobile_number=c['mobile_number'],
-                model_item=c['model_item'],
-                walkout_reason=c['walkout_reason'],
-                remarks=c.get('remarks'),
-                sales_person=c['sales_person'],
-                created_by=c.get('created_by', 'admin'),
-                created_at=c.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                updated_at=c.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            ))
-    db.session.commit()
+    """Save CRM walkin customer list to Supabase."""
+    db_save_crm_walkin(crm_list)
 
 
 @app.before_request
@@ -370,24 +234,25 @@ def api_session():
 @permission_required('customer_history_view')
 def api_get_customers_today():
     today_str = datetime.now().strftime('%Y-%m-%d')
-    customers = Customer.query.filter(Customer.created_at.like(f"{today_str}%")).all()
-    return jsonify({"success": True, "data": [c.to_dict() for c in customers]})
+    customers = db_get_customers_created_today(today_str)
+    return jsonify({"success": True, "data": customers})
 
 @app.route('/api/customers/finance', methods=['GET'])
 @login_required
 @permission_required('customer_history_view')
 def api_get_customers_finance():
-    customers = Customer.query.filter_by(transaction_mode='Finance').all()
-    return jsonify({"success": True, "data": [c.to_dict() for c in customers]})
+    customers = db_get_finance_customers()
+    return jsonify({"success": True, "data": customers})
 
 @app.route('/api/customers/<customer_id>', methods=['GET'])
 @login_required
 @permission_required('customer_history_view')
 def api_get_customer_detail(customer_id):
-    customer = db.session.get(Customer, customer_id)
+    customers = load_customers()
+    customer = next((c for c in customers if c.get('customer_id') == customer_id), None)
     if not customer:
         return jsonify({"success": False, "message": "Customer not found."}), 404
-    return jsonify({"success": True, "data": customer.to_dict()})
+    return jsonify({"success": True, "data": customer})
 
 @app.route('/403')
 def route_403():
@@ -676,22 +541,17 @@ def api_clear_all_customers():
     customers = load_customers()
     records_deleted = len(customers)
 
-    # Write audit log entry to SQL database
+    # Write audit log entry to Supabase
     try:
-        audit_entry = AuditLog(
-            action="clear_all_customers",
-            performed_by=session.get('username', ''),
-            employee_id=session.get('employee_id', ''),
-            role=session.get('role', ''),
-            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            records_deleted=records_deleted
-        )
-        db.session.add(audit_entry)
-
-        
-        db.session.commit()
+        db_add_audit_log({
+            "action": "clear_all_customers",
+            "performed_by": session.get('username', ''),
+            "employee_id": session.get('employee_id', ''),
+            "role": session.get('role', ''),
+            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "records_deleted": records_deleted
+        })
     except Exception:
-        db.session.rollback()
         pass  # Audit log failure should not block the operation
 
 
@@ -1080,86 +940,12 @@ def api_update_customer(customer_id):
     return jsonify({"success": True, "message": "Customer record updated successfully!", "customer": customers[customer_index]})
 
 def load_payments():
-    """Load payment list from SQL database."""
-    payments = Payment.query.all()
-    return [p.to_dict() for p in payments]
+    """Load payment list from Supabase."""
+    return db_load_payments()
 
 def save_payments(payments_list):
-    """Save payment list to SQL database by syncing it."""
-    existing_ids = {p.payment_id for p in Payment.query.all()}
-    input_ids = {p['payment_id'] for p in payments_list}
-    
-    for pid in existing_ids - input_ids:
-        p = db.session.get(Payment, pid)
-        if p:
-            db.session.delete(p)
-            
-    for p in payments_list:
-        db_pay = db.session.get(Payment, p['payment_id'])
-        if db_pay:
-            db_pay.customer_name = p['customer_name']
-            db_pay.mobile_number = p['mobile_number']
-            db_pay.invoice_number = p['invoice_number']
-            db_pay.item_model = p['item_model']
-            db_pay.imei_number = p['imei_number']
-            db_pay.sales_person = p['sales_person']
-            db_pay.payment_mode = p['payment_mode']
-            db_pay.total_bill_amount = float(p.get('total_bill_amount', 0.0))
-            db_pay.amount_received = float(p.get('amount_received', 0.0))
-            db_pay.pending_amount = float(p.get('pending_amount', 0.0))
-            db_pay.pending_from = p.get('pending_from')
-            db_pay.pending_person_name = p.get('pending_person_name')
-            db_pay.due_date = p.get('due_date')
-            db_pay.payment_status = p['payment_status']
-            db_pay.settlement_status = p['settlement_status']
-            db_pay.remarks = p.get('remarks')
-            db_pay.updated_at = p.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            
-            # Rebuild payment history
-            PaymentHistory.query.filter_by(payment_id=p['payment_id']).delete()
-            for h in p.get('payment_history', []):
-                db.session.add(PaymentHistory(
-                    payment_id=p['payment_id'],
-                    date_time=h.get('date_time'),
-                    amount_added=float(h.get('amount_added', 0.0)),
-                    received_by=h.get('received_by'),
-                    remarks=h.get('remarks')
-                ))
-        else:
-            new_pay = Payment(
-                payment_id=p['payment_id'],
-                customer_name=p['customer_name'],
-                mobile_number=p['mobile_number'],
-                invoice_number=p['invoice_number'],
-                item_model=p['item_model'],
-                imei_number=p['imei_number'],
-                sales_person=p['sales_person'],
-                payment_mode=p['payment_mode'],
-                total_bill_amount=float(p.get('total_bill_amount', 0.0)),
-                amount_received=float(p.get('amount_received', 0.0)),
-                pending_amount=float(p.get('pending_amount', 0.0)),
-                pending_from=p.get('pending_from'),
-                pending_person_name=p.get('pending_person_name'),
-                due_date=p.get('due_date'),
-                payment_status=p['payment_status'],
-                settlement_status=p['settlement_status'],
-                remarks=p.get('remarks'),
-                created_by=p.get('created_by', 'admin'),
-                created_at=p.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
-                updated_at=p.get('updated_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            )
-            db.session.add(new_pay)
-            db.session.flush()
-            
-            for h in p.get('payment_history', []):
-                db.session.add(PaymentHistory(
-                    payment_id=new_pay.payment_id,
-                    date_time=h.get('date_time'),
-                    amount_added=float(h.get('amount_added', 0.0)),
-                    received_by=h.get('received_by'),
-                    remarks=h.get('remarks')
-                ))
-    db.session.commit()
+    """Save payment list to Supabase."""
+    db_save_payments(payments_list)
 
 
 @app.route('/payment-tracker')
@@ -1937,53 +1723,12 @@ def api_delete_user(user_id):
     return jsonify({"success": True, "message": "User deleted successfully!"})
 
 def load_edit_requests():
-    """Load edit requests list from SQL database."""
-    reqs = EditRequest.query.all()
-    return [r.to_dict() for r in reqs]
+    """Load edit requests list from Supabase."""
+    return db_load_edit_requests()
 
 def save_edit_requests(requests_list):
-    """Save edit requests list to SQL database by syncing it."""
-    existing_ids = {r.request_id for r in EditRequest.query.all()}
-    input_ids = {r['request_id'] for r in requests_list}
-    
-    for rid in existing_ids - input_ids:
-        r = db.session.get(EditRequest, rid)
-        if r:
-            db.session.delete(r)
-            
-    for r in requests_list:
-        db_req = db.session.get(EditRequest, r['request_id'])
-        if db_req:
-            db_req.customer_id = r['customer_id']
-            db_req.requested_by = r['requested_by']
-            db_req.requested_role = r['requested_role']
-            db_req.original_data = json.dumps(r.get('original_data', {}))
-            db_req.proposed_data = json.dumps(r.get('proposed_data', {}))
-            db_req.reason = r['reason']
-            db_req.status = r.get('status', 'pending')
-            db_req.admin_remarks = r.get('admin_remarks')
-            db_req.approved_by = r.get('approved_by')
-            db_req.approved_at = r.get('approved_at')
-            db_req.rejected_by = r.get('rejected_by')
-            db_req.rejected_at = r.get('rejected_at')
-        else:
-            db.session.add(EditRequest(
-                request_id=r['request_id'],
-                customer_id=r['customer_id'],
-                requested_by=r['requested_by'],
-                requested_role=r['requested_role'],
-                original_data=json.dumps(r.get('original_data', {})),
-                proposed_data=json.dumps(r.get('proposed_data', {})),
-                reason=r['reason'],
-                status=r.get('status', 'pending'),
-                admin_remarks=r.get('admin_remarks'),
-                approved_by=r.get('approved_by'),
-                approved_at=r.get('approved_at'),
-                rejected_by=r.get('rejected_by'),
-                rejected_at=r.get('rejected_at'),
-                created_at=r.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            ))
-    db.session.commit()
+    """Save edit requests list to Supabase."""
+    db_save_edit_requests(requests_list)
 
 
 @app.route('/admin/edit-requests')
@@ -2357,6 +2102,4 @@ def migrate_customers_db():
         print(f"Error migrating database: {e}")
 
 if __name__ == '__main__':
-    with app.app_context():
-        migrate_customers_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
