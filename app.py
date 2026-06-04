@@ -35,7 +35,13 @@ if db_url:
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(DATA_DIR, 'sangeetha.db')
+    # If running in a serverless function environment (e.g. AWS Lambda / Vercel), the filesystem under /var/task is read-only.
+    # Fall back to placing sangeetha.db in the writable /tmp directory.
+    if os.environ.get('LAMBDA_TASK_ROOT') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.path.exists('/var/task'):
+        sqlite_db_path = os.path.join('/tmp', 'sangeetha.db')
+    else:
+        sqlite_db_path = os.path.join(DATA_DIR, 'sangeetha.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + sqlite_db_path
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
