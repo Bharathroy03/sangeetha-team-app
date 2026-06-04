@@ -31,10 +31,10 @@ from database import db, User, Customer, CRMWalkin, Payment, PaymentHistory, Edi
 # Database Configuration
 db_url = os.environ.get('DATABASE_URL')
 if not db_url:
-    # Supabase PostgreSQL connection pooler (Session/Transaction mode) is default (uumcsdvssgejpygxuxmj)
+    # Supabase PostgreSQL direct database is default (uumcsdvssgejpygxuxmj)
     import urllib.parse
     escaped_password = urllib.parse.quote_plus("s,4U9JX!R_t&!cj")
-    db_url = f"postgresql://postgres.uumcsdvssgejpygxuxmj:{escaped_password}@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require"
+    db_url = f"postgresql://postgres:{escaped_password}@db.uumcsdvssgejpygxuxmj.supabase.co:5432/postgres"
 
 if db_url.startswith('postgres://'):
     db_url = db_url.replace('postgres://', 'postgresql://', 1)
