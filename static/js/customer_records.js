@@ -1732,6 +1732,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    window.exportCustomerData = async (format) => {
+        if (window.currentUserRole !== 'super_admin') {
+            window.showToast('Access denied: Export is only available for Super Admins.', 'error');
+            return;
+        }
+
+        const scope = (currentLedgerFilter || 'TODAY').toLowerCase();
+        const search = (document.getElementById('ledgerSearch')?.value || '').trim();
+        const from_date = document.getElementById('filterStartDateCustomers')?.value || '';
+        const to_date = document.getElementById('filterEndDateCustomers')?.value || '';
+
+        const params = new URLSearchParams({
+            scope: scope,
+            search: search,
+            from_date: from_date,
+            to_date: to_date
+        });
+
+        const url = `/api/export/customers/${format}?${params.toString()}`;
+
+        window.showLoading(`Generating ${format.toUpperCase()} export...`);
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                let errMsg = 'Export failed.';
+                try {
+                    const errJson = await response.json();
+                    errMsg = errJson.message || errMsg;
+                } catch(e) {}
+                throw new Error(errMsg);
+            }
+
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `customers_${scope}_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : format}`;
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^";]+)"?/);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            a.remove();
+            
+            window.showToast(`${format.toUpperCase()} export downloaded successfully.`, 'success');
+        } catch (err) {
+            console.error('Export error:', err);
+            window.showToast(err.message || 'Connection error during export.', 'error');
+        } finally {
+            window.hideLoading();
+        }
+    };
+
     loadStaffListForModals();
 
     // --- INITIAL LOADING ---

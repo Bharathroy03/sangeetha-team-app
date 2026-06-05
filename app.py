@@ -4,6 +4,16 @@ from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
+import io
+import csv
+from flask import send_file
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 # In production, this secret key should be loaded from environment variables
@@ -270,6 +280,358 @@ def forbidden_error(error):
 def api_get_customers():
     customers = load_customers()
     return jsonify({"success": True, "data": customers})
+
+# --- SUPER ADMIN EXPORT ENDPOINTS ---
+
+def get_filtered_customers(scope, search, from_date, to_date):
+    customers = load_customers()
+    
+    # 1. Scope filter
+    if scope == 'today':
+        today_str = datetime.now().strftime('%Y-%m-%d')
+        customers = [c for c in customers if c.get('created_at') and c.get('created_at').startswith(today_str)]
+    elif scope == 'finance':
+        customers = [c for c in customers if c.get('transaction_mode') == 'Finance']
+        
+    # 2. Date filters
+    if from_date:
+        customers = [c for c in customers if c.get('created_at') and c.get('created_at').split(' ')[0] >= from_date]
+    if to_date:
+        customers = [c for c in customers if c.get('created_at') and c.get('created_at').split(' ')[0] <= to_date]
+        
+    # 3. Search query filter
+    if search:
+        search = search.strip().lower()
+        customers = [
+            c for c in customers if
+            search in (c.get('customer_name') or '').lower() or
+            search in (c.get('mobile_number') or '') or
+            search in (c.get('imei_number') or '') or
+            search in (c.get('item_model') or '').lower() or
+            search in (c.get('sales_person') or '').lower()
+        ]
+        
+    return customers
+
+def log_export_action(export_format, scope, filters, record_count):
+    try:
+        db_add_audit_log({
+            "action": f"export_{export_format}_{scope}",
+            "performed_by": session.get('username', 'Unknown'),
+            "employee_id": session.get('employee_id', 'Unknown'),
+            "role": session.get('role', 'super_admin'),
+            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "records_deleted": record_count
+        })
+    except Exception as e:
+        print(f"Failed to write export audit log: {e}")
+
+COLUMNS_TO_EXPORT = [
+    "Customer ID", "Customer Name", "Mobile Number", "Item / Model", "IMEI Number",
+    "Transaction Mode", "Finance Provider", "Down Payment Mode", "Down Payment Value",
+    "Cash Amount", "Card Amount", "E-Wallet Amount", "Total Amount Received",
+    "Exchange Status", "Exchange Brand", "Exchange Value", "Sales Person",
+    "Remarks", "Created By", "Created At", "Updated At"
+]
+
+KEY_MAPPING = {
+    "Customer ID": "customer_id",
+    "Customer Name": "customer_name",
+    "Mobile Number": "mobile_number",
+    "Item / Model": "item_model",
+    "IMEI Number": "imei_number",
+    "Transaction Mode": "transaction_mode",
+    "Finance Provider": "finance_provider",
+    "Down Payment Mode": "down_payment_mode",
+    "Down Payment Value": "down_payment_value",
+    "Cash Amount": "cash_amount",
+    "Card Amount": "card_amount",
+    "E-Wallet Amount": "ewallet_amount",
+    "Total Amount Received": "total_amount_received",
+    "Exchange Status": "exchange_status",
+    "Exchange Brand": "exchange_brand",
+    "Exchange Value": "exchange_value",
+    "Sales Person": "sales_person",
+    "Remarks": "remarks",
+    "Created By": "created_by",
+    "Created At": "created_at",
+    "Updated At": "updated_at"
+}
+
+@app.route('/api/export/customers/excel', methods=['GET'])
+@login_required
+@permission_required('export_data')
+def api_export_customers_excel():
+    try:
+        scope = request.args.get('scope', 'all').strip().lower()
+        search = request.args.get('search', '').strip()
+        from_date = request.args.get('from_date', '').strip()
+        to_date = request.args.get('to_date', '').strip()
+
+        customers = get_filtered_customers(scope, search, from_date, to_date)
+        
+        # Generate Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Customers"
+        
+        # Append Header
+        ws.append(COLUMNS_TO_EXPORT)
+        
+        # Style Header
+        header_fill = PatternFill(start_color="107C41", end_color="107C41", fill_type="solid") # green theme
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        
+        for col_num in range(1, len(COLUMNS_TO_EXPORT) + 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+        # Freeze header row
+        ws.freeze_panes = "A2"
+        
+        # Append rows
+        for customer in customers:
+            row = []
+            for col in COLUMNS_TO_EXPORT:
+                key = KEY_MAPPING[col]
+                row.append(customer.get(key, ''))
+            ws.append(row)
+            
+        # Auto column width adjustment
+        for col in ws.columns:
+            max_len = 0
+            for cell in col:
+                val_str = str(cell.value or '')
+                if len(val_str) > max_len:
+                    max_len = len(val_str)
+            col_letter = col[0].column_letter
+            ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+            
+        file_stream = io.BytesIO()
+        wb.save(file_stream)
+        file_stream.seek(0)
+        
+        today_date = datetime.now().strftime('%Y-%m-%d')
+        filename = f"customers_{scope}_{today_date}.xlsx"
+        
+        log_export_action('excel', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
+        
+        return send_file(
+            file_stream,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to export Excel: {str(e)}"}), 500
+
+@app.route('/api/export/customers/csv', methods=['GET'])
+@login_required
+@permission_required('export_data')
+def api_export_customers_csv():
+    try:
+        scope = request.args.get('scope', 'all').strip().lower()
+        search = request.args.get('search', '').strip()
+        from_date = request.args.get('from_date', '').strip()
+        to_date = request.args.get('to_date', '').strip()
+
+        customers = get_filtered_customers(scope, search, from_date, to_date)
+        
+        # Generate CSV
+        si = io.StringIO()
+        writer = csv.writer(si)
+        writer.writerow(COLUMNS_TO_EXPORT)
+        
+        for customer in customers:
+            row = []
+            for col in COLUMNS_TO_EXPORT:
+                key = KEY_MAPPING[col]
+                row.append(customer.get(key, ''))
+            writer.writerow(row)
+            
+        mem = io.BytesIO()
+        mem.write(si.getvalue().encode('utf-8'))
+        mem.seek(0)
+        
+        today_date = datetime.now().strftime('%Y-%m-%d')
+        filename = f"customers_{scope}_{today_date}.csv"
+        
+        log_export_action('csv', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
+        
+        return send_file(
+            mem,
+            mimetype="text/csv",
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to export CSV: {str(e)}"}), 500
+
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_number(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica", 7)
+        self.setFillColor(colors.HexColor("#475569"))
+        
+        # Header (on all pages)
+        self.drawString(15, 560, "Sangeetha Customer Records Report")
+        self.setStrokeColor(colors.HexColor("#CBD5E1"))
+        self.setLineWidth(0.5)
+        self.line(15, 552, 827, 552)
+        
+        # Footer (on all pages)
+        page_text = f"Page {self._pageNumber} of {page_count}"
+        self.drawRightString(827, 20, page_text)
+        self.drawString(15, 20, "Confidential - For Internal Use Only")
+        self.restoreState()
+
+@app.route('/api/export/customers/pdf', methods=['GET'])
+@login_required
+@permission_required('export_data')
+def api_export_customers_pdf():
+    try:
+        scope = request.args.get('scope', 'all').strip().lower()
+        search = request.args.get('search', '').strip()
+        from_date = request.args.get('from_date', '').strip()
+        to_date = request.args.get('to_date', '').strip()
+
+        customers = get_filtered_customers(scope, search, from_date, to_date)
+        
+        # Generate PDF
+        pdf_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            pdf_buffer,
+            pagesize=landscape(A4),
+            leftMargin=15,
+            rightMargin=15,
+            topMargin=55,
+            bottomMargin=45
+        )
+        
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Title Styling
+        title_style = ParagraphStyle(
+            'ReportTitle',
+            parent=styles['Heading1'],
+            fontName='Helvetica-Bold',
+            fontSize=16,
+            leading=20,
+            textColor=colors.HexColor("#0D70C0"),
+            spaceAfter=12
+        )
+        
+        metadata_style = ParagraphStyle(
+            'ReportMetadata',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=8,
+            leading=10,
+            textColor=colors.HexColor("#475569")
+        )
+        
+        # Banner Title
+        story.append(Paragraph("Sangeetha Customer Records Report", title_style))
+        
+        # Metadata Block
+        gen_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user_name = session.get('username', 'Unknown')
+        filter_str = f"Scope: {scope.capitalize()}"
+        if search:
+            filter_str += f" | Search: \"{search}\""
+        if from_date or to_date:
+            filter_str += f" | Range: {from_date or 'Start'} to {to_date or 'End'}"
+            
+        story.append(Paragraph(f"<strong>Generated At:</strong> {gen_time} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Exported By:</strong> {user_name} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Filters:</strong> {filter_str}", metadata_style))
+        story.append(Spacer(1, 15))
+        
+        # Table Styling
+        cell_style = ParagraphStyle(
+            'TableCell',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=5.5,
+            leading=6.5,
+            textColor=colors.HexColor("#1e293b")
+        )
+        header_cell_style = ParagraphStyle(
+            'TableHeaderCell',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=6,
+            leading=7.5,
+            textColor=colors.white,
+            alignment=1 # Center
+        )
+        
+        table_data = []
+        # Header Row
+        header_row = [Paragraph(col, header_cell_style) for col in COLUMNS_TO_EXPORT]
+        table_data.append(header_row)
+        
+        # Data Rows
+        for customer in customers:
+            data_row = []
+            for col in COLUMNS_TO_EXPORT:
+                key = KEY_MAPPING[col]
+                val = str(customer.get(key, '') or '')
+                data_row.append(Paragraph(val, cell_style))
+            table_data.append(data_row)
+            
+        # exact column widths to sum up to exactly 810 pt
+        col_widths = [45, 55, 45, 45, 50, 40, 40, 35, 35, 30, 30, 30, 35, 25, 30, 30, 40, 40, 35, 45, 45]
+        
+        t = Table(table_data, colWidths=col_widths, repeatRows=1)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DC2626")), # red theme header
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 3),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F8FAFC")]), # Alternating
+        ]))
+        
+        story.append(t)
+        
+        # Build Document
+        doc.build(story, canvasmaker=NumberedCanvas)
+        
+        pdf_buffer.seek(0)
+        today_date = datetime.now().strftime('%Y-%m-%d')
+        filename = f"customers_{scope}_{today_date}.pdf"
+        
+        log_export_action('pdf', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
+        
+        return send_file(
+            pdf_buffer,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to export PDF: {str(e)}"}), 500
 
 @app.route('/api/verify-imei', methods=['POST'])
 @login_required
