@@ -24,15 +24,28 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'sangeetha_super_secret_sess
 
 # Configure Logging
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
-os.makedirs(DATA_DIR, exist_ok=True)
-log_file = os.path.join(DATA_DIR, 'app.log')
 log_formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+
+try:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    log_file = os.path.join(DATA_DIR, 'app.log')
+    file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+except (OSError, PermissionError):
+    try:
+        # Fallback to /tmp on serverless environments like Vercel
+        tmp_log_file = os.path.join('/tmp', 'app.log')
+        file_handler = RotatingFileHandler(tmp_log_file, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+    except (OSError, PermissionError):
+        # Ultimate fallback to StreamHandler (stdout)
+        import sys
+        file_handler = logging.StreamHandler(sys.stdout)
+
 file_handler.setFormatter(log_formatter)
 file_handler.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 app.logger.info("Sangeetha Mobiles App Started")
+
 
 def log_application_error(error_message, exception=None, status_code=500):
     """Log structured application errors with request context and stack trace."""
