@@ -1170,6 +1170,7 @@
     <!-- Toast Alert Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1, 100000) | random }}"></script>
     <script src="{{ url_for('static', filename='js/customer_records.js') }}?v={{ range(1, 100000) | random }}"></script>
 
     <!-- Clear All Customers logic specifically tied to the modals in this page -->
