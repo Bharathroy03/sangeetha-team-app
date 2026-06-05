@@ -2021,22 +2021,22 @@ def get_allowed_salespeople():
     for u in users:
         if u.get('status', 'active') != 'active':
             continue
-        job_title = (u.get('job_title') or '').strip()
-        if not job_title:
+        name = u.get('username', '').strip()
+        employee_id = u.get('employee_id', '').strip()
+        if not name or not employee_id:
             continue
-        name = u.get('username', '')
-        employee_id = u.get('employee_id', '')
-        if job_title.lower() == 'promoter':
-            display = f"{name} \u2014 {employee_id}"
-        else:
-            display = f"{name} \u2014 {job_title}"
-        allowed.append(display)
-    
-    # Generate fallback/compatibility values with standard hyphens
-    extra_allowed = []
-    for s in allowed:
-        extra_allowed.append(s.replace('\u2014', '-'))
-        extra_allowed.append(s.replace('\u2014', '\u2013'))
+        
+        # 1. Add employee_id based displays (what UI dropdown sends)
+        allowed.append(f"{name} - {employee_id}")
+        allowed.append(f"{name} \u2014 {employee_id}")
+        allowed.append(f"{name} \u2013 {employee_id}")
+        
+        # 2. Add job_title based displays (for legacy/admin records)
+        job_title = (u.get('job_title') or '').strip()
+        if job_title:
+            allowed.append(f"{name} - {job_title}")
+            allowed.append(f"{name} \u2014 {job_title}")
+            allowed.append(f"{name} \u2013 {job_title}")
     
     # Keep legacy hardcoded values for backward compatibility
     legacy = [
@@ -2050,7 +2050,7 @@ def get_allowed_salespeople():
         "Rabiya - Xiaomi",
         "Finance Promoter"
     ]
-    return list(set(allowed + extra_allowed + legacy))
+    return list(set(allowed + legacy))
 
 # Sales Persons / Employees list — accessible to any logged-in user, no admin permission required
 @app.route('/api/sales-persons', methods=['GET'])
