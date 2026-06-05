@@ -46,6 +46,11 @@ app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 app.logger.info("Sangeetha Mobiles App Started")
 
+def safe_str(val):
+    if val is None:
+        return ""
+    return str(val).strip()
+
 
 def log_application_error(error_message, exception=None, status_code=500):
     """Log structured application errors with request context and stack trace."""
@@ -2177,10 +2182,12 @@ def get_allowed_salespeople():
     users = load_users()
     allowed = []
     for u in users:
+        if not isinstance(u, dict):
+            continue
         if u.get('status', 'active') != 'active':
             continue
-        name = u.get('username', '').strip()
-        employee_id = u.get('employee_id', '').strip()
+        name = (u.get('username') or '').strip()
+        employee_id = (u.get('employee_id') or '').strip()
         if not name or not employee_id:
             continue
         
@@ -2270,11 +2277,11 @@ def api_get_users():
 @permission_required('user_create')
 def api_create_user():
     data = request.get_json() or {}
-    username = data.get('username', '').strip()
-    employee_id = data.get('employee_id', '').strip()
-    password = data.get('password', '').strip()
-    role = data.get('role', '').strip()
-    job_title = data.get('job_title', '').strip() or None
+    username = (data.get('username') or '').strip()
+    employee_id = (data.get('employee_id') or '').strip()
+    password = (data.get('password') or '').strip()
+    role = (data.get('role') or '').strip()
+    job_title = (data.get('job_title') or '').strip() or None
     
     if not username or not employee_id or not password or not role:
         return jsonify({"success": False, "message": "All fields (Username, Employee ID, Password, Role) are required."}), 400
