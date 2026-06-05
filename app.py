@@ -2021,7 +2021,7 @@ def get_allowed_salespeople():
     for u in users:
         if u.get('status', 'active') != 'active':
             continue
-        job_title = u.get('job_title', '').strip()
+        job_title = (u.get('job_title') or '').strip()
         if not job_title:
             continue
         name = u.get('username', '')
