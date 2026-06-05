@@ -1568,27 +1568,46 @@ def get_allowed_salespeople():
     ]
     return list(set(allowed + extra_allowed + legacy))
 
-# Staff list — accessible to any logged-in user, no admin permission required
+# Sales Persons / Employees list — accessible to any logged-in user, no admin permission required
+@app.route('/api/sales-persons', methods=['GET'])
+@login_required
+def api_sales_persons():
+    """Return active sales persons/employees from Supabase users table."""
+    users = load_users()
+    sales_persons = []
+    for u in users:
+        if u.get('status', 'active').lower() != 'active':
+            continue
+        username = u.get('username', '')
+        employee_id = u.get('employee_id', '')
+        display_name = f"{username} - {employee_id}"
+        sales_persons.append({
+            "user_id": u.get('user_id') or u.get('id', ''),
+            "username": username,
+            "employee_id": employee_id,
+            "role": u.get('role', ''),
+            "display_name": display_name
+        })
+    return jsonify(sales_persons)
+
 @app.route('/api/staff-list', methods=['GET'])
 @login_required
 def api_staff_list():
-    """Return active staff with job_title/employee_id for the Sales Person dropdown.
-    Excludes generic admin accounts (those without a job_title)."""
+    """Fallback legacy route for active staff list."""
     users = load_users()
     staff = []
     for u in users:
-        if u.get('status', 'active') != 'active':
+        if u.get('status', 'active').lower() != 'active':
             continue
-        job_title = u.get('job_title', '').strip()
-        if not job_title:
-            continue   # skip generic admin / system accounts with no job title
-        name = u.get('username', '')
+        username = u.get('username', '')
         employee_id = u.get('employee_id', '')
-        if job_title.lower() == 'promoter':
-            display = f"{name} \u2014 {employee_id}"
-        else:
-            display = f"{name} \u2014 {job_title}"
-        staff.append({'username': name, 'role': u.get('role',''), 'job_title': job_title, 'display': display})
+        display = f"{username} - {employee_id}"
+        staff.append({
+            'username': username,
+            'role': u.get('role', ''),
+            'job_title': u.get('job_title', '') or 'Staff',
+            'display': display
+        })
     return jsonify({'success': True, 'data': staff})
 
 @app.route('/api/users', methods=['GET'])

@@ -570,7 +570,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const normalized = query.toLowerCase().trim();
         list.querySelectorAll('.option-item').forEach(btn => {
             const val = btn.getAttribute('data-value').toLowerCase();
-            btn.style.display = val.includes(normalized) ? 'flex' : 'none';
+            const role = (btn.getAttribute('data-role') || '').toLowerCase();
+            btn.style.display = (val.includes(normalized) || role.includes(normalized)) ? 'flex' : 'none';
         });
     };
 
@@ -1700,19 +1701,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOAD DYNAMIC STAFF LISTS ---
     const loadStaffListForModals = async () => {
         try {
-            const res = await fetch('/api/staff-list');
-            const json = await res.json();
-            if (!res.ok || !json.success) throw new Error(json.message || 'Failed');
-            const staffList = json.data || [];
+            const res = await fetch('/api/sales-persons');
+            if (!res.ok) throw new Error('Failed to load sales persons');
+            const staffList = await res.json();
             
             // Populate list-sales_person
             const salesPersonListEl = document.getElementById('list-sales_person');
             if (salesPersonListEl) {
                 salesPersonListEl.innerHTML = staffList.map(u => {
-                    const display = u.display || u.username || '';
+                    const display = u.display_name || u.username || '';
                     const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
                     const safe = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="${safe}" onclick="selectPopupOption('sales_person', '${safe}')">
+                    return `<button type="button" class="option-item flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 transition-all text-left group" data-value="${safe}" data-role="${u.role || ''}" onclick="selectPopupOption('sales_person', '${safe}')">
                         <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold font-data-mono">${initials}</span>
                         <span class="text-sm font-semibold text-slate-700">${display}</span>
                     </button>`;
@@ -1723,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const filterSalespersonSelect = document.getElementById('filterSalesperson');
             if (filterSalespersonSelect) {
                 filterSalespersonSelect.innerHTML = '<option value="">All Salespersons</option>' + staffList.map(u => {
-                    const display = u.display || u.username || '';
+                    const display = u.display_name || u.username || '';
                     return `<option value="${display}">${display}</option>`;
                 }).join('');
             }

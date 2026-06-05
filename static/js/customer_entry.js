@@ -490,10 +490,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const listEl = document.getElementById('salesPersonList') || document.querySelector('#modal-sales_person .option-list') || document.getElementById('list-sales_person');
         if (!listEl) return;
         try {
-            const res  = await fetch('/api/staff-list');
-            const json = await res.json();
-            if (!res.ok || !json.success) throw new Error(json.message || 'Failed');
-            salesPersonData = json.data || [];
+            const res  = await fetch('/api/sales-persons');
+            if (!res.ok) throw new Error('Failed to load sales persons');
+            salesPersonData = await res.json();
             renderSalesPersonList(salesPersonData);
         } catch (e) {
             if (listEl) listEl.innerHTML = '<p class="text-xs text-rose-500 text-center py-4">Failed to load staff list.</p>';
@@ -508,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         listEl.innerHTML = list.map(u => {
-            const display  = u.display || u.username || '';
+            const display  = u.display_name || u.username || '';
             const initials = display.split(/[\s\-\u2014]+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0].toUpperCase()).join('').slice(0, 2) || '??';
             const safe     = display.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
             const onClickFn = window.selectSalesPerson ? `selectSalesPerson('${safe}')` : `selectPopupOption('sales_person', '${safe}')`;
@@ -526,7 +525,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.filterSalesPersonList = (query) => {
         const q = query.toLowerCase().trim();
         const filtered = q
-            ? salesPersonData.filter(u => (u.display || u.username || '').toLowerCase().includes(q))
+            ? salesPersonData.filter(u => 
+                (u.username || '').toLowerCase().includes(q) ||
+                (u.employee_id || '').toLowerCase().includes(q) ||
+                (u.role || '').toLowerCase().includes(q)
+              )
             : salesPersonData;
         renderSalesPersonList(filtered);
     };
