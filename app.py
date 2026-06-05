@@ -14,10 +14,50 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+import logging
+from logging.handlers import RotatingFileHandler
+import traceback
 
 app = Flask(__name__)
 # In production, this secret key should be loaded from environment variables
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'sangeetha_super_secret_session_key')
+
+# Configure Logging
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+os.makedirs(DATA_DIR, exist_ok=True)
+log_file = os.path.join(DATA_DIR, 'app.log')
+log_formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.INFO)
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
+app.logger.info("Sangeetha Mobiles App Started")
+
+def log_application_error(error_message, exception=None, status_code=500):
+    """Log structured application errors with request context and stack trace."""
+    user = session.get('username') or 'Anonymous'
+    emp_id = session.get('employee_id') or 'N/A'
+    role = session.get('role') or 'N/A'
+    route = request.path
+    method = request.method
+    
+    stack_trace = ""
+    if exception:
+        stack_trace = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+        
+    log_msg = (
+        f"Route: {method} {route} | "
+        f"User: {user} ({emp_id}) | "
+        f"Role: {role} | "
+        f"Status: {status_code} | "
+        f"Error: {error_message}"
+    )
+    if stack_trace:
+        log_msg += f"\nStack Trace:\n{stack_trace}"
+        
+    app.logger.error(log_msg)
+
 
 # Path to our customers JSON database
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -264,15 +304,120 @@ def api_get_customer_detail(customer_id):
         return jsonify({"success": False, "message": "Customer not found."}), 404
     return jsonify({"success": True, "data": customer})
 
+from database import (
+    SupabaseError, SupabaseConnectionError, SupabaseQueryError,
+    SupabaseRlsError, SupabaseOperationError
+)
+
 @app.route('/403')
 def route_403():
     return render_template('403.html', message="Forbidden: Access is denied."), 403
 
+@app.errorhandler(SupabaseError)
+def handle_supabase_error(error):
+    status = 500
+    if isinstance(error, SupabaseRlsError):
+        status = 403
+        msg = "Database permission denied. Contact admin."
+    elif isinstance(error, SupabaseQueryError):
+        status = 404
+        msg = "Database query failed. Resource not found."
+    elif isinstance(error, SupabaseConnectionError):
+        status = 503
+        msg = "Database connection failed. Contact admin."
+    else:
+        status = 500
+        msg = "Database operation failed. Contact admin."
+        
+    log_application_error(f"SupabaseError ({type(error).__name__}): {error.message}", exception=error, status_code=status)
+    
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": type(error).__name__,
+            "details": getattr(error, 'details', None) or str(error)
+        }), status
+    return render_template('500.html', message=msg), status
+
+@app.errorhandler(400)
+def bad_request_error(error):
+    msg = "Bad request. Please verify request parameters."
+    log_application_error(msg, exception=error, status_code=400)
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "BAD_REQUEST",
+            "details": str(error)
+        }), 400
+    return render_template('403.html', message=msg), 400
+
+@app.errorhandler(401)
+def unauthorized_error(error):
+    msg = "Session expired. Please login again."
+    log_application_error(msg, exception=error, status_code=401)
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "UNAUTHORIZED",
+            "details": str(error)
+        }), 401
+    return redirect(url_for('login'))
+
 @app.errorhandler(403)
 def forbidden_error(error):
+    msg = "You do not have permission to access this resource."
+    log_application_error(msg, exception=error, status_code=403)
     if request.is_json or request.path.startswith('/api/'):
-        return jsonify({"success": False, "message": "Forbidden: You do not have permission to access this resource."}), 403
-    return render_template('403.html', message="You do not have permission to access this page."), 403
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "FORBIDDEN",
+            "details": str(error)
+        }), 403
+    return render_template('403.html', message=msg), 403
+
+@app.errorhandler(404)
+def not_found_error(error):
+    msg = "The requested resource could not be found."
+    log_application_error(msg, exception=error, status_code=404)
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "NOT_FOUND",
+            "details": str(error)
+        }), 404
+    return render_template('403.html', message=msg), 404
+
+@app.errorhandler(405)
+def method_not_allowed_error(error):
+    msg = "HTTP Method not allowed for this route."
+    log_application_error(msg, exception=error, status_code=405)
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "METHOD_NOT_ALLOWED",
+            "details": str(error)
+        }), 405
+    return render_template('403.html', message=msg), 405
+
+@app.errorhandler(500)
+@app.errorhandler(Exception)
+def internal_server_error(error):
+    msg = "An internal server error occurred. Please try again later."
+    log_application_error(f"Unhandled Exception: {str(error)}", exception=error, status_code=500)
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": msg,
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "details": str(error)
+        }), 500
+    return render_template('500.html', message=msg), 500
 
 @app.route('/api/customers', methods=['GET'])
 @login_required

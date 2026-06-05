@@ -1965,13 +1965,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.showLoading('Verifying billing and locking record...');
         try {
-            const response = await fetch(`/api/customers/${activeVerificationCustomerId}/verify-billing`, {
+            const res = await window.safeFetch(`/api/customers/${activeVerificationCustomerId}/verify-billing`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ admin_remarks })
             });
-            const res = await response.json();
-            if (response.ok && res.success) {
+            if (res.success) {
                 window.showToast('Billing verified and record locked successfully.', 'success');
                 window.closeVerifyBillingModal();
                 window.closeCustomerDetailModal();
@@ -1980,7 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.showToast(res.message || 'Failed to verify billing.', 'error');
             }
         } catch (err) {
-            window.showToast('Network error during billing verification.', 'error');
+            window.showToast(err.message || 'Network error during billing verification.', 'error');
         } finally {
             window.hideLoading();
         }
@@ -1998,13 +1996,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.showLoading('Reopening billing record...');
         try {
-            const response = await fetch(`/api/customers/${activeReopenCustomerId}/reopen`, {
+            const res = await window.safeFetch(`/api/customers/${activeReopenCustomerId}/reopen`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reopen_reason })
             });
-            const res = await response.json();
-            if (response.ok && res.success) {
+            if (res.success) {
                 window.showToast('Billing record reopened successfully.', 'success');
                 window.closeReopenBillingModal();
                 window.closeCustomerDetailModal();
@@ -2013,7 +2009,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.showToast(res.message || 'Failed to reopen billing.', 'error');
             }
         } catch (err) {
-            window.showToast('Network error while reopening.', 'error');
+            window.showToast(err.message || 'Network error while reopening.', 'error');
         } finally {
             window.hideLoading();
         }

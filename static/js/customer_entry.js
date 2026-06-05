@@ -642,12 +642,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleDecodedIMEI = async (decodedText) => {
         const trimmed = decodedText.trim();
         try {
-            const res  = await fetch('/api/verify-imei', {
-                method:'POST', headers:{'Content-Type':'application/json'},
+            const data = await window.safeFetch('/api/verify-imei', {
+                method:'POST',
                 body: JSON.stringify({ imei: trimmed })
             });
-            const data = await res.json();
-            if (res.ok && data.success) {
+            if (data.success) {
                 playScanBeep();
                 if (imeiInput) { 
                     imeiInput.value = trimmed; 
@@ -659,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.showToast) window.showToast(data.message || 'Invalid scanned IMEI.', 'error');
             }
         } catch(e) { 
-            if (window.showToast) window.showToast('Server verification failed.', 'error'); 
+            if (window.showToast) window.showToast(e.message || 'Server verification failed.', 'error'); 
         }
     };
 
@@ -1188,12 +1187,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('/api/customers', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
+                const res = await window.safeFetch('/api/customers', {
+                    method:'POST',
                     body: JSON.stringify(payload)
                 });
-                const res = await response.json();
-                if (response.ok && res.success) {
+                if (res.success) {
                     if(window.showToast) window.showToast('Customer saved successfully!','success');
                     customerForm.reset();
                     // Clear all summaries and wizard state
@@ -1203,7 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(window.showToast) window.showToast(res.message || 'Failed to save customer.','error');
                 }
             } catch(err) {
-                if(window.showToast) window.showToast('Network error while saving customer.','error');
+                if(window.showToast) window.showToast(err.message || 'Network error while saving customer.','error');
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = originalText;

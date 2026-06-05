@@ -1,3 +1,88 @@
+window.safeFetch = async (url, options = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    const defaultHeaders = {
+        'Content-Type': 'application/json'
+    };
+    
+    const config = {
+        ...options,
+        signal: controller.signal,
+        headers: {
+            ...defaultHeaders,
+            ...(options.headers || {})
+        }
+    };
+    
+    if (options.body instanceof FormData) {
+        delete config.headers['Content-Type'];
+    }
+    
+    try {
+        const response = await fetch(url, config);
+        clearTimeout(timeoutId);
+        
+        if (response.status === 401) {
+            if (window.showToast) {
+                window.showToast('Session expired. Please login again.', 'error');
+            }
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            throw new Error('UNAUTHORIZED');
+        }
+        
+        if (response.status === 403) {
+            if (window.showToast) {
+                window.showToast('You do not have permission to perform this action.', 'error');
+            }
+            throw new Error('FORBIDDEN');
+        }
+        
+        const contentType = response.headers.get('content-type') || '';
+        let data = {};
+        
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(`Server returned status ${response.status}`);
+            }
+            data = { success: true, rawText: text };
+        }
+        
+        if (!response.ok) {
+            const errMsg = data.message || `Request failed with status ${response.status}`;
+            throw new Error(errMsg);
+        }
+        
+        return data;
+        
+    } catch (err) {
+        clearTimeout(timeoutId);
+        
+        if (err.name === 'AbortError') {
+            if (window.showToast) {
+                window.showToast('Connection timed out. Please try again.', 'error');
+            }
+            throw new Error('Connection timed out.');
+        }
+        
+        console.error(`[safeFetch Error] url: ${url}`, err);
+        
+        let friendlyMessage = err.message;
+        if (err.message === 'Failed to fetch' || err.message.includes('network') || err.message.includes('load')) {
+            friendlyMessage = 'Network connection error. Please check your internet connection.';
+        } else if (err.message.includes('Server returned status') || err.message.includes('Unexpected token')) {
+            friendlyMessage = 'Unable to complete request. Server encountered an issue.';
+        }
+        
+        throw new Error(friendlyMessage);
+    }
+};
+
 const initApp = () => {
     // Page Elements
     const loginForm = document.getElementById('loginForm');
