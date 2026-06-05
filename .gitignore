@@ -29,8 +29,8 @@ ngrok
 # SQLite local database (not committed — use PostgreSQL in production)
 data/sangeetha.db
 
-# Scratch / temporary log files
-scratch/tunnel.log
+# Scratch / temporary files
+scratch/
 
 # Standard environments and dependencies
 venv/
