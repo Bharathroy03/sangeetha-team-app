@@ -281,6 +281,95 @@ def api_get_customers():
     customers = load_customers()
     return jsonify({"success": True, "data": customers})
 
+@app.route('/api/customers/<customer_id>/verify-billing', methods=['POST'])
+@login_required
+@permission_required('billing_verify')
+def api_verify_billing(customer_id):
+    data = request.get_json(silent=True) or {}
+    admin_remarks = data.get('admin_remarks', '').strip()
+
+    customers = load_customers()
+    customer_idx = next((i for i, c in enumerate(customers) if c.get('customer_id') == customer_id), -1)
+    if customer_idx == -1:
+        return jsonify({"success": False, "message": "Customer record not found."}), 404
+
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    emp_id = session.get('employee_id', 'unknown')
+
+    customers[customer_idx].update({
+        "billing_status": "Billing Verified",
+        "billing_verified": True,
+        "billing_verified_by": emp_id,
+        "billing_verified_at": now_str,
+        "billing_admin_remarks": admin_remarks or None,
+        "record_locked": True,
+        "locked_by": emp_id,
+        "locked_at": now_str
+    })
+
+    save_customers(customers)
+
+    # Log to audit log
+    db_add_audit_log({
+        "action": f"verify_billing",
+        "performed_by": session.get('username', 'Unknown'),
+        "employee_id": emp_id,
+        "role": session.get('role', 'admin'),
+        "timestamp": now_str,
+        "records_deleted": 0  # Conform to existing schema
+    })
+
+    return jsonify({
+        "success": True, 
+        "message": "Billing successfully verified and customer record locked.",
+        "customer": customers[customer_idx]
+    })
+
+@app.route('/api/customers/<customer_id>/reopen', methods=['POST'])
+@login_required
+@permission_required('billing_reopen')
+def api_reopen_billing(customer_id):
+    data = request.get_json(silent=True) or {}
+    reopen_reason = data.get('reopen_reason', '').strip()
+
+    if not reopen_reason:
+        return jsonify({"success": False, "message": "Reason for reopening billing is required."}), 400
+
+    customers = load_customers()
+    customer_idx = next((i for i, c in enumerate(customers) if c.get('customer_id') == customer_id), -1)
+    if customer_idx == -1:
+        return jsonify({"success": False, "message": "Customer record not found."}), 404
+
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    emp_id = session.get('employee_id', 'unknown')
+
+    customers[customer_idx].update({
+        "billing_status": "Pending Verification",
+        "billing_verified": False,
+        "record_locked": False,
+        "reopened_by": emp_id,
+        "reopened_at": now_str,
+        "reopen_reason": reopen_reason
+    })
+
+    save_customers(customers)
+
+    # Log to audit log
+    db_add_audit_log({
+        "action": f"reopen_billing",
+        "performed_by": session.get('username', 'Unknown'),
+        "employee_id": emp_id,
+        "role": session.get('role', 'super_admin'),
+        "timestamp": now_str,
+        "records_deleted": 0  # Conform to existing schema
+    })
+
+    return jsonify({
+        "success": True, 
+        "message": "Billing reopened successfully and customer record unlocked.",
+        "customer": customers[customer_idx]
+    })
+
 # --- SUPER ADMIN EXPORT ENDPOINTS ---
 
 def get_filtered_customers(scope, search, from_date, to_date):
@@ -331,7 +420,10 @@ COLUMNS_TO_EXPORT = [
     "Transaction Mode", "Finance Provider", "Down Payment Mode", "Down Payment Value",
     "Cash Amount", "Card Amount", "E-Wallet Amount", "Total Amount Received",
     "Exchange Status", "Exchange Brand", "Exchange Value", "Sales Person",
-    "Remarks", "Created By", "Created At", "Updated At"
+    "Remarks", "Created By", "Created At", "Updated At",
+    "Billing Status", "Billing Verified", "Billing Verified By", "Billing Verified At",
+    "Billing Admin Remarks", "Record Locked", "Locked By", "Locked At",
+    "Reopened By", "Reopened At", "Reopen Reason"
 ]
 
 KEY_MAPPING = {
@@ -355,7 +447,18 @@ KEY_MAPPING = {
     "Remarks": "remarks",
     "Created By": "created_by",
     "Created At": "created_at",
-    "Updated At": "updated_at"
+    "Updated At": "updated_at",
+    "Billing Status": "billing_status",
+    "Billing Verified": "billing_verified",
+    "Billing Verified By": "billing_verified_by",
+    "Billing Verified At": "billing_verified_at",
+    "Billing Admin Remarks": "billing_admin_remarks",
+    "Record Locked": "record_locked",
+    "Locked By": "locked_by",
+    "Locked At": "locked_at",
+    "Reopened By": "reopened_by",
+    "Reopened At": "reopened_at",
+    "Reopen Reason": "reopen_reason"
 }
 
 @app.route('/api/export/customers/excel', methods=['GET'])
@@ -597,8 +700,8 @@ def api_export_customers_pdf():
                 data_row.append(Paragraph(val, cell_style))
             table_data.append(data_row)
             
-        # exact column widths to sum up to exactly 810 pt
-        col_widths = [45, 55, 45, 45, 50, 40, 40, 35, 35, 30, 30, 30, 35, 25, 30, 30, 40, 40, 35, 45, 45]
+        # exact column widths to sum up to exactly 812 pt
+        col_widths = [25, 34, 35, 35, 35, 30, 30, 25, 25, 20, 20, 20, 25, 18, 22, 20, 30, 25, 25, 26, 26, 25, 18, 25, 25, 25, 18, 25, 25, 25, 25, 25]
         
         t = Table(table_data, colWidths=col_widths, repeatRows=1)
         t.setStyle(TableStyle([
@@ -812,7 +915,18 @@ def api_add_customer():
         "remarks": remarks,
         "created_by": session.get('employee_id', 'admin'),
         "created_at": now_str,
-        "updated_at": now_str
+        "updated_at": now_str,
+        "billing_status": "Pending Verification",
+        "billing_verified": False,
+        "billing_verified_by": None,
+        "billing_verified_at": None,
+        "billing_admin_remarks": None,
+        "record_locked": False,
+        "locked_by": None,
+        "locked_at": None,
+        "reopened_by": None,
+        "reopened_at": None,
+        "reopen_reason": None
     }
 
     customers.append(new_customer)
@@ -887,11 +1001,14 @@ def api_save_raw_data():
 @permission_required('customer_history_delete')
 def api_delete_customer(customer_id):
     customers = load_customers()
-    updated_customers = [c for c in customers if c.get('customer_id') != customer_id]
-    
-    if len(updated_customers) == len(customers):
+    customer = next((c for c in customers if c.get('customer_id') == customer_id), None)
+    if not customer:
         return jsonify({"success": False, "message": "Record not found."}), 404
         
+    if customer.get('record_locked'):
+        return jsonify({"success": False, "message": "This customer record is locked (billing verified) and cannot be deleted."}), 403
+        
+    updated_customers = [c for c in customers if c.get('customer_id') != customer_id]
     save_customers(updated_customers)
     return jsonify({"success": True, "message": "Customer record deleted successfully!"})
 
@@ -1143,6 +1260,13 @@ def edit_request_view(customer_id):
 @login_required
 @permission_required('customer_history_edit')
 def api_update_customer(customer_id):
+    customers = load_customers()
+    customer_index = next((i for i, c in enumerate(customers) if c.get('customer_id') == customer_id), -1)
+    if customer_index == -1:
+        return jsonify({"success": False, "message": "Record not found."}), 404
+    if customers[customer_index].get('record_locked'):
+        return jsonify({"success": False, "message": "This customer record is locked (billing verified) and cannot be updated."}), 403
+
     data = request.get_json() or {}
     
     # Extract fields
@@ -1267,12 +1391,6 @@ def api_update_customer(customer_id):
     # Remarks validation
     if len(remarks) > 500:
         return jsonify({"success": False, "message": "Remarks must not exceed 500 characters."}), 400
-
-    customers = load_customers()
-    customer_index = next((i for i, c in enumerate(customers) if c.get('customer_id') == customer_id), -1)
-    
-    if customer_index == -1:
-        return jsonify({"success": False, "message": "Record not found."}), 404
 
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -2147,6 +2265,9 @@ def api_create_edit_request(customer_id):
     if not customer:
         return jsonify({"success": False, "message": "Customer record not found."}), 404
 
+    if customer.get('record_locked'):
+        return jsonify({"success": False, "message": "This customer record is locked (billing verified) and cannot accept edit requests."}), 403
+
     # Check for duplicate pending requests by the same user for this customer
     requests_list = load_edit_requests()
     duplicate = next((r for r in requests_list if r.get('customer_id') == customer_id and r.get('requested_by') == session.get('employee_id') and r.get('status') == 'pending'), None)
@@ -2311,15 +2432,28 @@ def api_approve_edit_request(request_id):
     if customer_index == -1:
         return jsonify({"success": False, "message": "Original customer record not found."}), 404
 
+    orig_cust = customers[customer_index]
+    if orig_cust.get('record_locked'):
+        return jsonify({"success": False, "message": "The original customer record is locked (billing verified) and cannot be updated."}), 403
+
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     proposed = req.get('proposed_data', {})
     
     # Overwrite original customer record, but preserve customer_id, created_at, created_by
-    proposed['customer_id'] = customers[customer_index].get('customer_id')
-    proposed['created_at'] = customers[customer_index].get('created_at')
-    proposed['created_by'] = customers[customer_index].get('created_by')
+    proposed['customer_id'] = orig_cust.get('customer_id')
+    proposed['created_at'] = orig_cust.get('created_at')
+    proposed['created_by'] = orig_cust.get('created_by')
     proposed['updated_at'] = now_str
     
+    # Preserve billing verification and locking fields
+    for field in [
+        'billing_status', 'billing_verified', 'billing_verified_by', 'billing_verified_at',
+        'billing_admin_remarks', 'record_locked', 'locked_by', 'locked_at',
+        'reopened_by', 'reopened_at', 'reopen_reason'
+    ]:
+        if field in orig_cust:
+            proposed[field] = orig_cust[field]
+            
     customers[customer_index] = proposed
     save_customers(customers)
     

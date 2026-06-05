@@ -5,7 +5,8 @@ ROLE_PERMISSIONS = {
         'payment_tracker_view', 'payment_tracker_create', 'payment_tracker_edit', 'payment_tracker_delete',
         'user_create', 'user_update', 'user_delete', 'settings_access',
         'edit_request_view', 'edit_request_approve', 'edit_request_reject',
-        'crm_view', 'crm_create', 'crm_edit', 'crm_delete', 'export_data'
+        'crm_view', 'crm_create', 'crm_edit', 'crm_delete', 'export_data',
+        'billing_verify', 'billing_reopen'
     ],
     'admin': [
         'dashboard_view', 'customer_create', 'customer_history_view',
@@ -13,7 +14,8 @@ ROLE_PERMISSIONS = {
         'payment_tracker_view', 'payment_tracker_create', 'payment_tracker_edit', 'payment_tracker_delete',
         'user_create', 'user_update', 'user_delete', 'settings_access',
         'edit_request_view', 'edit_request_approve', 'edit_request_reject',
-        'crm_view', 'crm_create', 'crm_edit', 'crm_delete'
+        'crm_view', 'crm_create', 'crm_edit', 'crm_delete',
+        'billing_verify'
     ],
     'store_employee': [
         'dashboard_view', 'customer_create', 'customer_history_view',

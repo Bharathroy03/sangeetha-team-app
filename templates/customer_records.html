@@ -524,12 +524,13 @@
                                 <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">DATE / TIME</th>
                                 <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">CUSTOMER NAME</th>
                                 <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">MODEL / ITEM</th>
+                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">BILLING STATUS</th>
                                 <th class="px-6 py-3.5 text-label-md font-label-md text-right whitespace-nowrap">ACTION</th>
                             </tr>
                         </thead>
                         <tbody id="ledgerTableBody" class="divide-y divide-outline-variant">
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-on-surface-variant opacity-60">No records found.</td>
+                                <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant opacity-60">No records found.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -618,15 +619,62 @@
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Sales Associate</p>
                         <p id="detail_sales_person" class="text-sm font-bold text-slate-800"></p>
                     </div>
+                    
+                    <!-- Divider line -->
+                    <div class="col-span-2 border-t border-slate-200/60 my-2"></div>
+                    
+                    <!-- Billing Verification Details -->
+                    <div class="col-span-2">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Billing Completion Status</p>
+                        <div class="flex items-center gap-2">
+                            <span id="detail_billing_status_badge" class="px-2.5 py-1 text-xs font-bold rounded-full flex items-center gap-1"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="detail_billing_verified_section" class="col-span-2 grid grid-cols-2 gap-4 hidden">
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Verified By</p>
+                            <p id="detail_billing_verified_by" class="text-sm font-bold text-slate-800"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Verified At</p>
+                            <p id="detail_billing_verified_at" class="text-sm font-bold text-slate-800 font-data-mono"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Admin Remarks</p>
+                            <p id="detail_billing_admin_remarks" class="text-xs font-medium text-slate-600 italic bg-white border border-slate-200 rounded-lg p-2.5 mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div id="detail_billing_reopened_section" class="col-span-2 grid grid-cols-2 gap-4 hidden">
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Reopened By</p>
+                            <p id="detail_reopened_by" class="text-sm font-bold text-slate-800"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Reopened At</p>
+                            <p id="detail_reopened_at" class="text-sm font-bold text-slate-800 font-data-mono"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Reopen Reason</p>
+                            <p id="detail_reopen_reason" class="text-xs font-medium text-slate-600 italic bg-white border border-slate-200 rounded-lg p-2.5 mt-1"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Modal Footer -->
-            <div class="px-6 py-4 border-t border-slate-100 bg-white flex justify-end gap-3 flex-shrink-0">
+            <div class="px-6 py-4 border-t border-slate-100 bg-white flex flex-wrap justify-end gap-3 flex-shrink-0">
                 <button id="btnDeleteFromModal" class="px-4 py-2 border border-red-200 text-error hover:bg-red-50 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 hidden">
                     <span class="material-symbols-outlined text-[16px]">delete</span> Delete Record
                 </button>
                 <button id="btnEditFromModal" class="px-4 py-2 bg-[#EE8133] hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 active:scale-95">
                     <span class="material-symbols-outlined text-[16px]">edit</span> Edit Record
+                </button>
+                <button id="btnVerifyFromModal" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 active:scale-95 hidden">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span> Verify Billing
+                </button>
+                <button id="btnReopenFromModal" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 active:scale-95 hidden">
+                    <span class="material-symbols-outlined text-[16px]">lock_open</span> Reopen Billing
                 </button>
                 <button onclick="window.closeCustomerDetailModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all">
                     Close Details
@@ -1207,6 +1255,75 @@
             }
         });
     })();
+    <!-- VERIFY BILLING DIALOG MODAL -->
+    <div id="verifyBillingModal" class="hidden fixed inset-0 z-[210] overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="bg-emerald-600 px-6 py-4 flex justify-between items-center text-white">
+                <h3 class="text-md font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Verify Bill & Lock Record
+                </h3>
+                <button onclick="window.closeVerifyBillingModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">close</span>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    You are marking this customer entry as <strong>Billing Verified</strong>. Once verified, the customer record will be <strong>locked</strong>, preventing any edits or deletion.
+                </p>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-700" for="verify_remarks">Admin Verification Remarks (Optional)</label>
+                    <textarea id="verify_remarks" class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs resize-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 w-full" placeholder="Enter verification notes or audit observations..." maxlength="300" rows="3"></textarea>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-550 flex justify-end gap-3">
+                <button onclick="window.closeVerifyBillingModal()" class="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button id="btnConfirmVerify" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 active:scale-95">
+                    Confirm Verification
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REOPEN BILLING DIALOG MODAL -->
+    <div id="reopenBillingModal" class="hidden fixed inset-0 z-[210] overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="bg-rose-600 px-6 py-4 flex justify-between items-center text-white">
+                <h3 class="text-md font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined">lock_open</span>
+                    Reopen Locked Billing
+                </h3>
+                <button onclick="window.closeReopenBillingModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-[24px]">close</span>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    You are reopening a locked customer record. This will unlock the record, allowing edits, and set the status back to <strong>Pending Verification</strong>.
+                </p>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-700" for="reopen_reason">Reason for Reopening (Required)</label>
+                    <textarea id="reopen_reason" class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs resize-none focus:ring-1 focus:ring-rose-500 focus:border-rose-500 w-full" placeholder="Specify why this billing record is being reopened..." maxlength="300" rows="3" required></textarea>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-550 flex justify-end gap-3">
+                <button onclick="window.closeReopenBillingModal()" class="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button id="btnConfirmReopen" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 active:scale-95">
+                    Confirm Reopen
+                </button>
+            </div>
+        </div>
+    </div>
     </script>
 </body>
 </html>

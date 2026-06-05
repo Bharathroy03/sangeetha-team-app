@@ -48,6 +48,28 @@ def db_save_users(users_list):
         headers_upsert["Prefer"] = "resolution=merge-duplicates"
         requests.post(f"{SUPABASE_URL}/rest/v1/users", json=users_list, headers=headers_upsert)
 
+def _parse_customer_record(c):
+    c["down_payment_value"] = float(c.get("down_payment_value", 0.0) or 0.0)
+    c["cash_amount"] = float(c.get("cash_amount", 0.0) or 0.0)
+    c["card_amount"] = float(c.get("card_amount", 0.0) or 0.0)
+    c["ewallet_amount"] = float(c.get("ewallet_amount", 0.0) or 0.0)
+    c["total_amount_received"] = float(c.get("total_amount_received", 0.0) or 0.0)
+    c["exchange_value"] = float(c.get("exchange_value", 0.0) or 0.0)
+    
+    # Bill completion verification defaults
+    c["billing_status"] = c.get("billing_status") or "Pending Verification"
+    c["billing_verified"] = bool(c.get("billing_verified", False))
+    c["billing_verified_by"] = c.get("billing_verified_by") or None
+    c["billing_verified_at"] = c.get("billing_verified_at") or None
+    c["billing_admin_remarks"] = c.get("billing_admin_remarks") or None
+    c["record_locked"] = bool(c.get("record_locked", False))
+    c["locked_by"] = c.get("locked_by") or None
+    c["locked_at"] = c.get("locked_at") or None
+    c["reopened_by"] = c.get("reopened_by") or None
+    c["reopened_at"] = c.get("reopened_at") or None
+    c["reopen_reason"] = c.get("reopen_reason") or None
+    return c
+
 def db_load_customers():
     headers = get_headers()
     url = f"{SUPABASE_URL}/rest/v1/customers"
@@ -55,14 +77,7 @@ def db_load_customers():
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             customers = r.json()
-            for c in customers:
-                c["down_payment_value"] = float(c.get("down_payment_value", 0.0) or 0.0)
-                c["cash_amount"] = float(c.get("cash_amount", 0.0) or 0.0)
-                c["card_amount"] = float(c.get("card_amount", 0.0) or 0.0)
-                c["ewallet_amount"] = float(c.get("ewallet_amount", 0.0) or 0.0)
-                c["total_amount_received"] = float(c.get("total_amount_received", 0.0) or 0.0)
-                c["exchange_value"] = float(c.get("exchange_value", 0.0) or 0.0)
-            return customers
+            return [_parse_customer_record(c) for c in customers]
         print(f"Error loading customers from Supabase: {r.status_code} - {r.text}")
     except Exception as e:
         print(f"Failed to query Supabase customers: {e}")
@@ -82,7 +97,10 @@ def db_save_customers(customers_list):
     if customers_list:
         headers_upsert = headers.copy()
         headers_upsert["Prefer"] = "resolution=merge-duplicates"
-        requests.post(f"{SUPABASE_URL}/rest/v1/customers", json=customers_list, headers=headers_upsert)
+        r = requests.post(f"{SUPABASE_URL}/rest/v1/customers", json=customers_list, headers=headers_upsert)
+        if r.status_code not in [200, 201, 204]:
+            print(f"ERROR: Failed to save customers to Supabase: {r.status_code} - {r.text}")
+            raise Exception(f"Failed to save customers to Supabase: {r.status_code} - {r.text}")
 
 def db_get_customers_created_today(today_str):
     headers = get_headers()
@@ -91,14 +109,7 @@ def db_get_customers_created_today(today_str):
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             customers = r.json()
-            for c in customers:
-                c["down_payment_value"] = float(c.get("down_payment_value", 0.0) or 0.0)
-                c["cash_amount"] = float(c.get("cash_amount", 0.0) or 0.0)
-                c["card_amount"] = float(c.get("card_amount", 0.0) or 0.0)
-                c["ewallet_amount"] = float(c.get("ewallet_amount", 0.0) or 0.0)
-                c["total_amount_received"] = float(c.get("total_amount_received", 0.0) or 0.0)
-                c["exchange_value"] = float(c.get("exchange_value", 0.0) or 0.0)
-            return customers
+            return [_parse_customer_record(c) for c in customers]
         print(f"Error loading today's customers: {r.status_code} - {r.text}")
     except Exception as e:
         print(f"Failed to query today's customers: {e}")
@@ -111,14 +122,7 @@ def db_get_finance_customers():
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             customers = r.json()
-            for c in customers:
-                c["down_payment_value"] = float(c.get("down_payment_value", 0.0) or 0.0)
-                c["cash_amount"] = float(c.get("cash_amount", 0.0) or 0.0)
-                c["card_amount"] = float(c.get("card_amount", 0.0) or 0.0)
-                c["ewallet_amount"] = float(c.get("ewallet_amount", 0.0) or 0.0)
-                c["total_amount_received"] = float(c.get("total_amount_received", 0.0) or 0.0)
-                c["exchange_value"] = float(c.get("exchange_value", 0.0) or 0.0)
-            return customers
+            return [_parse_customer_record(c) for c in customers]
         print(f"Error loading finance customers: {r.status_code} - {r.text}")
     except Exception as e:
         print(f"Failed to query finance customers: {e}")

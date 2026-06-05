@@ -196,15 +196,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderedRecords = [...filtered].reverse();
         ledgerTableBody.innerHTML = renderedRecords.map(item => {
             const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
-            const editButton = hasDeletePermission ? `
-                <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Edit Record">
-                    <span class="material-symbols-outlined text-[18px]">edit</span>
+            const isLocked = !!item.record_locked;
+
+            let editButton = '';
+            if (isLocked) {
+                editButton = `
+                    <button class="text-slate-300 p-1.5 cursor-not-allowed" title="Record Locked (Billing Verified)" disabled>
+                        <span class="material-symbols-outlined text-[18px]">lock</span>
+                    </button>
+                `;
+            } else {
+                editButton = hasDeletePermission ? `
+                    <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Edit Record">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                ` : `
+                    <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Request Edit">
+                        <span class="material-symbols-outlined text-[18px]">edit_note</span>
+                    </button>
+                `;
+            }
+
+            const deleteButton = (hasDeletePermission && !isLocked) ? `
+                <button onclick="deleteRecord('${item.customer_id}')" class="text-error hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Delete customer row">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
                 </button>
+            ` : '';
+
+            const statusHtml = isLocked ? `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold bg-emerald-100 text-emerald-800 rounded-full">
+                    <span class="material-symbols-outlined text-[13px]">lock</span> Verified
+                </span>
             ` : `
-                <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Request Edit">
-                    <span class="material-symbols-outlined text-[18px]">edit_note</span>
-                </button>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-full">
+                    <span class="material-symbols-outlined text-[13px]">lock_open</span> Pending
+                </span>
             `;
+
             return `
                 <tr class="odd:bg-[#0D70C0]/5 even:bg-white hover:bg-[#0D70C0]/10 transition-colors duration-200 group">
                     <td class="px-6 py-4 font-data-mono text-body-sm text-on-surface-variant whitespace-nowrap">${escapeHtml(item.created_at)}</td>
@@ -212,17 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${escapeHtml(item.customer_name)}
                     </td>
                     <td class="px-6 py-4 text-on-surface font-medium whitespace-nowrap">${escapeHtml(item.item_model)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusHtml}</td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <div class="flex justify-end gap-2">
                             <button onclick="viewCustomer('${item.customer_id}')" class="text-primary hover:text-blue-800 transition-colors p-1.5 rounded-lg hover:bg-blue-50" title="View Details">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                             ${editButton}
-                            ${hasDeletePermission ? `
-                            <button onclick="deleteRecord('${item.customer_id}')" class="text-error hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Delete customer row">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                            ` : ''}
+                            ${deleteButton}
                         </div>
                     </td>
                 </tr>
@@ -232,15 +257,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ledgerCardList) {
             ledgerCardList.innerHTML = renderedRecords.map((item, idx) => {
                 const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
-                const editButtonMobile = hasDeletePermission ? `
-                    <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Edit details">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                const isLocked = !!item.record_locked;
+
+                let editButtonMobile = '';
+                if (isLocked) {
+                    editButtonMobile = `
+                        <button class="text-slate-300 p-2 cursor-not-allowed" title="Record Locked" disabled>
+                            <span class="material-symbols-outlined text-[20px]">lock</span>
+                        </button>
+                    `;
+                } else {
+                    editButtonMobile = hasDeletePermission ? `
+                        <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Edit details">
+                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                        </button>
+                    ` : `
+                        <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Request Edit">
+                            <span class="material-symbols-outlined text-[20px]">edit_note</span>
+                        </button>
+                    `;
+                }
+
+                const deleteButtonMobile = (hasDeletePermission && !isLocked) ? `
+                    <button onclick="deleteRecord('${item.customer_id}')" class="text-rose-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete record">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
                     </button>
+                ` : '';
+
+                const statusBadgeMobile = isLocked ? `
+                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 rounded-full mt-1">
+                        <span class="material-symbols-outlined text-[10px]">lock</span> Verified
+                    </span>
                 ` : `
-                    <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Request Edit">
-                        <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                    </button>
+                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 rounded-full mt-1">
+                        <span class="material-symbols-outlined text-[10px]">lock_open</span> Pending
+                    </span>
                 `;
+
                 return `
                 <div class="bg-white border-b border-outline-variant last:border-b-0">
                     <div class="flex items-center justify-between px-4 py-3.5 ${idx % 2 === 0 ? 'bg-[#0D70C0]/5' : 'bg-white'}">
@@ -251,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="min-w-0">
                                 <p class="font-bold text-primary hover:underline text-[15px] leading-tight">${escapeHtml(item.customer_name)}</p>
                                 <p class="text-xs text-on-surface-variant font-medium mt-0.5">${escapeHtml(item.item_model)}</p>
+                                ${statusBadgeMobile}
                             </div>
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0 ml-2">
@@ -258,11 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                             </button>
                             ${editButtonMobile}
-                            ${hasDeletePermission ? `
-                            <button onclick="deleteRecord('${item.customer_id}')" class="text-rose-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete record">
-                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                            </button>
-                            ` : ''}
+                            ${deleteButtonMobile}
                         </div>
                     </div>
                 </div>
@@ -316,9 +366,51 @@ document.addEventListener('DOMContentLoaded', () => {
             if (detailFinanceSec) detailFinanceSec.classList.add('hidden');
         }
 
+        const isLocked = !!item.record_locked;
+        const detailBillingStatusBadge = document.getElementById('detail_billing_status_badge');
+        if (detailBillingStatusBadge) {
+            if (isLocked) {
+                detailBillingStatusBadge.className = "px-2.5 py-1 text-xs font-bold rounded-full flex items-center gap-1 bg-emerald-100 text-emerald-800";
+                detailBillingStatusBadge.innerHTML = `<span class="material-symbols-outlined text-[14px]">lock</span> Billing Verified`;
+            } else {
+                detailBillingStatusBadge.className = "px-2.5 py-1 text-xs font-bold rounded-full flex items-center gap-1 bg-amber-100 text-amber-800";
+                detailBillingStatusBadge.innerHTML = `<span class="material-symbols-outlined text-[14px]">lock_open</span> Pending Verification`;
+            }
+        }
+
+        // Verified sections
+        const detailBillingVerifiedSection = document.getElementById('detail_billing_verified_section');
+        const detailBillingVerifiedBy = document.getElementById('detail_billing_verified_by');
+        const detailBillingVerifiedAt = document.getElementById('detail_billing_verified_at');
+        const detailBillingAdminRemarks = document.getElementById('detail_billing_admin_remarks');
+
+        if (item.billing_verified) {
+            if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.remove('hidden');
+            if (detailBillingVerifiedBy) detailBillingVerifiedBy.textContent = item.billing_verified_by || '—';
+            if (detailBillingVerifiedAt) detailBillingVerifiedAt.textContent = item.billing_verified_at || '—';
+            if (detailBillingAdminRemarks) detailBillingAdminRemarks.textContent = item.billing_admin_remarks || 'No remarks provided.';
+        } else {
+            if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.add('hidden');
+        }
+
+        // Reopened sections
+        const detailBillingReopenedSection = document.getElementById('detail_billing_reopened_section');
+        const detailReopenedBy = document.getElementById('detail_reopened_by');
+        const detailReopenedAt = document.getElementById('detail_reopened_at');
+        const detailReopenReason = document.getElementById('detail_reopen_reason');
+
+        if (item.reopened_by) {
+            if (detailBillingReopenedSection) detailBillingReopenedSection.classList.remove('hidden');
+            if (detailReopenedBy) detailReopenedBy.textContent = item.reopened_by || '—';
+            if (detailReopenedAt) detailReopenedAt.textContent = item.reopened_at || '—';
+            if (detailReopenReason) detailReopenReason.textContent = item.reopen_reason || 'No reason provided.';
+        } else {
+            if (detailBillingReopenedSection) detailBillingReopenedSection.classList.add('hidden');
+        }
+
         const btnDelete = document.getElementById('btnDeleteFromModal');
         if (btnDelete) {
-            const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
+            const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin') && !isLocked;
             if (hasDeletePermission) {
                 btnDelete.classList.remove('hidden');
                 btnDelete.onclick = () => deleteRecord(customerId);
@@ -329,9 +421,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnEdit = document.getElementById('btnEditFromModal');
         if (btnEdit) {
-            const hasEditPermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
-            btnEdit.innerHTML = hasEditPermission ? `<span class="material-symbols-outlined text-[16px]">edit</span> Edit Record` : `<span class="material-symbols-outlined text-[16px]">edit_note</span> Request Edit`;
-            btnEdit.onclick = () => editCustomerDirectly(customerId);
+            if (isLocked) {
+                btnEdit.classList.add('hidden');
+            } else {
+                btnEdit.classList.remove('hidden');
+                const hasEditPermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
+                btnEdit.innerHTML = hasEditPermission ? `<span class="material-symbols-outlined text-[16px]">edit</span> Edit Record` : `<span class="material-symbols-outlined text-[16px]">edit_note</span> Request Edit`;
+                btnEdit.onclick = () => editCustomerDirectly(customerId);
+            }
+        }
+
+        const btnVerify = document.getElementById('btnVerifyFromModal');
+        if (btnVerify) {
+            const canVerify = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin') && !isLocked;
+            if (canVerify) {
+                btnVerify.classList.remove('hidden');
+                btnVerify.onclick = () => window.openVerifyBillingModal(customerId);
+            } else {
+                btnVerify.classList.add('hidden');
+            }
+        }
+
+        const btnReopen = document.getElementById('btnReopenFromModal');
+        if (btnReopen) {
+            const canReopen = (window.currentUserRole === 'super_admin') && isLocked;
+            if (canReopen) {
+                btnReopen.classList.remove('hidden');
+                btnReopen.onclick = () => window.openReopenBillingModal(customerId);
+            } else {
+                btnReopen.classList.add('hidden');
+            }
         }
 
         const modal = document.getElementById('customerDetailModal');
@@ -1687,12 +1806,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal Escape Listener
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            const verifyModal = document.getElementById('verifyBillingModal');
+            if (verifyModal && !verifyModal.classList.contains('hidden')) {
+                window.closeVerifyBillingModal();
+                return;
+            }
+            const reopenModal = document.getElementById('reopenBillingModal');
+            if (reopenModal && !reopenModal.classList.contains('hidden')) {
+                window.closeReopenBillingModal();
+                return;
+            }
+            const detailModal = document.getElementById('customerDetailModal');
+            if (detailModal && !detailModal.classList.contains('hidden')) {
+                window.closeCustomerDetailModal();
+                return;
+            }
             document.querySelectorAll('.popup-modal-overlay:not(.hidden)').forEach(modal => {
                 const id = modal.id.replace('modal-', '');
                 if (id === 'barcode') { closeBarcodeScanner(); }
                 else if (id === 'payment-detail') { closeDetailModal(); }
                 else if (id === 'partial-payment') { closePartialModal(); }
-                else if (id === 'customerDetailModal') { closeCustomerDetailModal(); }
                 else { closePopupModal(id); }
             });
         }
@@ -1793,6 +1926,108 @@ document.addEventListener('DOMContentLoaded', () => {
             window.hideLoading();
         }
     };
+
+    let activeVerificationCustomerId = null;
+    let activeReopenCustomerId = null;
+
+    window.openVerifyBillingModal = (customerId) => {
+        activeVerificationCustomerId = customerId;
+        const remarksInput = document.getElementById('verify_remarks');
+        if (remarksInput) remarksInput.value = '';
+        const modal = document.getElementById('verifyBillingModal');
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeVerifyBillingModal = () => {
+        const modal = document.getElementById('verifyBillingModal');
+        if (modal) modal.classList.add('hidden');
+        activeVerificationCustomerId = null;
+    };
+
+    window.openReopenBillingModal = (customerId) => {
+        activeReopenCustomerId = customerId;
+        const reasonInput = document.getElementById('reopen_reason');
+        if (reasonInput) reasonInput.value = '';
+        const modal = document.getElementById('reopenBillingModal');
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeReopenBillingModal = () => {
+        const modal = document.getElementById('reopenBillingModal');
+        if (modal) modal.classList.add('hidden');
+        activeReopenCustomerId = null;
+    };
+
+    window.verifyBilling = async () => {
+        if (!activeVerificationCustomerId) return;
+        const remarksInput = document.getElementById('verify_remarks');
+        const admin_remarks = remarksInput ? remarksInput.value.trim() : '';
+
+        window.showLoading('Verifying billing and locking record...');
+        try {
+            const response = await fetch(`/api/customers/${activeVerificationCustomerId}/verify-billing`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ admin_remarks })
+            });
+            const res = await response.json();
+            if (response.ok && res.success) {
+                window.showToast('Billing verified and record locked successfully.', 'success');
+                window.closeVerifyBillingModal();
+                window.closeCustomerDetailModal();
+                loadCustomers();
+            } else {
+                window.showToast(res.message || 'Failed to verify billing.', 'error');
+            }
+        } catch (err) {
+            window.showToast('Network error during billing verification.', 'error');
+        } finally {
+            window.hideLoading();
+        }
+    };
+
+    window.reopenBilling = async () => {
+        if (!activeReopenCustomerId) return;
+        const reasonInput = document.getElementById('reopen_reason');
+        const reopen_reason = reasonInput ? reasonInput.value.trim() : '';
+
+        if (!reopen_reason) {
+            window.showToast('A reason for reopening is required.', 'error');
+            return;
+        }
+
+        window.showLoading('Reopening billing record...');
+        try {
+            const response = await fetch(`/api/customers/${activeReopenCustomerId}/reopen`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reopen_reason })
+            });
+            const res = await response.json();
+            if (response.ok && res.success) {
+                window.showToast('Billing record reopened successfully.', 'success');
+                window.closeReopenBillingModal();
+                window.closeCustomerDetailModal();
+                loadCustomers();
+            } else {
+                window.showToast(res.message || 'Failed to reopen billing.', 'error');
+            }
+        } catch (err) {
+            window.showToast('Network error while reopening.', 'error');
+        } finally {
+            window.hideLoading();
+        }
+    };
+
+    // Bind Confirm buttons inside the verify/reopen modals
+    const btnConfirmVerify = document.getElementById('btnConfirmVerify');
+    if (btnConfirmVerify) {
+        btnConfirmVerify.onclick = window.verifyBilling;
+    }
+    const btnConfirmReopen = document.getElementById('btnConfirmReopen');
+    if (btnConfirmReopen) {
+        btnConfirmReopen.onclick = window.reopenBilling;
+    }
 
     loadStaffListForModals();
 
