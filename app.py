@@ -930,7 +930,11 @@ def api_add_customer():
     }
 
     customers.append(new_customer)
-    save_customers(customers)
+    try:
+        save_customers(customers)
+    except Exception as e:
+        print(f"ERROR saving customer to database: {e}")
+        return jsonify({"success": False, "message": f"Database save failed: {str(e)}"}), 500
 
     return jsonify({"success": True, "message": "Customer record saved successfully!", "customer": new_customer})
 
