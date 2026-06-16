@@ -306,6 +306,50 @@ def api_session():
         }
     })
 
+@app.route('/api/decode-barcode', methods=['POST'])
+@login_required
+def api_decode_barcode():
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file uploaded"}), 400
+    file = request.files['file']
+    if not file or file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+    
+    try:
+        from PIL import Image, ImageEnhance, UnidentifiedImageError
+        from pyzbar.pyzbar import decode
+        
+        # Load image
+        try:
+            img = Image.open(file.stream)
+        except UnidentifiedImageError:
+            return jsonify({"success": False, "message": "Invalid or empty image file uploaded. Please upload a valid image."}), 400
+        
+        # Decode attempt 1: Original image
+        decoded_objs = decode(img)
+        
+        # Decode attempt 2: Grayscale image
+        if not decoded_objs:
+            gray_img = img.convert('L')
+            decoded_objs = decode(gray_img)
+            
+            # Decode attempt 3: High contrast grayscale
+            if not decoded_objs:
+                enhancer = ImageEnhance.Contrast(gray_img)
+                enhanced_img = enhancer.enhance(2.0)
+                decoded_objs = decode(enhanced_img)
+        
+        if decoded_objs:
+            # Get the first successfully decoded barcode value
+            barcode_val = decoded_objs[0].data.decode('utf-8').strip()
+            return jsonify({"success": True, "barcode": barcode_val})
+        else:
+            return jsonify({"success": False, "message": "No barcode detected in the uploaded image. Please ensure it is clear and aligned."}), 422
+            
+    except Exception as e:
+        app.logger.error(f"Barcode decoding API failed: {e}\n{traceback.format_exc()}")
+        return jsonify({"success": False, "message": f"Decoding failed: {str(e)}"}), 500
+
 @app.route('/api/customers/today', methods=['GET'])
 @login_required
 @permission_required('customer_history_view')

@@ -1093,16 +1093,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.showToast) window.showToast('Preparing preview...', 'success');
             
             showBarcodeCroppingModal(file, async (croppedFile, onSuccess, onError) => {
-                if (window.showToast) window.showToast('Scanning aligned area...', 'success');
-                if (!html5QrCode) html5QrCode = new Html5Qrcode('scannerReader');
-                try { 
-                    const text = await html5QrCode.scanFile(croppedFile, true);
-                    await handleDecodedIMEI(text); 
-                    onSuccess();
-                }
-                catch(err) { 
+                if (window.showToast) window.showToast('Scanning aligned area (backend)...', 'success');
+                
+                const formData = new FormData();
+                formData.append('file', croppedFile);
+
+                try {
+                    const res = await fetch('/api/decode-barcode', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (res.ok && data.success) {
+                        await handleDecodedIMEI(data.barcode);
+                        onSuccess();
+                    } else {
+                        if (window.showToast) {
+                            window.showToast(data.message || 'Could not decode a barcode from the aligned region.', 'error');
+                        }
+                        onError();
+                    }
+                } catch (err) {
+                    console.error('Backend barcode scan failed:', err);
                     if (window.showToast) {
-                        window.showToast('Could not decode a barcode from the aligned region. Please align and try again.', 'error');
+                        window.showToast('Connection error during barcode scanning. Please try again.', 'error');
                     }
                     onError();
                 }
