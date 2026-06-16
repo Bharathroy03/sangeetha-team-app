@@ -1252,17 +1252,23 @@ window.openIMEIScanner = function(onSuccess) {
     let currentCameraIndex = 0;
     let availableCameras = [];
 
-    // Query available camera devices
-    Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length > 1) {
-            availableCameras = devices;
-            switchBtn.style.display = 'flex';
+    // Setup MutationObserver to force video elements to play inline and muted (iOS/Android autoplay fix)
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.tagName === 'VIDEO') {
+                    node.setAttribute('playsinline', 'true');
+                    node.setAttribute('webkit-playsinline', 'true');
+                    node.muted = true;
+                    node.play().catch(e => console.warn('Autoplay prevented:', e));
+                }
+            }
         }
-    }).catch(e => {
-        console.warn('Failed to get cameras list:', e);
     });
+    observer.observe(readerDiv, { childList: true });
 
     const cleanUp = () => {
+        observer.disconnect();
         if (html5QrCode && isScanning) {
             isScanning = false;
             html5QrCode.stop().then(() => {
@@ -1320,10 +1326,12 @@ window.openIMEIScanner = function(onSuccess) {
                         html5QrCode.stop().then(() => {
                             overlay.remove();
                             styleEl.remove();
+                            observer.disconnect();
                             onSuccess(trimmed);
                         }).catch(() => {
                             overlay.remove();
                             styleEl.remove();
+                            observer.disconnect();
                             onSuccess(trimmed);
                         });
                     }
@@ -1332,7 +1340,15 @@ window.openIMEIScanner = function(onSuccess) {
             () => {
                 // Ignore scan errors/warnings for smooth continuous scanning
             }
-        );
+        ).then(() => {
+            // Query cameras list again now that permission is granted
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length > 1) {
+                    availableCameras = devices;
+                    switchBtn.style.display = 'flex';
+                }
+            }).catch(e => console.warn('getCameras list error:', e));
+        });
     };
 
     const setupTorch = () => {
@@ -1385,8 +1401,8 @@ window.openIMEIScanner = function(onSuccess) {
                     setupTorch();
                 }).catch(err => {
                     console.error('Failed to switch to camera:', err);
-                    // Start with empty constraints to recover
-                    startCamera({}).then(() => {
+                    // Start with environment fallback to recover
+                    startCamera({ facingMode: 'environment' }).then(() => {
                         isScanning = true;
                         setupTorch();
                     });
@@ -1397,6 +1413,21 @@ window.openIMEIScanner = function(onSuccess) {
         }
     };
     switchBtn.onclick = toggleCamera;
+
+    const tryFrontCameraFallback = () => {
+        startCamera({ facingMode: 'user' }).then(() => {
+            isScanning = true;
+            setupTorch();
+        }).catch(err => {
+            console.error('All camera start attempts failed:', err);
+            isScanning = false;
+            observer.disconnect();
+            overlay.remove();
+            styleEl.remove();
+            if (window.showToast) window.showToast('Failed to start camera. Please verify permission.', 'error');
+            else alert('Failed to start camera. Please verify permission.');
+        });
+    };
 
     // Fallback cascade to ensure scanner opens on any platform/device
     startCamera({
@@ -1412,17 +1443,48 @@ window.openIMEIScanner = function(onSuccess) {
             isScanning = true;
             setupTorch();
         }).catch((err2) => {
-            console.warn('Failed to start camera in environment mode, trying any default camera:', err2);
-            startCamera({}).then(() => {
-                isScanning = true;
-                setupTorch();
-            }).catch((err3) => {
-                console.error('All camera start attempts failed:', err3);
-                isScanning = false;
-                overlay.remove();
-                styleEl.remove();
-                if (window.showToast) window.showToast('Failed to start camera. Please verify permission.', 'error');
-                else alert('Failed to start camera. Please verify permission.');
+            console.warn('Failed to start camera in environment mode, querying cameras list...', err2);
+            
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length > 0) {
+                    availableCameras = devices;
+                    if (devices.length > 1) {
+                        switchBtn.style.display = 'flex';
+                    }
+                    
+                    // Try to find a back/rear camera
+                    let targetId = devices[0].id;
+                    const backCamera = devices.find(d => {
+                        const label = (d.label || '').toLowerCase();
+                        return label.includes('back') || label.includes('rear') || label.includes('environment');
+                    });
+                    if (backCamera) {
+                        targetId = backCamera.id;
+                        currentCameraIndex = devices.indexOf(backCamera);
+                    }
+                    
+                    startCamera(targetId).then(() => {
+                        isScanning = true;
+                        setupTorch();
+                    }).catch(err3 => {
+                        console.warn('Failed to start chosen camera device, trying first available...', err3);
+                        if (targetId !== devices[0].id) {
+                            startCamera(devices[0].id).then(() => {
+                                currentCameraIndex = 0;
+                                isScanning = true;
+                                setupTorch();
+                            }).catch(err4 => {
+                                tryFrontCameraFallback();
+                            });
+                        } else {
+                            tryFrontCameraFallback();
+                        }
+                    });
+                } else {
+                    tryFrontCameraFallback();
+                }
+            }).catch(e => {
+                tryFrontCameraFallback();
             });
         });
     });
