@@ -1088,6 +1088,14 @@ if (document.readyState === 'loading') {
 }
 
 window.openIMEIScanner = function(onSuccess) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        const errMsg = 'Camera access requires a secure connection (HTTPS) or localhost.';
+        console.error(errMsg);
+        if (window.showToast) window.showToast(errMsg, 'error');
+        else alert(errMsg);
+        return;
+    }
+
     // 1. Create overlay container
     const overlay = document.createElement('div');
     overlay.id = 'fullScreenScanner';
@@ -1275,8 +1283,7 @@ window.openIMEIScanner = function(onSuccess) {
     // Config
     const config = {
         fps: 25,
-        qrbox: null, // Custom cutout drawn by us
-        aspectRatio: window.innerHeight / window.innerWidth
+        qrbox: null // Custom cutout drawn by us
     };
 
     const startCamera = (constraints) => {
