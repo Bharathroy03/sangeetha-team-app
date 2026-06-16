@@ -521,9 +521,15 @@
                     <table class="min-w-max w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-[#0D70C0] text-white border-b border-[#0D70C0]">
-                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">DATE / TIME</th>
-                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">CUSTOMER NAME</th>
-                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">MODEL / ITEM</th>
+                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap cursor-pointer select-none hover:bg-[#0960a8] transition-colors" onclick="setSortField('created_at')" title="Sort by date">
+                                    DATE / TIME <span id="sort-arrow-created_at" style="opacity:1;margin-left:4px;font-size:13px;">↓</span>
+                                </th>
+                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap cursor-pointer select-none hover:bg-[#0960a8] transition-colors" onclick="setSortField('customer_name')" title="Sort by name">
+                                    CUSTOMER NAME <span id="sort-arrow-customer_name" style="opacity:0.4;margin-left:4px;font-size:13px;">⇅</span>
+                                </th>
+                                <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap cursor-pointer select-none hover:bg-[#0960a8] transition-colors" onclick="setSortField('item_model')" title="Sort by model">
+                                    MODEL / ITEM <span id="sort-arrow-item_model" style="opacity:0.4;margin-left:4px;font-size:13px;">⇅</span>
+                                </th>
                                 <th class="px-6 py-3.5 text-label-md font-label-md whitespace-nowrap">BILLING STATUS</th>
                                 <th class="px-6 py-3.5 text-label-md font-label-md text-right whitespace-nowrap">ACTION</th>
                             </tr>

@@ -132,6 +132,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let allCustomers = [];
     let currentLedgerFilter = 'TODAY'; // TODAY, TOTAL, FINANCE
+    let sortField = 'created_at';      // active sort column
+    let sortDir   = 'desc';            // 'asc' | 'desc'
+
+    // Generic comparator — handles date strings, numbers, plain text
+    const applySort = (arr) => {
+        return [...arr].sort((a, b) => {
+            let va = a[sortField] ?? '';
+            let vb = b[sortField] ?? '';
+            // Numeric compare
+            const na = parseFloat(va), nb = parseFloat(vb);
+            if (!isNaN(na) && !isNaN(nb)) {
+                return sortDir === 'asc' ? na - nb : nb - na;
+            }
+            // String / date compare
+            va = String(va).toLowerCase();
+            vb = String(vb).toLowerCase();
+            if (va < vb) return sortDir === 'asc' ? -1 :  1;
+            if (va > vb) return sortDir === 'asc' ?  1 : -1;
+            return 0;
+        });
+    };
+
+    // Called by clickable column headers in the table
+    window.setSortField = (field) => {
+        if (sortField === field) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortDir   = 'desc'; // default new column → newest/largest first
+        }
+        renderLedgerTable();
+    };
 
     const loadCustomers = async () => {
         try {
@@ -193,7 +225,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const renderedRecords = [...filtered].reverse();
+        // Update sort-arrow indicators in the header
+        ['created_at','customer_name','item_model'].forEach(f => {
+            const arrowEl = document.getElementById(`sort-arrow-${f}`);
+            if (!arrowEl) return;
+            arrowEl.textContent = sortField === f
+                ? (sortDir === 'asc' ? '↑' : '↓')
+                : '⇅';
+            arrowEl.style.opacity = sortField === f ? '1' : '0.4';
+        });
+
+        const renderedRecords = applySort(filtered);
         ledgerTableBody.innerHTML = renderedRecords.map(item => {
             const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
             const isLocked = !!item.record_locked;

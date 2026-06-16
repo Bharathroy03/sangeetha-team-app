@@ -130,7 +130,7 @@ def _parse_customer_record(c):
 
 def db_load_customers():
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers"
+    url = f"{SUPABASE_URL}/rest/v1/customers?order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
@@ -156,7 +156,7 @@ def db_save_customers(customers_list):
 
 def db_get_customers_created_today(today_str):
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers?created_at=like.{today_str}%25"
+    url = f"{SUPABASE_URL}/rest/v1/customers?created_at=like.{today_str}%25&order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
@@ -164,7 +164,7 @@ def db_get_customers_created_today(today_str):
 
 def db_get_finance_customers():
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers?transaction_mode=eq.Finance"
+    url = f"{SUPABASE_URL}/rest/v1/customers?transaction_mode=eq.Finance&order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
