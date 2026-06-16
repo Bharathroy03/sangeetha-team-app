@@ -340,7 +340,13 @@ def api_decode_barcode():
                 decoded_objs = decode(enhanced_img)
         
         if decoded_objs:
-            # Get the first successfully decoded barcode value
+            # Prioritize standard 15-digit numeric IMEI barcodes
+            for obj in decoded_objs:
+                val = obj.data.decode('utf-8').strip()
+                if len(val) == 15 and val.isdigit():
+                    return jsonify({"success": True, "barcode": val})
+            
+            # Fallback to the first decoded barcode
             barcode_val = decoded_objs[0].data.decode('utf-8').strip()
             return jsonify({"success": True, "barcode": barcode_val})
         else:
