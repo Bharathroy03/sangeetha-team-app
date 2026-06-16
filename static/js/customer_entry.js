@@ -988,7 +988,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 catch(err) { 
                     if (window.showToast) {
-                        window.showToast('Could not decode a barcode from the aligned region. Please align and try again.', 'error');
+                        window.showToast('Could not decode a barcode from the cropped area. Adjust the crop and try again.', 'error');
                     }
                     onError();
                 }

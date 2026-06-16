@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     // --- TAB SWITCHING SYSTEM ---
     window.switchRecordTab = (tab) => {
         const tabs = ['today', 'total', 'finance', 'payments'];
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let sortField = 'created_at';      // active sort column
     let sortDir   = 'desc';            // 'asc' | 'desc'
 
-    // Generic comparator — handles date strings, numbers, plain text
+    // Generic comparator â€” handles date strings, numbers, plain text
     const applySort = (arr) => {
         return [...arr].sort((a, b) => {
             let va = a[sortField] ?? '';
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sortDir = sortDir === 'asc' ? 'desc' : 'asc';
         } else {
             sortField = field;
-            sortDir   = 'desc'; // default new column → newest/largest first
+            sortDir   = 'desc'; // default new column â†’ newest/largest first
         }
         renderLedgerTable();
     };
@@ -230,8 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const arrowEl = document.getElementById(`sort-arrow-${f}`);
             if (!arrowEl) return;
             arrowEl.textContent = sortField === f
-                ? (sortDir === 'asc' ? '↑' : '↓')
-                : '⇅';
+                ? (sortDir === 'asc' ? 'â†‘' : 'â†“')
+                : 'â‡…';
             arrowEl.style.opacity = sortField === f ? '1' : '0.4';
         });
 
@@ -379,17 +379,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = allCustomers.find(c => c.customer_id === customerId);
         if (!item) return;
 
-        document.getElementById('detail_created_at').textContent = item.created_at || '—';
-        document.getElementById('detail_customer_name').textContent = item.customer_name || '—';
-        document.getElementById('detail_mobile_number').textContent = item.mobile_number || '—';
-        document.getElementById('detail_item_model').textContent = item.item_model || '—';
-        document.getElementById('detail_imei_number').textContent = item.imei_number || '—';
-        document.getElementById('detail_transaction_mode').textContent = item.transaction_mode || '—';
-        document.getElementById('detail_payment_mode').textContent = item.down_payment_mode || item.payment_mode || '—';
-        document.getElementById('detail_exchange_status').textContent = item.exchange_status || '—';
-        document.getElementById('detail_sales_person').textContent = item.sales_person || '—';
+        document.getElementById('detail_created_at').textContent = item.created_at || 'â€”';
+        document.getElementById('detail_customer_name').textContent = item.customer_name || 'â€”';
+        document.getElementById('detail_mobile_number').textContent = item.mobile_number || 'â€”';
+        document.getElementById('detail_item_model').textContent = item.item_model || 'â€”';
+        document.getElementById('detail_imei_number').textContent = item.imei_number || 'â€”';
+        document.getElementById('detail_transaction_mode').textContent = item.transaction_mode || 'â€”';
+        document.getElementById('detail_payment_mode').textContent = item.down_payment_mode || item.payment_mode || 'â€”';
+        document.getElementById('detail_exchange_status').textContent = item.exchange_status || 'â€”';
+        document.getElementById('detail_sales_person').textContent = item.sales_person || 'â€”';
 
-        const displayAmount = item.total_amount_received ? `₹${parseFloat(item.total_amount_received).toLocaleString('en-IN')}` : '₹0';
+        const displayAmount = item.total_amount_received ? `â‚¹${parseFloat(item.total_amount_received).toLocaleString('en-IN')}` : 'â‚¹0';
         document.getElementById('detail_amount_received').textContent = displayAmount;
 
         const detailDownPmtSec = document.getElementById('detail_down_payment_section');
@@ -400,9 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (item.transaction_mode === 'Finance') {
             if (detailDownPmtSec) detailDownPmtSec.classList.remove('hidden');
             if (detailFinanceSec) detailFinanceSec.classList.remove('hidden');
-            const downPmtVal = item.down_payment_value ? `₹${parseFloat(item.down_payment_value).toLocaleString('en-IN')}` : '₹0';
+            const downPmtVal = item.down_payment_value ? `â‚¹${parseFloat(item.down_payment_value).toLocaleString('en-IN')}` : 'â‚¹0';
             if (detailDownPmt) detailDownPmt.textContent = downPmtVal;
-            if (detailFinanceProv) detailFinanceProv.textContent = item.finance_provider || '—';
+            if (detailFinanceProv) detailFinanceProv.textContent = item.finance_provider || 'â€”';
         } else {
             if (detailDownPmtSec) detailDownPmtSec.classList.add('hidden');
             if (detailFinanceSec) detailFinanceSec.classList.add('hidden');
@@ -428,8 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (item.billing_verified) {
             if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.remove('hidden');
-            if (detailBillingVerifiedBy) detailBillingVerifiedBy.textContent = item.billing_verified_by || '—';
-            if (detailBillingVerifiedAt) detailBillingVerifiedAt.textContent = item.billing_verified_at || '—';
+            if (detailBillingVerifiedBy) detailBillingVerifiedBy.textContent = item.billing_verified_by || 'â€”';
+            if (detailBillingVerifiedAt) detailBillingVerifiedAt.textContent = item.billing_verified_at || 'â€”';
             if (detailBillingAdminRemarks) detailBillingAdminRemarks.textContent = item.billing_admin_remarks || 'No remarks provided.';
         } else {
             if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.add('hidden');
@@ -443,8 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (item.reopened_by) {
             if (detailBillingReopenedSection) detailBillingReopenedSection.classList.remove('hidden');
-            if (detailReopenedBy) detailReopenedBy.textContent = item.reopened_by || '—';
-            if (detailReopenedAt) detailReopenedAt.textContent = item.reopened_at || '—';
+            if (detailReopenedBy) detailReopenedBy.textContent = item.reopened_by || 'â€”';
+            if (detailReopenedAt) detailReopenedAt.textContent = item.reopened_at || 'â€”';
             if (detailReopenReason) detailReopenReason.textContent = item.reopen_reason || 'No reason provided.';
         } else {
             if (detailBillingReopenedSection) detailBillingReopenedSection.classList.add('hidden');
@@ -926,425 +926,205 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalId = 'barcode-crop-modal';
         let modal = document.getElementById(modalId);
         if (modal) modal.remove();
-        
+
         modal = document.createElement('div');
         modal.id = modalId;
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.backgroundColor = 'rgba(15, 23, 42, 0.9)';
-        modal.style.backdropFilter = 'blur(8px)';
-        modal.style.webkitBackdropFilter = 'blur(8px)';
-        modal.style.zIndex = '99999';
-        modal.style.display = 'flex';
-        modal.style.flexDirection = 'column';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-        modal.style.color = '#fff';
-        modal.style.fontFamily = 'system-ui, -apple-system, sans-serif';
-        modal.style.opacity = '0';
-        modal.style.transition = 'opacity 0.3s ease';
-        
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:system-ui,-apple-system,sans-serif;opacity:0;transition:opacity 0.3s ease;';
+
         const header = document.createElement('div');
-        header.style.textAlign = 'center';
-        header.style.marginBottom = '20px';
-        header.style.padding = '0 20px';
-        header.innerHTML = `
-            <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 700; color: #f97316; letter-spacing: 0.5px;">Align Barcode</h3>
-            <p style="margin: 0; font-size: 0.875rem; color: #94a3b8;">Ensure the target barcode is centered inside the orange box</p>
-        `;
+        header.style.cssText = 'text-align:center;margin-bottom:14px;padding:0 20px;';
+        header.innerHTML = `<h3 style="margin:0 0 6px 0;font-size:1.1rem;font-weight:700;color:#f97316;">Crop Barcode Area</h3><p style="margin:0;font-size:0.8rem;color:#94a3b8;">Drag the orange handles to crop exactly around the barcode, then tap <strong style="color:#f97316">âœ‚ Scan Crop</strong>.</p>`;
         modal.appendChild(header);
 
         const container = document.createElement('div');
-        container.style.width = '90%';
-        container.style.maxWidth = '500px';
-        container.style.display = 'flex';
-        container.style.justifyContent = 'center';
-        container.style.alignItems = 'center';
+        container.style.cssText = 'width:92%;max-width:480px;display:flex;justify-content:center;align-items:center;';
         modal.appendChild(container);
 
         const imageWrapper = document.createElement('div');
-        imageWrapper.style.position = 'relative';
-        imageWrapper.style.display = 'inline-block';
-        imageWrapper.style.maxWidth = '100%';
-        imageWrapper.style.maxHeight = '60vh';
-        imageWrapper.style.borderRadius = '12px';
-        imageWrapper.style.overflow = 'hidden';
-        imageWrapper.style.backgroundColor = '#000';
-        imageWrapper.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.5)';
+        imageWrapper.style.cssText = 'position:relative;display:inline-block;max-width:100%;max-height:55vh;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 10px 25px -5px rgba(0,0,0,0.6);user-select:none;';
         container.appendChild(imageWrapper);
-        
+
         const loader = document.createElement('div');
-        loader.style.padding = '40px';
-        loader.style.fontSize = '0.9rem';
-        loader.style.color = '#94a3b8';
-        loader.innerText = 'Loading preview...';
+        loader.style.cssText = 'padding:40px;font-size:0.9rem;color:#94a3b8;';
+        loader.innerText = 'Loading image...';
         imageWrapper.appendChild(loader);
 
-
-
-        const zoomControl = document.createElement('div');
-        zoomControl.style.width = '90%';
-        zoomControl.style.maxWidth = '500px';
-        zoomControl.style.marginTop = '16px';
-        zoomControl.style.display = 'flex';
-        zoomControl.style.alignItems = 'center';
-        zoomControl.style.gap = '12px';
-        
-        const zoomLabel = document.createElement('span');
-        zoomLabel.style.fontSize = '0.85rem';
-        zoomLabel.style.color = '#94a3b8';
-        zoomLabel.style.fontWeight = '600';
-        zoomLabel.innerText = '🔍 Zoom';
-        
-        const zoomSlider = document.createElement('input');
-        zoomSlider.type = 'range';
-        zoomSlider.min = '1';
-        zoomSlider.max = '4';
-        zoomSlider.step = '0.05';
-        zoomSlider.value = '1';
-        zoomSlider.style.flex = '1';
-        zoomSlider.style.accentColor = '#f97316';
-        zoomSlider.style.height = '6px';
-        zoomSlider.style.borderRadius = '3px';
-        zoomSlider.style.cursor = 'pointer';
-        
-        const zoomValueText = document.createElement('span');
-        zoomValueText.style.fontSize = '0.85rem';
-        zoomValueText.style.color = '#f97316';
-        zoomValueText.style.fontWeight = '700';
-        zoomValueText.style.minWidth = '35px';
-        zoomValueText.style.textAlign = 'right';
-        zoomValueText.innerText = '1.0x';
-        
-        zoomControl.appendChild(zoomLabel);
-        zoomControl.appendChild(zoomSlider);
-        zoomControl.appendChild(zoomValueText);
-
         const controls = document.createElement('div');
-        controls.style.display = 'flex';
-        controls.style.gap = '12px';
-        controls.style.marginTop = '24px';
-        controls.style.width = '90%';
-        controls.style.maxWidth = '500px';
-        
+        controls.style.cssText = 'display:flex;gap:10px;margin-top:18px;width:92%;max-width:480px;';
+
         const btnCancel = document.createElement('button');
         btnCancel.type = 'button';
         btnCancel.innerText = 'Cancel';
-        btnCancel.style.flex = '1';
-        btnCancel.style.padding = '14px 20px';
-        btnCancel.style.borderRadius = '12px';
-        btnCancel.style.border = '1px solid #334155';
-        btnCancel.style.backgroundColor = 'transparent';
-        btnCancel.style.color = '#94a3b8';
-        btnCancel.style.fontSize = '0.95rem';
-        btnCancel.style.fontWeight = '600';
-        btnCancel.style.cursor = 'pointer';
-        btnCancel.style.transition = 'all 0.2s ease';
+        btnCancel.style.cssText = 'flex:1;padding:13px 16px;border-radius:12px;border:1px solid #334155;background:transparent;color:#94a3b8;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;';
         btnCancel.addEventListener('mouseenter', () => { btnCancel.style.backgroundColor = 'rgba(255,255,255,0.05)'; btnCancel.style.color = '#fff'; });
         btnCancel.addEventListener('mouseleave', () => { btnCancel.style.backgroundColor = 'transparent'; btnCancel.style.color = '#94a3b8'; });
-        btnCancel.addEventListener('click', () => {
-            modal.style.opacity = '0';
-            setTimeout(() => { modal.remove(); onCancel(); }, 300);
-        });
+        btnCancel.addEventListener('click', () => { modal.style.opacity = '0'; setTimeout(() => { modal.remove(); onCancel(); }, 300); });
 
         const btnScan = document.createElement('button');
         btnScan.type = 'button';
-        btnScan.innerText = 'Scan Aligned Area';
-        btnScan.style.flex = '2';
-        btnScan.style.padding = '14px 20px';
-        btnScan.style.borderRadius = '12px';
-        btnScan.style.border = 'none';
-        btnScan.style.backgroundColor = '#f97316';
-        btnScan.style.color = '#fff';
-        btnScan.style.fontSize = '0.95rem';
-        btnScan.style.fontWeight = '600';
-        btnScan.style.cursor = 'pointer';
-        btnScan.style.transition = 'all 0.2s ease';
-        btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
-        btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; btnScan.style.boxShadow = '0 6px 16px rgba(249, 115, 22, 0.4)'; });
-        btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)'; });
+        btnScan.innerText = 'âœ‚ Scan Crop';
+        btnScan.style.cssText = 'flex:2;padding:13px 16px;border-radius:12px;border:none;background:#f97316;color:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(249,115,22,0.35);';
+        btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; });
+        btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; });
 
         controls.appendChild(btnCancel);
         controls.appendChild(btnScan);
-        
-        modal.appendChild(zoomControl);
         modal.appendChild(controls);
-
         document.body.appendChild(modal);
-        
         requestAnimationFrame(() => modal.style.opacity = '1');
 
         const img = new Image();
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => { img.src = e.target.result; };
+        fileReader.readAsDataURL(file);
 
-        img.onload = function() {
+        img.onload = function () {
             loader.remove();
-            
-            img.style.display = 'block';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '60vh';
-            img.style.width = 'auto';
-            img.style.height = 'auto';
+            img.style.cssText = 'display:block;max-width:100%;max-height:55vh;width:auto;height:auto;pointer-events:none;user-select:none;';
+            img.draggable = false;
             imageWrapper.appendChild(img);
 
-            const wrapperWidth = img.offsetWidth;
-            const wrapperHeight = img.offsetHeight;
-            imageWrapper.style.width = wrapperWidth + 'px';
-            imageWrapper.style.height = wrapperHeight + 'px';
+            const wW = img.offsetWidth;
+            const wH = img.offsetHeight;
+            imageWrapper.style.width  = wW + 'px';
+            imageWrapper.style.height = wH + 'px';
 
-            let isDragging = false;
-            let startY = 0;
-            let startTopPercent = 35;
-            const cropHeightPercent = 30;
-            let currentTopPercent = 35;
+            const makeMask = () => {
+                const m = document.createElement('div');
+                m.style.cssText = 'position:absolute;background:rgba(10,18,35,0.65);pointer-events:none;z-index:5;';
+                imageWrapper.appendChild(m);
+                return m;
+            };
+            const maskTop = makeMask(), maskBottom = makeMask(), maskLeft = makeMask(), maskRight = makeMask();
 
-            let scale = 1.0;
-            let panX = 0;
-            let panY = 0;
-            let isPanning = false;
-            let panStartX = 0;
-            let panStartY = 0;
-            let startPanX = 0;
-            let startPanY = 0;
+            let cropX = Math.round(wW * 0.10);
+            let cropY = Math.round(wH * 0.35);
+            let cropW = Math.round(wW * 0.80);
+            let cropH = Math.round(wH * 0.30);
+            const MIN_SIZE = 20;
 
-            img.style.transformOrigin = 'center center';
-            img.style.transition = 'none';
+            const cropBox = document.createElement('div');
+            cropBox.style.cssText = 'position:absolute;border:2px solid #f97316;box-sizing:border-box;cursor:move;z-index:10;';
+            imageWrapper.appendChild(cropBox);
 
-            zoomSlider.addEventListener('input', (e) => {
-                scale = parseFloat(e.target.value);
-                zoomValueText.innerText = scale.toFixed(1) + 'x';
-                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            const handleDefs = [
+                { id:'tl', cursor:'nw-resize', top:'-6px',    left:'-6px'             },
+                { id:'tr', cursor:'ne-resize', top:'-6px',    right:'-6px'            },
+                { id:'bl', cursor:'sw-resize', bottom:'-6px', left:'-6px'             },
+                { id:'br', cursor:'se-resize', bottom:'-6px', right:'-6px'            },
+                { id:'mt', cursor:'n-resize',  top:'-6px',    left:'calc(50% - 6px)'  },
+                { id:'mb', cursor:'s-resize',  bottom:'-6px', left:'calc(50% - 6px)'  },
+                { id:'ml', cursor:'w-resize',  top:'calc(50% - 6px)', left:'-6px'     },
+                { id:'mr', cursor:'e-resize',  top:'calc(50% - 6px)', right:'-6px'    },
+            ];
+            const handles = {};
+            handleDefs.forEach(hd => {
+                const h = document.createElement('div');
+                h.style.cssText = `position:absolute;width:12px;height:12px;background:#f97316;border:2px solid #fff;border-radius:3px;cursor:${hd.cursor};z-index:20;`;
+                if (hd.top)    h.style.top    = hd.top;
+                if (hd.bottom) h.style.bottom = hd.bottom;
+                if (hd.left)   h.style.left   = hd.left;
+                if (hd.right)  h.style.right  = hd.right;
+                h.dataset.handle = hd.id;
+                cropBox.appendChild(h);
+                handles[hd.id] = h;
             });
 
-            const topShade = document.createElement('div');
-            topShade.style.position = 'absolute';
-            topShade.style.top = '0';
-            topShade.style.left = '0';
-            topShade.style.width = '100%';
-            topShade.style.height = '35%';
-            topShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
-            topShade.style.pointerEvents = 'none';
-            
-            const bottomShade = document.createElement('div');
-            bottomShade.style.position = 'absolute';
-            bottomShade.style.bottom = '0';
-            bottomShade.style.left = '0';
-            bottomShade.style.width = '100%';
-            bottomShade.style.height = '35%';
-            bottomShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
-            bottomShade.style.pointerEvents = 'none';
-            
-            const alignmentTarget = document.createElement('div');
-            alignmentTarget.style.position = 'absolute';
-            alignmentTarget.style.top = '35%';
-            alignmentTarget.style.left = '0';
-            alignmentTarget.style.width = '100%';
-            alignmentTarget.style.height = '30%';
-            alignmentTarget.style.borderTop = '2px solid #f97316';
-            alignmentTarget.style.borderBottom = '2px solid #f97316';
-            alignmentTarget.style.boxSizing = 'border-box';
-            alignmentTarget.style.pointerEvents = 'auto';
-            alignmentTarget.style.cursor = 'ns-resize';
-            alignmentTarget.style.touchAction = 'none';
-            alignmentTarget.style.boxShadow = 'inset 0 0 10px rgba(249, 115, 22, 0.1)';
+            const updateOverlay = () => {
+                cropX = Math.max(0, Math.min(wW - MIN_SIZE, cropX));
+                cropY = Math.max(0, Math.min(wH - MIN_SIZE, cropY));
+                cropW = Math.max(MIN_SIZE, Math.min(wW - cropX, cropW));
+                cropH = Math.max(MIN_SIZE, Math.min(wH - cropY, cropH));
+                cropBox.style.left = cropX+'px'; cropBox.style.top = cropY+'px';
+                cropBox.style.width = cropW+'px'; cropBox.style.height = cropH+'px';
+                maskTop.style.cssText    += `;top:0;left:0;width:100%;height:${cropY}px;`;
+                maskBottom.style.cssText += `;top:${cropY+cropH}px;left:0;width:100%;height:${wH-cropY-cropH}px;`;
+                maskLeft.style.cssText   += `;top:${cropY}px;left:0;width:${cropX}px;height:${cropH}px;`;
+                maskRight.style.cssText  += `;top:${cropY}px;left:${cropX+cropW}px;width:${wW-cropX-cropW}px;height:${cropH}px;`;
+            };
+            updateOverlay();
 
-            const dragTip = document.createElement('div');
-            dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
-            dragTip.style.position = 'absolute';
-            dragTip.style.top = '50%';
-            dragTip.style.left = '50%';
-            dragTip.style.transform = 'translate(-50%, -50%)';
-            dragTip.style.fontSize = '12px';
-            dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
-            dragTip.style.textTransform = 'uppercase';
-            dragTip.style.letterSpacing = '1px';
-            dragTip.style.fontWeight = 'bold';
-            dragTip.style.pointerEvents = 'none';
-            dragTip.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
-            alignmentTarget.appendChild(dragTip);
+            let dragMode = null, dragStartX = 0, dragStartY = 0;
+            let sCropX = 0, sCropY = 0, sCropW = 0, sCropH = 0;
 
-            const laser = document.createElement('div');
-            laser.style.position = 'absolute';
-            laser.style.top = '50%';
-            laser.style.left = '5%';
-            laser.style.width = '90%';
-            laser.style.height = '2px';
-            laser.style.backgroundColor = '#ef4444';
-            laser.style.boxShadow = '0 0 8px #ef4444';
-            laser.style.pointerEvents = 'none';
-            laser.style.animation = 'laserMove 2s infinite ease-in-out';
-            alignmentTarget.appendChild(laser);
-            
-            const styleId = 'laser-animation-style';
-            if (!document.getElementById(styleId)) {
-                const style = document.createElement('style');
-                style.id = styleId;
-                style.textContent = `
-                    @keyframes laserMove {
-                        0% { top: 10%; }
-                        50% { top: 90%; }
-                        100% { top: 10%; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+            const getXY = (e) => {
+                const rect = imageWrapper.getBoundingClientRect();
+                if (e.touches && e.touches.length) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            };
 
-            imageWrapper.appendChild(topShade);
-            imageWrapper.appendChild(bottomShade);
-            imageWrapper.appendChild(alignmentTarget);
+            const onDown = (e) => {
+                const hKey = e.target.dataset && e.target.dataset.handle;
+                dragMode = hKey || (e.target === cropBox ? 'move' : null);
+                if (!dragMode) return;
+                const xy = getXY(e);
+                dragStartX = xy.x; dragStartY = xy.y;
+                sCropX = cropX; sCropY = cropY; sCropW = cropW; sCropH = cropH;
+                e.preventDefault(); e.stopPropagation();
+            };
 
-            const getEventXAndY = (ev) => {
-                if (ev.touches && ev.touches.length > 0) {
-                    return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+            const onMove = (e) => {
+                if (!dragMode) return;
+                const xy = getXY(e);
+                const dx = xy.x - dragStartX, dy = xy.y - dragStartY;
+                if (dragMode === 'move') { cropX = sCropX + dx; cropY = sCropY + dy; }
+                else {
+                    const h = dragMode;
+                    if (h==='tl'||h==='bl'||h==='ml') { cropX = sCropX + dx; cropW = sCropW - dx; }
+                    if (h==='tr'||h==='br'||h==='mr') { cropW = sCropW + dx; }
+                    if (h==='tl'||h==='tr'||h==='mt') { cropY = sCropY + dy; cropH = sCropH - dy; }
+                    if (h==='bl'||h==='br'||h==='mb') { cropH = sCropH + dy; }
                 }
-                return { x: ev.clientX, y: ev.clientY };
-            };
-
-            const startDrag = (e) => {
-                isDragging = true;
-                startY = getEventXAndY(e).y;
-                startTopPercent = currentTopPercent;
-                alignmentTarget.style.borderTopColor = '#38bdf8';
-                alignmentTarget.style.borderBottomColor = '#38bdf8';
-                dragTip.style.color = '#38bdf8';
-                dragTip.innerText = '↕ Aligning... ↕';
+                updateOverlay();
                 e.preventDefault();
             };
+            const onUp = () => { dragMode = null; };
 
-            const doDrag = (e) => {
-                if (!isDragging) return;
-                const currentY = getEventXAndY(e).y;
-                const diffY = currentY - startY;
-                if (wrapperHeight > 0) {
-                    const diffPercent = (diffY / wrapperHeight) * 100;
-                    let newTop = startTopPercent + diffPercent;
-                    newTop = Math.max(0, Math.min(100 - cropHeightPercent, newTop));
-                    currentTopPercent = newTop;
-                    
-                    topShade.style.height = currentTopPercent + '%';
-                    alignmentTarget.style.top = currentTopPercent + '%';
-                    bottomShade.style.height = (100 - currentTopPercent - cropHeightPercent) + '%';
-                }
-                e.preventDefault();
-            };
+            cropBox.addEventListener('mousedown',  onDown);
+            window.addEventListener('mousemove',   onMove);
+            window.addEventListener('mouseup',     onUp);
+            cropBox.addEventListener('touchstart', onDown, { passive: false });
+            window.addEventListener('touchmove',   onMove, { passive: false });
+            window.addEventListener('touchend',    onUp);
+            Object.values(handles).forEach(h => {
+                h.addEventListener('mousedown',  onDown);
+                h.addEventListener('touchstart', onDown, { passive: false });
+            });
 
-            const stopDrag = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                alignmentTarget.style.borderTopColor = '#f97316';
-                alignmentTarget.style.borderBottomColor = '#f97316';
-                dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
-                dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
-            };
-
-            alignmentTarget.addEventListener('mousedown', startDrag);
-            window.addEventListener('mousemove', doDrag);
-            window.addEventListener('mouseup', stopDrag);
-
-            alignmentTarget.addEventListener('touchstart', startDrag, { passive: false });
-            window.addEventListener('touchmove', doDrag, { passive: false });
-            window.addEventListener('touchend', stopDrag);
-
-            const startImagePan = (e) => {
-                if (e.target === alignmentTarget || alignmentTarget.contains(e.target)) return;
-                
-                isPanning = true;
-                const coords = getEventXAndY(e);
-                panStartX = coords.x;
-                panStartY = coords.y;
-                startPanX = panX;
-                startPanY = panY;
-                imageWrapper.style.cursor = 'grabbing';
-                e.preventDefault();
-            };
-
-            const doImagePan = (e) => {
-                if (!isPanning) return;
-                const coords = getEventXAndY(e);
-                const diffX = coords.x - panStartX;
-                const diffY = coords.y - panStartY;
-                
-                panX = startPanX + diffX;
-                panY = startPanY + diffY;
-                
-                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-                e.preventDefault();
-            };
-
-            const stopImagePan = () => {
-                if (!isPanning) return;
-                isPanning = false;
-                imageWrapper.style.cursor = 'default';
-            };
-
-            imageWrapper.addEventListener('mousedown', startImagePan);
-            window.addEventListener('mousemove', doImagePan);
-            window.addEventListener('mouseup', stopImagePan);
-
-            imageWrapper.addEventListener('touchstart', startImagePan, { passive: false });
-            window.addEventListener('touchmove', doImagePan, { passive: false });
-            window.addEventListener('touchend', stopImagePan);
-            
             btnScan.addEventListener('click', () => {
                 btnScan.disabled = true;
-                btnScan.innerText = 'Processing...';
+                btnScan.innerText = 'Scanning...';
                 btnScan.style.backgroundColor = '#d97706';
-                
+
+                const scaleX = img.naturalWidth  / wW;
+                const scaleY = img.naturalHeight / wH;
+                const sX = Math.max(0, Math.round(cropX * scaleX));
+                const sY = Math.max(0, Math.round(cropY * scaleY));
+                const sW = Math.max(1, Math.min(Math.round(cropW * scaleX), img.naturalWidth  - sX));
+                const sH = Math.max(1, Math.min(Math.round(cropH * scaleY), img.naturalHeight - sY));
+
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                const cx = wrapperWidth / 2;
-                const cy = wrapperHeight / 2;
-                
-                const y_v_start = (currentTopPercent / 100) * wrapperHeight;
-                const y_v_end = ((currentTopPercent + cropHeightPercent) / 100) * wrapperHeight;
-                
-                const x_i_start = cx + (0 - cx - panX) / scale;
-                const x_i_end = cx + (wrapperWidth - cx - panX) / scale;
-                
-                const y_i_start = cy + (y_v_start - cy - panY) / scale;
-                const y_i_end = cy + (y_v_end - cy - panY) / scale;
-                
-                let sX = x_i_start * (img.naturalWidth / wrapperWidth);
-                let sY = y_i_start * (img.naturalHeight / wrapperHeight);
-                let sWidth = (x_i_end - x_i_start) * (img.naturalWidth / wrapperWidth);
-                let sHeight = (y_i_end - y_i_start) * (img.naturalHeight / wrapperHeight);
-                
-                sX = Math.max(0, Math.min(img.naturalWidth, sX));
-                sY = Math.max(0, Math.min(img.naturalHeight, sY));
-                sWidth = Math.max(1, Math.min(img.naturalWidth - sX, sWidth));
-                sHeight = Math.max(1, Math.min(img.naturalHeight - sY, sHeight));
-                
-                canvas.width = sWidth;
-                canvas.height = sHeight;
-                
-                ctx.drawImage(img, sX, sY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-                
+                canvas.width = sW; canvas.height = sH;
+                canvas.getContext('2d').drawImage(img, sX, sY, sW, sH, 0, 0, sW, sH);
+
                 canvas.toBlob((blob) => {
-                    if (blob) {
-                        const croppedFile = new File([blob], "cropped_barcode.png", { type: "image/png" });
-                        onCropAndScan(croppedFile, () => {
-                            modal.style.opacity = '0';
-                            setTimeout(() => modal.remove(), 300);
-                        }, () => {
-                            btnScan.disabled = false;
-                            btnScan.innerText = 'Scan Aligned Area';
-                            btnScan.style.backgroundColor = '#f97316';
-                        });
-                    } else {
+                    if (!blob) {
                         btnScan.disabled = false;
-                        btnScan.innerText = 'Scan Aligned Area';
+                        btnScan.innerText = 'âœ‚ Scan Crop';
                         btnScan.style.backgroundColor = '#f97316';
-                        alert("Error processing photo canvas.");
+                        if (window.showToast) showToast('Failed to crop image. Try again.', 'error');
+                        return;
                     }
-                }, "image/png");
+                    const croppedFile = new File([blob], 'cropped_barcode.png', { type: 'image/png' });
+                    onCropAndScan(croppedFile, () => {
+                        modal.style.opacity = '0';
+                        setTimeout(() => modal.remove(), 300);
+                    }, () => {
+                        btnScan.disabled = false;
+                        btnScan.innerText = 'âœ‚ Scan Crop';
+                        btnScan.style.backgroundColor = '#f97316';
+                    });
+                }, 'image/png');
             });
         };
     }
@@ -1355,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Preparing preview...', 'success');
             
             showBarcodeCroppingModal(file, async (croppedFile, onSuccess, onError) => {
-                showToast('Scanning aligned area...', 'success');
+                showToast('Scanning cropped area...', 'success');
                 if (!html5QrCode) html5QrCode = new Html5Qrcode('interactive-reader');
                 try {
                     const decodedText = await html5QrCode.scanFile(croppedFile, true);
@@ -1381,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } catch (err) {
                     console.error(err);
-                    showToast('Could not decode a barcode from the aligned region. Please align and try again.', 'error');
+                    showToast('Could not decode a barcode from the cropped area. Adjust the crop and try again.', 'error');
                     onError();
                 }
             }, () => {
@@ -1444,8 +1224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(id);
             if (el) el.textContent = val;
         };
-        setVal('cardCustomerPending', `₹${Math.round(s.customer_pending).toLocaleString()}`);
-        setVal('cardEmployeePending', `₹${Math.round(s.employee_pending).toLocaleString()}`);
+        setVal('cardCustomerPending', `â‚¹${Math.round(s.customer_pending).toLocaleString()}`);
+        setVal('cardEmployeePending', `â‚¹${Math.round(s.employee_pending).toLocaleString()}`);
     }
 
     function renderAllTables() {
@@ -1492,8 +1272,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-4 py-3 font-bold text-[#0D70C0] cursor-pointer hover:underline" onclick="viewPaymentDetail('${p.payment_id}')">${escapeHtml(p.customer_name)}</td>
                 <td class="px-4 py-3 font-data-mono">${escapeHtml(p.mobile_number)}</td>
                 <td class="px-4 py-3 font-data-mono">${escapeHtml(p.invoice_number || '--')}</td>
-                <td class="px-4 py-3 text-right text-emerald-600 font-bold">₹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                <td class="px-4 py-3 text-right text-rose-600 font-bold">₹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3 text-right text-emerald-600 font-bold">â‚¹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3 text-right text-rose-600 font-bold">â‚¹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3">${escapeHtml(p.pending_from)}</td>
                 <td class="px-4 py-3">${statusTag}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap flex items-center justify-end gap-1.5 min-h-[48px]">
@@ -1519,8 +1299,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Customer:</span><span class="font-bold text-[#0D70C0] text-right break-words max-w-[65%]">${escapeHtml(p.customer_name)}</span></div>
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Mobile:</span><span class="font-data-mono text-right break-words">${escapeHtml(p.mobile_number)}</span></div>
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Invoice:</span><span class="font-data-mono text-right break-all max-w-[65%]">${escapeHtml(p.invoice_number || '--')}</span></div>
-                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Collected:</span><span class="font-bold text-emerald-600 text-right">₹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
-                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Pending:</span><span class="font-bold text-rose-600 text-right">₹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Collected:</span><span class="font-bold text-emerald-600 text-right">â‚¹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Pending:</span><span class="font-bold text-rose-600 text-right">â‚¹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                     <div class="flex justify-between items-center gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Status:</span><span class="text-right">${statusTag}</span></div>
                 </div>
                 <div class="flex flex-wrap items-center justify-start sm:justify-end gap-2 border-t border-slate-100 pt-3 mt-1">
@@ -1552,7 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td class="px-4 py-3.5 font-bold text-[#0D70C0]">${escapeHtml(p.customer_name)}</td>
                 <td class="px-4 py-3.5 font-data-mono text-slate-600">${escapeHtml(p.mobile_number)}</td>
-                <td class="px-4 py-3.5 text-right font-bold text-rose-600">₹${(parseFloat(p.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3.5 text-right font-bold text-rose-600">â‚¹${(parseFloat(p.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3.5 font-bold text-slate-800">${p.due_date}</td>
                 <td class="px-4 py-3.5 text-slate-500 max-w-[200px] truncate" title="${escapeHtml(p.remarks)}">${escapeHtml(p.remarks || 'No notes.')}</td>
                 <td class="px-4 py-3.5 text-right flex items-center justify-end gap-2">
@@ -1600,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td class="px-4 py-3.5 font-bold text-slate-800">${escapeHtml(emp.name)}</td>
                 <td class="px-4 py-3.5 text-center font-bold">${emp.cases} cases</td>
-                <td class="px-4 py-3.5 text-right font-bold text-rose-600">₹${emp.totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3.5 text-right font-bold text-rose-600">â‚¹${emp.totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3.5 font-bold text-slate-800 font-data-mono">${emp.oldestDue === '9999-12-31' ? '--' : emp.oldestDue}</td>
                 <td class="px-4 py-3.5">${dueBadge}</td>
                 <td class="px-4 py-3.5 text-right">
@@ -1628,9 +1408,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detSalesPerson').textContent = payment.sales_person;
         document.getElementById('detInvoice').textContent = payment.invoice_number || '--';
         document.getElementById('detPaymentMode').textContent = payment.payment_mode;
-        document.getElementById('detTotalBill').textContent = `₹${(parseFloat(payment.total_bill_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        document.getElementById('detReceived').textContent = `₹${(parseFloat(payment.amount_received) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        document.getElementById('detPending').textContent = `₹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detTotalBill').textContent = `â‚¹${(parseFloat(payment.total_bill_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detReceived').textContent = `â‚¹${(parseFloat(payment.amount_received) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detPending').textContent = `â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         
         const debtSec = document.getElementById('detDebtSection');
         if (parseFloat(payment.pending_amount) > 0) {
@@ -1651,7 +1431,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.className = 'history-timeline-item flex flex-col gap-0.5 text-[11px]';
                 item.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-emerald-600">+ ₹${(parseFloat(log.amount_added) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        <span class="font-bold text-emerald-600">+ â‚¹${(parseFloat(log.amount_added) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                         <span class="text-slate-400 font-data-mono text-[9px]">${log.date_time}</span>
                     </div>
                     <div class="text-slate-500"><span class="font-semibold text-slate-700">Received By:</span> ${escapeHtml(log.received_by)}</div>
@@ -1718,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!modal) return;
 
         document.getElementById('partial_payment_id').value = payment.payment_id;
-        document.getElementById('partialPendingBalance').textContent = `₹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('partialPendingBalance').textContent = `â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         document.getElementById('partial_amount_added').value = '';
         document.getElementById('partial_amount_added').max = payment.pending_amount;
         document.getElementById('partial_remarks').value = '';
@@ -1758,7 +1538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const res = await response.json();
                 if (response.ok && res.success) {
-                    showToast(`Recorded partial payment of ₹${amount.toLocaleString()} successfully!`, 'success');
+                    showToast(`Recorded partial payment of â‚¹${amount.toLocaleString()} successfully!`, 'success');
                     closePartialModal();
                     fetchPayments();
                 } else {
@@ -1775,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payment = allPayments.find(p => p.payment_id === id);
         if (!payment) return;
 
-        const confirmVal = await window.showConfirm(`Are you sure you want to mark payment ID ${payment.payment_id} for ${payment.customer_name} as Fully Paid? This will settle the remaining balance of ₹${(parseFloat(payment.pending_amount) || 0).toLocaleString()}.`, 'confirm');
+        const confirmVal = await window.showConfirm(`Are you sure you want to mark payment ID ${payment.payment_id} for ${payment.customer_name} as Fully Paid? This will settle the remaining balance of â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString()}.`, 'confirm');
         if (!confirmVal) return;
 
         window.showLoading('Settle pending balance...');
