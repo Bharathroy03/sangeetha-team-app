@@ -689,17 +689,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const header = document.createElement('div');
         header.style.textAlign = 'center';
-        header.style.marginBottom = '20px';
+        header.style.marginBottom = '14px';
         header.style.padding = '0 20px';
         header.innerHTML = `
-            <h3 style="margin: 0 0 8px 0; font-size: 1.25rem; font-weight: 700; color: #f97316; letter-spacing: 0.5px;">Align Barcode</h3>
-            <p style="margin: 0; font-size: 0.875rem; color: #94a3b8;">Ensure the target barcode is centered inside the orange box</p>
+            <h3 style="margin: 0 0 6px 0; font-size: 1.1rem; font-weight: 700; color: #f97316; letter-spacing: 0.5px;">Crop Barcode Area</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;">Drag the orange handles to crop exactly around the barcode, then tap <strong style="color:#f97316">✂ Scan Crop</strong>.</p>
         `;
         modal.appendChild(header);
 
         const container = document.createElement('div');
-        container.style.width = '90%';
-        container.style.maxWidth = '500px';
+        container.style.width = '92%';
+        container.style.maxWidth = '480px';
         container.style.display = 'flex';
         container.style.justifyContent = 'center';
         container.style.alignItems = 'center';
@@ -709,64 +709,27 @@ document.addEventListener('DOMContentLoaded', () => {
         imageWrapper.style.position = 'relative';
         imageWrapper.style.display = 'inline-block';
         imageWrapper.style.maxWidth = '100%';
-        imageWrapper.style.maxHeight = '60vh';
+        imageWrapper.style.maxHeight = '55vh';
         imageWrapper.style.borderRadius = '12px';
         imageWrapper.style.overflow = 'hidden';
         imageWrapper.style.backgroundColor = '#000';
-        imageWrapper.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.5)';
+        imageWrapper.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.6)';
+        imageWrapper.style.userSelect = 'none';
         container.appendChild(imageWrapper);
         
         const loader = document.createElement('div');
         loader.style.padding = '40px';
         loader.style.fontSize = '0.9rem';
         loader.style.color = '#94a3b8';
-        loader.innerText = 'Loading preview...';
+        loader.innerText = 'Loading image...';
         imageWrapper.appendChild(loader);
-
-        const zoomControl = document.createElement('div');
-        zoomControl.style.width = '90%';
-        zoomControl.style.maxWidth = '500px';
-        zoomControl.style.marginTop = '16px';
-        zoomControl.style.display = 'flex';
-        zoomControl.style.alignItems = 'center';
-        zoomControl.style.gap = '12px';
-        
-        const zoomLabel = document.createElement('span');
-        zoomLabel.style.fontSize = '0.85rem';
-        zoomLabel.style.color = '#94a3b8';
-        zoomLabel.style.fontWeight = '600';
-        zoomLabel.innerText = '🔍 Zoom';
-        
-        const zoomSlider = document.createElement('input');
-        zoomSlider.type = 'range';
-        zoomSlider.min = '1';
-        zoomSlider.max = '4';
-        zoomSlider.step = '0.05';
-        zoomSlider.value = '1';
-        zoomSlider.style.flex = '1';
-        zoomSlider.style.accentColor = '#f97316';
-        zoomSlider.style.height = '6px';
-        zoomSlider.style.borderRadius = '3px';
-        zoomSlider.style.cursor = 'pointer';
-        
-        const zoomValueText = document.createElement('span');
-        zoomValueText.style.fontSize = '0.85rem';
-        zoomValueText.style.color = '#f97316';
-        zoomValueText.style.fontWeight = '700';
-        zoomValueText.style.minWidth = '35px';
-        zoomValueText.style.textAlign = 'right';
-        zoomValueText.innerText = '1.0x';
-        
-        zoomControl.appendChild(zoomLabel);
-        zoomControl.appendChild(zoomSlider);
-        zoomControl.appendChild(zoomValueText);
 
         const controls = document.createElement('div');
         controls.style.display = 'flex';
-        controls.style.gap = '12px';
-        controls.style.marginTop = '24px';
-        controls.style.width = '90%';
-        controls.style.maxWidth = '500px';
+        controls.style.gap = '10px';
+        controls.style.marginTop = '18px';
+        controls.style.width = '92%';
+        controls.style.maxWidth = '480px';
         
         const btnCancel = document.createElement('button');
         btnCancel.type = 'button';
@@ -790,25 +753,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnScan = document.createElement('button');
         btnScan.type = 'button';
-        btnScan.innerText = 'Scan Aligned Area';
+        btnScan.innerText = '✂ Scan Crop';
         btnScan.style.flex = '2';
-        btnScan.style.padding = '14px 20px';
+        btnScan.style.padding = '13px 16px';
         btnScan.style.borderRadius = '12px';
         btnScan.style.border = 'none';
         btnScan.style.backgroundColor = '#f97316';
         btnScan.style.color = '#fff';
-        btnScan.style.fontSize = '0.95rem';
-        btnScan.style.fontWeight = '600';
+        btnScan.style.fontSize = '0.9rem';
+        btnScan.style.fontWeight = '700';
         btnScan.style.cursor = 'pointer';
         btnScan.style.transition = 'all 0.2s ease';
-        btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
-        btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; btnScan.style.boxShadow = '0 6px 16px rgba(249, 115, 22, 0.4)'; });
-        btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; btnScan.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)'; });
+        btnScan.style.boxShadow = '0 4px 14px rgba(249,115,22,0.35)';
+        btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; });
+        btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; });
 
         controls.appendChild(btnCancel);
         controls.appendChild(btnScan);
-        
-        modal.appendChild(zoomControl);
         modal.appendChild(controls);
 
         document.body.appendChild(modal);
@@ -816,273 +777,198 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => modal.style.opacity = '1');
 
         const img = new Image();
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => { img.src = e.target.result; };
+        fileReader.readAsDataURL(file);
 
-        img.onload = function() {
+        img.onload = function () {
             loader.remove();
-            
+
             img.style.display = 'block';
             img.style.maxWidth = '100%';
-            img.style.maxHeight = '60vh';
+            img.style.maxHeight = '55vh';
             img.style.width = 'auto';
             img.style.height = 'auto';
+            img.style.pointerEvents = 'none';
+            img.style.userSelect = 'none';
+            img.draggable = false;
             imageWrapper.appendChild(img);
 
-            const wrapperWidth = img.offsetWidth;
-            const wrapperHeight = img.offsetHeight;
-            imageWrapper.style.width = wrapperWidth + 'px';
-            imageWrapper.style.height = wrapperHeight + 'px';
+            const wW = img.offsetWidth;
+            const wH = img.offsetHeight;
+            imageWrapper.style.width  = wW + 'px';
+            imageWrapper.style.height = wH + 'px';
 
-            let isDragging = false;
-            let startY = 0;
-            let startTopPercent = 35;
-            const cropHeightPercent = 30;
-            let currentTopPercent = 35;
+            // 4 dark mask divs surrounding the crop box
+            const makeMask = () => {
+                const m = document.createElement('div');
+                m.style.position = 'absolute';
+                m.style.background = 'rgba(10,18,35,0.65)';
+                m.style.pointerEvents = 'none';
+                m.style.zIndex = '5';
+                imageWrapper.appendChild(m);
+                return m;
+            };
+            const maskTop    = makeMask();
+            const maskBottom = makeMask();
+            const maskLeft   = makeMask();
+            const maskRight  = makeMask();
 
-            let scale = 1.0;
-            let panX = 0;
-            let panY = 0;
-            let isPanning = false;
-            let panStartX = 0;
-            let panStartY = 0;
-            let startPanX = 0;
-            let startPanY = 0;
+            // Initial crop: 80% wide, 30% tall, centred vertically
+            let cropX = Math.round(wW * 0.10);
+            let cropY = Math.round(wH * 0.35);
+            let cropW = Math.round(wW * 0.80);
+            let cropH = Math.round(wH * 0.30);
+            const MIN_SIZE = 20;
 
-            img.style.transformOrigin = 'center center';
-            img.style.transition = 'none';
+            // Crop box
+            const cropBox = document.createElement('div');
+            cropBox.style.position = 'absolute';
+            cropBox.style.border = '2px solid #f97316';
+            cropBox.style.boxSizing = 'border-box';
+            cropBox.style.cursor = 'move';
+            cropBox.style.zIndex = '10';
+            imageWrapper.appendChild(cropBox);
 
-            zoomSlider.addEventListener('input', (e) => {
-                scale = parseFloat(e.target.value);
-                zoomValueText.innerText = scale.toFixed(1) + 'x';
-                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            // 8 resize handles: 4 corners + 4 edge midpoints
+            const handleDefs = [
+                { id:'tl', cursor:'nw-resize', top:'-6px',    left:'-6px'               },
+                { id:'tr', cursor:'ne-resize', top:'-6px',    right:'-6px'              },
+                { id:'bl', cursor:'sw-resize', bottom:'-6px', left:'-6px'               },
+                { id:'br', cursor:'se-resize', bottom:'-6px', right:'-6px'              },
+                { id:'mt', cursor:'n-resize',  top:'-6px',    left:'calc(50% - 6px)'    },
+                { id:'mb', cursor:'s-resize',  bottom:'-6px', left:'calc(50% - 6px)'    },
+                { id:'ml', cursor:'w-resize',  top:'calc(50% - 6px)', left:'-6px'       },
+                { id:'mr', cursor:'e-resize',  top:'calc(50% - 6px)', right:'-6px'      },
+            ];
+            const handles = {};
+            handleDefs.forEach(hd => {
+                const h = document.createElement('div');
+                h.style.position = 'absolute';
+                h.style.width = '12px'; h.style.height = '12px';
+                h.style.backgroundColor = '#f97316';
+                h.style.border = '2px solid #fff';
+                h.style.borderRadius = '3px';
+                h.style.cursor = hd.cursor;
+                h.style.zIndex = '20';
+                if (hd.top)    h.style.top    = hd.top;
+                if (hd.bottom) h.style.bottom = hd.bottom;
+                if (hd.left)   h.style.left   = hd.left;
+                if (hd.right)  h.style.right  = hd.right;
+                h.dataset.handle = hd.id;
+                cropBox.appendChild(h);
+                handles[hd.id] = h;
             });
 
-            const topShade = document.createElement('div');
-            topShade.style.position = 'absolute';
-            topShade.style.top = '0';
-            topShade.style.left = '0';
-            topShade.style.width = '100%';
-            topShade.style.height = '35%';
-            topShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
-            topShade.style.pointerEvents = 'none';
-            
-            const bottomShade = document.createElement('div');
-            bottomShade.style.position = 'absolute';
-            bottomShade.style.bottom = '0';
-            bottomShade.style.left = '0';
-            bottomShade.style.width = '100%';
-            bottomShade.style.height = '35%';
-            bottomShade.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
-            bottomShade.style.pointerEvents = 'none';
-            
-            const alignmentTarget = document.createElement('div');
-            alignmentTarget.style.position = 'absolute';
-            alignmentTarget.style.top = '35%';
-            alignmentTarget.style.left = '0';
-            alignmentTarget.style.width = '100%';
-            alignmentTarget.style.height = '30%';
-            alignmentTarget.style.borderTop = '2px solid #f97316';
-            alignmentTarget.style.borderBottom = '2px solid #f97316';
-            alignmentTarget.style.boxSizing = 'border-box';
-            alignmentTarget.style.pointerEvents = 'auto';
-            alignmentTarget.style.cursor = 'ns-resize';
-            alignmentTarget.style.touchAction = 'none';
-            alignmentTarget.style.boxShadow = 'inset 0 0 10px rgba(249, 115, 22, 0.1)';
+            // Redraw masks & crop box
+            const updateOverlay = () => {
+                cropX = Math.max(0, Math.min(wW - MIN_SIZE, cropX));
+                cropY = Math.max(0, Math.min(wH - MIN_SIZE, cropY));
+                cropW = Math.max(MIN_SIZE, Math.min(wW - cropX, cropW));
+                cropH = Math.max(MIN_SIZE, Math.min(wH - cropY, cropH));
 
-            const dragTip = document.createElement('div');
-            dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
-            dragTip.style.position = 'absolute';
-            dragTip.style.top = '50%';
-            dragTip.style.left = '50%';
-            dragTip.style.transform = 'translate(-50%, -50%)';
-            dragTip.style.fontSize = '12px';
-            dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
-            dragTip.style.textTransform = 'uppercase';
-            dragTip.style.letterSpacing = '1px';
-            dragTip.style.fontWeight = 'bold';
-            dragTip.style.pointerEvents = 'none';
-            dragTip.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
-            alignmentTarget.appendChild(dragTip);
+                cropBox.style.left   = cropX + 'px';
+                cropBox.style.top    = cropY + 'px';
+                cropBox.style.width  = cropW + 'px';
+                cropBox.style.height = cropH + 'px';
 
-            const laser = document.createElement('div');
-            laser.style.position = 'absolute';
-            laser.style.top = '50%';
-            laser.style.left = '5%';
-            laser.style.width = '90%';
-            laser.style.height = '2px';
-            laser.style.backgroundColor = '#ef4444';
-            laser.style.boxShadow = '0 0 8px #ef4444';
-            laser.style.pointerEvents = 'none';
-            laser.style.animation = 'laserMove 2s infinite ease-in-out';
-            alignmentTarget.appendChild(laser);
-            
-            const styleId = 'laser-animation-style';
-            if (!document.getElementById(styleId)) {
-                const style = document.createElement('style');
-                style.id = styleId;
-                style.textContent = `
-                    @keyframes laserMove {
-                        0% { top: 10%; }
-                        50% { top: 90%; }
-                        100% { top: 10%; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+                maskTop.style.top    = '0';    maskTop.style.left    = '0';              maskTop.style.width    = '100%';                   maskTop.style.height   = cropY + 'px';
+                maskBottom.style.top = (cropY+cropH)+'px'; maskBottom.style.left='0'; maskBottom.style.width='100%'; maskBottom.style.height=(wH-cropY-cropH)+'px';
+                maskLeft.style.top   = cropY+'px'; maskLeft.style.left   = '0';          maskLeft.style.width   = cropX+'px';               maskLeft.style.height  = cropH+'px';
+                maskRight.style.top  = cropY+'px'; maskRight.style.left  = (cropX+cropW)+'px'; maskRight.style.width=(wW-cropX-cropW)+'px'; maskRight.style.height = cropH+'px';
+            };
+            updateOverlay();
 
-            imageWrapper.appendChild(topShade);
-            imageWrapper.appendChild(bottomShade);
-            imageWrapper.appendChild(alignmentTarget);
+            // Drag/resize
+            let dragMode = null;
+            let dragStartX = 0, dragStartY = 0;
+            let sCropX = 0, sCropY = 0, sCropW = 0, sCropH = 0;
 
-            const getEventXAndY = (ev) => {
-                if (ev.touches && ev.touches.length > 0) {
-                    return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+            const getXY = (e) => {
+                const rect = imageWrapper.getBoundingClientRect();
+                if (e.touches && e.touches.length) {
+                    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
                 }
-                return { x: ev.clientX, y: ev.clientY };
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
             };
 
-            const startDrag = (e) => {
-                isDragging = true;
-                startY = getEventXAndY(e).y;
-                startTopPercent = currentTopPercent;
-                alignmentTarget.style.borderTopColor = '#38bdf8';
-                alignmentTarget.style.borderBottomColor = '#38bdf8';
-                dragTip.style.color = '#38bdf8';
-                dragTip.innerText = '↕ Aligning... ↕';
-                e.preventDefault();
+            const onDown = (e) => {
+                const hKey = e.target.dataset && e.target.dataset.handle;
+                dragMode = hKey || (e.target === cropBox ? 'move' : null);
+                if (!dragMode) return;
+                const xy = getXY(e);
+                dragStartX = xy.x; dragStartY = xy.y;
+                sCropX = cropX; sCropY = cropY; sCropW = cropW; sCropH = cropH;
+                e.preventDefault(); e.stopPropagation();
             };
 
-            const doDrag = (e) => {
-                if (!isDragging) return;
-                const currentY = getEventXAndY(e).y;
-                const diffY = currentY - startY;
-                if (wrapperHeight > 0) {
-                    const diffPercent = (diffY / wrapperHeight) * 100;
-                    let newTop = startTopPercent + diffPercent;
-                    newTop = Math.max(0, Math.min(100 - cropHeightPercent, newTop));
-                    currentTopPercent = newTop;
-                    
-                    topShade.style.height = currentTopPercent + '%';
-                    alignmentTarget.style.top = currentTopPercent + '%';
-                    bottomShade.style.height = (100 - currentTopPercent - cropHeightPercent) + '%';
+            const onMove = (e) => {
+                if (!dragMode) return;
+                const xy = getXY(e);
+                const dx = xy.x - dragStartX;
+                const dy = xy.y - dragStartY;
+                if (dragMode === 'move') {
+                    cropX = sCropX + dx; cropY = sCropY + dy;
+                } else {
+                    const h = dragMode;
+                    if (h==='tl'||h==='bl'||h==='ml') { cropX = sCropX + dx; cropW = sCropW - dx; }
+                    if (h==='tr'||h==='br'||h==='mr') { cropW = sCropW + dx; }
+                    if (h==='tl'||h==='tr'||h==='mt') { cropY = sCropY + dy; cropH = sCropH - dy; }
+                    if (h==='bl'||h==='br'||h==='mb') { cropH = sCropH + dy; }
                 }
+                updateOverlay();
                 e.preventDefault();
             };
 
-            const stopDrag = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                alignmentTarget.style.borderTopColor = '#f97316';
-                alignmentTarget.style.borderBottomColor = '#f97316';
-                dragTip.style.color = 'rgba(249, 115, 22, 0.9)';
-                dragTip.innerText = '↕ Drag Box to Align Barcode ↕';
-            };
+            const onUp = () => { dragMode = null; };
 
-            alignmentTarget.addEventListener('mousedown', startDrag);
-            window.addEventListener('mousemove', doDrag);
-            window.addEventListener('mouseup', stopDrag);
+            cropBox.addEventListener('mousedown',  onDown);
+            window.addEventListener('mousemove',   onMove);
+            window.addEventListener('mouseup',     onUp);
+            cropBox.addEventListener('touchstart', onDown, { passive: false });
+            window.addEventListener('touchmove',   onMove, { passive: false });
+            window.addEventListener('touchend',    onUp);
+            Object.values(handles).forEach(h => {
+                h.addEventListener('mousedown',  onDown);
+                h.addEventListener('touchstart', onDown, { passive: false });
+            });
 
-            alignmentTarget.addEventListener('touchstart', startDrag, { passive: false });
-            window.addEventListener('touchmove', doDrag, { passive: false });
-            window.addEventListener('touchend', stopDrag);
-
-            const startImagePan = (e) => {
-                if (e.target === alignmentTarget || alignmentTarget.contains(e.target)) return;
-                
-                isPanning = true;
-                const coords = getEventXAndY(e);
-                panStartX = coords.x;
-                panStartY = coords.y;
-                startPanX = panX;
-                startPanY = panY;
-                imageWrapper.style.cursor = 'grabbing';
-                e.preventDefault();
-            };
-
-            const doImagePan = (e) => {
-                if (!isPanning) return;
-                const coords = getEventXAndY(e);
-                const diffX = coords.x - panStartX;
-                const diffY = coords.y - panStartY;
-                
-                panX = startPanX + diffX;
-                panY = startPanY + diffY;
-                
-                img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-                e.preventDefault();
-            };
-
-            const stopImagePan = () => {
-                if (!isPanning) return;
-                isPanning = false;
-                imageWrapper.style.cursor = 'default';
-            };
-
-            imageWrapper.addEventListener('mousedown', startImagePan);
-            window.addEventListener('mousemove', doImagePan);
-            window.addEventListener('mouseup', stopImagePan);
-
-            imageWrapper.addEventListener('touchstart', startImagePan, { passive: false });
-            window.addEventListener('touchmove', doImagePan, { passive: false });
-            window.addEventListener('touchend', stopImagePan);
-            
+            // Scan: crop canvas → decode
             btnScan.addEventListener('click', () => {
                 btnScan.disabled = true;
-                btnScan.innerText = 'Processing...';
+                btnScan.innerText = 'Scanning...';
                 btnScan.style.backgroundColor = '#d97706';
-                
+
+                const scaleX = img.naturalWidth  / wW;
+                const scaleY = img.naturalHeight / wH;
+                const sX = Math.max(0, Math.round(cropX * scaleX));
+                const sY = Math.max(0, Math.round(cropY * scaleY));
+                const sW = Math.max(1, Math.min(Math.round(cropW * scaleX), img.naturalWidth  - sX));
+                const sH = Math.max(1, Math.min(Math.round(cropH * scaleY), img.naturalHeight - sY));
+
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                const cx = wrapperWidth / 2;
-                const cy = wrapperHeight / 2;
-                
-                const y_v_start = (currentTopPercent / 100) * wrapperHeight;
-                const y_v_end = ((currentTopPercent + cropHeightPercent) / 100) * wrapperHeight;
-                
-                const x_i_start = cx + (0 - cx - panX) / scale;
-                const x_i_end = cx + (wrapperWidth - cx - panX) / scale;
-                
-                const y_i_start = cy + (y_v_start - cy - panY) / scale;
-                const y_i_end = cy + (y_v_end - cy - panY) / scale;
-                
-                let sX = x_i_start * (img.naturalWidth / wrapperWidth);
-                let sY = y_i_start * (img.naturalHeight / wrapperHeight);
-                let sWidth = (x_i_end - x_i_start) * (img.naturalWidth / wrapperWidth);
-                let sHeight = (y_i_end - y_i_start) * (img.naturalHeight / wrapperHeight);
-                
-                sX = Math.max(0, Math.min(img.naturalWidth, sX));
-                sY = Math.max(0, Math.min(img.naturalHeight, sY));
-                sWidth = Math.max(1, Math.min(img.naturalWidth - sX, sWidth));
-                sHeight = Math.max(1, Math.min(img.naturalHeight - sY, sHeight));
-                
-                canvas.width = sWidth;
-                canvas.height = sHeight;
-                
-                ctx.drawImage(img, sX, sY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-                
+                canvas.width  = sW;
+                canvas.height = sH;
+                canvas.getContext('2d').drawImage(img, sX, sY, sW, sH, 0, 0, sW, sH);
+
                 canvas.toBlob((blob) => {
-                    if (blob) {
-                        const croppedFile = new File([blob], "cropped_barcode.png", { type: "image/png" });
-                        onCropAndScan(croppedFile, () => {
-                            modal.style.opacity = '0';
-                            setTimeout(() => modal.remove(), 300);
-                        }, () => {
-                            btnScan.disabled = false;
-                            btnScan.innerText = 'Scan Aligned Area';
-                            btnScan.style.backgroundColor = '#f97316';
-                        });
-                    } else {
+                    if (!blob) {
                         btnScan.disabled = false;
-                        btnScan.innerText = 'Scan Aligned Area';
+                        btnScan.innerText = '✂ Scan Crop';
                         btnScan.style.backgroundColor = '#f97316';
-                        alert("Error processing photo canvas.");
+                        if (window.showToast) window.showToast('Failed to crop image. Try again.', 'error');
+                        return;
                     }
-                }, "image/png");
+                    const croppedFile = new File([blob], 'cropped_barcode.png', { type: 'image/png' });
+                    onCropAndScan(croppedFile, () => {
+                        modal.style.opacity = '0';
+                        setTimeout(() => modal.remove(), 300);
+                    }, () => {
+                        btnScan.disabled = false;
+                        btnScan.innerText = '✂ Scan Crop';
+                        btnScan.style.backgroundColor = '#f97316';
+                    });
+                }, 'image/png');
             });
         };
     }
@@ -1093,7 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.showToast) window.showToast('Preparing preview...', 'success');
             
             showBarcodeCroppingModal(file, async (croppedFile, onSuccess, onError) => {
-                if (window.showToast) window.showToast('Scanning aligned area...', 'success');
+                if (window.showToast) window.showToast('Scanning cropped area...', 'success');
                 if (!html5QrCode) html5QrCode = new Html5Qrcode('scannerReader');
                 try { 
                     const text = await html5QrCode.scanFile(croppedFile, true);
