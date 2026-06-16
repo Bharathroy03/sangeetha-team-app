@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -17,6 +17,12 @@ from reportlab.pdfgen import canvas
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
+
+# IST timezone helper (+05:30) — works on UTC servers (Vercel/cloud) and local
+IST_TZ = timezone(timedelta(hours=5, minutes=30))
+def now_ist():
+    """Return current datetime in Indian Standard Time (IST, UTC+5:30)."""
+    return datetime.now(IST_TZ)
 
 app = Flask(__name__)
 # In production, this secret key should be loaded from environment variables
@@ -124,8 +130,8 @@ def load_users():
                 "password_hash": generate_password_hash(pwd),
                 "role": role,
                 "status": "active",
-                "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "updated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                "created_at": now_ist().strftime('%Y-%m-%d %H:%M:%S'),
+                "updated_at": now_ist().strftime('%Y-%m-%d %H:%M:%S')
             })
         db_save_users(users_to_save)
         users = db_load_users()
@@ -301,7 +307,7 @@ def api_session():
 @login_required
 @permission_required('customer_history_view')
 def api_get_customers_today():
-    today_str = datetime.now().strftime('%Y-%m-%d')
+    today_str = now_ist().strftime('%Y-%m-%d')
     customers = db_get_customers_created_today(today_str)
     return jsonify({"success": True, "data": customers})
 
@@ -456,7 +462,7 @@ def api_verify_billing(customer_id):
     if customer_idx == -1:
         return jsonify({"success": False, "message": "Customer record not found."}), 404
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     emp_id = session.get('employee_id', 'unknown')
 
     customers[customer_idx].update({
@@ -503,7 +509,7 @@ def api_reopen_billing(customer_id):
     if customer_idx == -1:
         return jsonify({"success": False, "message": "Customer record not found."}), 404
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     emp_id = session.get('employee_id', 'unknown')
 
     customers[customer_idx].update({
@@ -540,7 +546,7 @@ def get_filtered_customers(scope, search, from_date, to_date):
     
     # 1. Scope filter
     if scope == 'today':
-        today_str = datetime.now().strftime('%Y-%m-%d')
+        today_str = now_ist().strftime('%Y-%m-%d')
         customers = [c for c in customers if c.get('created_at') and c.get('created_at').startswith(today_str)]
     elif scope == 'finance':
         customers = [c for c in customers if c.get('transaction_mode') == 'Finance']
@@ -572,7 +578,7 @@ def log_export_action(export_format, scope, filters, record_count):
             "performed_by": session.get('username', 'Unknown'),
             "employee_id": session.get('employee_id', 'Unknown'),
             "role": session.get('role', 'super_admin'),
-            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "timestamp": now_ist().strftime('%Y-%m-%d %H:%M:%S'),
             "records_deleted": record_count
         })
     except Exception as e:
@@ -679,7 +685,7 @@ def api_export_customers_excel():
         wb.save(file_stream)
         file_stream.seek(0)
         
-        today_date = datetime.now().strftime('%Y-%m-%d')
+        today_date = now_ist().strftime('%Y-%m-%d')
         filename = f"customers_{scope}_{today_date}.xlsx"
         
         log_export_action('excel', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
@@ -721,7 +727,7 @@ def api_export_customers_csv():
         mem.write(si.getvalue().encode('utf-8'))
         mem.seek(0)
         
-        today_date = datetime.now().strftime('%Y-%m-%d')
+        today_date = now_ist().strftime('%Y-%m-%d')
         filename = f"customers_{scope}_{today_date}.csv"
         
         log_export_action('csv', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
@@ -819,7 +825,7 @@ def api_export_customers_pdf():
         story.append(Paragraph("Sangeetha Customer Records Report", title_style))
         
         # Metadata Block
-        gen_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        gen_time = now_ist().strftime('%Y-%m-%d %H:%M:%S')
         user_name = session.get('username', 'Unknown')
         filter_str = f"Scope: {scope.capitalize()}"
         if search:
@@ -885,7 +891,7 @@ def api_export_customers_pdf():
         doc.build(story, canvasmaker=NumberedCanvas)
         
         pdf_buffer.seek(0)
-        today_date = datetime.now().strftime('%Y-%m-%d')
+        today_date = now_ist().strftime('%Y-%m-%d')
         filename = f"customers_{scope}_{today_date}.pdf"
         
         log_export_action('pdf', scope, {'search': search, 'from_date': from_date, 'to_date': to_date}, len(customers))
@@ -1040,7 +1046,7 @@ def api_add_customer():
     if len(remarks) > 500:
         return jsonify({"success": False, "message": "Remarks must not exceed 500 characters."}), 400
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
 
     # Generate customer_id CUST-XXXX
     customers = load_customers()
@@ -1194,7 +1200,7 @@ def api_clear_all_customers():
             "performed_by": session.get('username', ''),
             "employee_id": session.get('employee_id', ''),
             "role": session.get('role', ''),
-            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "timestamp": now_ist().strftime('%Y-%m-%d %H:%M:%S'),
             "records_deleted": records_deleted
         })
     except Exception:
@@ -1312,7 +1318,7 @@ def api_add_crm_customer():
                     pass
     crm_customer_id = f"CRM-{next_num}"
     
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     new_record = {
         "crm_customer_id": crm_customer_id,
         "customer_name": ' '.join(w.capitalize() for w in customer_name.split()),
@@ -1380,7 +1386,7 @@ def api_update_crm_customer(crm_customer_id):
     if idx == -1:
         return jsonify({"success": False, "message": "CRM record not found."}), 404
         
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     crm_customers[idx].update({
         "customer_name": ' '.join(w.capitalize() for w in customer_name.split()),
         "mobile_number": mobile_number,
@@ -1559,7 +1565,7 @@ def api_update_customer(customer_id):
     if len(remarks) > 500:
         return jsonify({"success": False, "message": "Remarks must not exceed 500 characters."}), 400
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
 
     # Update customer record
     customers[customer_index].update({
@@ -1606,7 +1612,7 @@ def payment_tracker():
 @permission_required('payment_tracker_view')
 def api_payment_summary():
     payments = load_payments()
-    today_str = datetime.now().strftime('%Y-%m-%d')
+    today_str = now_ist().strftime('%Y-%m-%d')
     
     total_sales = 0.0
     cash_sales = 0.0
@@ -1860,7 +1866,7 @@ def api_add_payment():
                     pass
     payment_id = f"PAY-{next_num}"
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
 
     # Initial history log
     history_entry = {
@@ -2013,7 +2019,7 @@ def api_update_payment(payment_id):
 
     # If amount received changed, we log it in the history
     prev_received = float(payment.get('amount_received') or 0)
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     
     if received_val != prev_received:
         diff = received_val - prev_received
@@ -2097,7 +2103,7 @@ def api_partial_payment(payment_id):
     new_received = round(float(payment.get('amount_received') or 0) + added_val, 2)
     new_pending = round(float(payment.get('total_bill_amount') or 0) - new_received, 2)
     
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     
     history_entry = {
         "date_time": now_str,
@@ -2142,7 +2148,7 @@ def api_mark_paid(payment_id):
     if pending_val <= 0:
         return jsonify({"success": False, "message": "This payment is already fully paid."}), 400
         
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     
     history_entry = {
         "date_time": now_str,
@@ -2306,7 +2312,7 @@ def api_create_user():
                 pass
     user_id = f"USR-{next_num}"
     
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     new_user = {
         "user_id": user_id,
         "username": username,
@@ -2366,7 +2372,7 @@ def api_update_user(user_id):
     if job_title is not None:
         user['job_title'] = job_title.strip() or None
         
-    user['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user['updated_at'] = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     save_users(users)
     
     ret_data = user.copy()
@@ -2421,7 +2427,7 @@ def api_create_edit_request(customer_id):
     data = request.get_json() or {}
     reason = data.get('reason', '').strip()
     proposed_data = data.get('proposed_data', {})
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
 
     if not reason:
         return jsonify({"success": False, "message": "Reason for edit request is required."}), 400
@@ -2605,7 +2611,7 @@ def api_approve_edit_request(request_id):
     if orig_cust.get('record_locked'):
         return jsonify({"success": False, "message": "The original customer record is locked (billing verified) and cannot be updated."}), 403
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     proposed = req.get('proposed_data', {})
     
     # Overwrite original customer record, but preserve customer_id, created_at, created_by
@@ -2655,7 +2661,7 @@ def api_reject_edit_request(request_id):
     if req.get('status') != 'pending':
         return jsonify({"success": False, "message": f"This request is already {req.get('status')}."}), 400
 
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_str = now_ist().strftime('%Y-%m-%d %H:%M:%S')
     
     # Update request entry
     req['status'] = 'rejected'
@@ -2743,8 +2749,8 @@ def migrate_customers_db():
             # Auditing timestamps
             c_at = c.get('created_at')
             if not c_at:
-                date_val = c.get('date', datetime.now().strftime('%Y-%m-%d'))
-                time_val = c.get('time', datetime.now().strftime('%H:%M:%S'))
+                date_val = c.get('date', now_ist().strftime('%Y-%m-%d'))
+                time_val = c.get('time', now_ist().strftime('%H:%M:%S'))
                 c_at = f"{date_val} {time_val}"
                 c_modified = True
 
