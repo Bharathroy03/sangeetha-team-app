@@ -1319,25 +1319,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Preparing preview...', 'success');
             
             showBarcodeCroppingModal(file, async (croppedFile, onSuccess, onError) => {
-                showToast('Scanning aligned area (backend)...', 'success');
-                
-                const formData = new FormData();
-                formData.append('file', croppedFile);
-
+                showToast('Scanning aligned area...', 'success');
+                if (!html5QrCode) html5QrCode = new Html5Qrcode('interactive-reader');
                 try {
-                    const scanRes = await fetch('/api/decode-barcode', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const scanData = await scanRes.json();
+                    const decodedText = await html5QrCode.scanFile(croppedFile, true);
+                    const trimmed = decodedText.trim();
                     
-                    if (!scanRes.ok || !scanData.success) {
-                        showToast(scanData.message || 'Could not decode a barcode from the aligned region.', 'error');
-                        onError();
-                        return;
-                    }
-                    
-                    const trimmed = scanData.barcode;
                     const res = await fetch('/api/verify-imei', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1357,8 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         onError();
                     }
                 } catch (err) {
-                    console.error('Backend barcode scan failed:', err);
-                    showToast('Connection error during barcode scanning. Please try again.', 'error');
+                    console.error(err);
+                    showToast('Could not decode a barcode from the aligned region. Please align and try again.', 'error');
                     onError();
                 }
             }, () => {
