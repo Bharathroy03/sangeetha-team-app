@@ -571,14 +571,20 @@ const initApp = () => {
             return;
         }
 
-        // Render records reverse chronologically
-        const renderedRecords = [...filtered].reverse();
+        // Render records newest to oldest
+        const renderedRecords = [...filtered].sort((a, b) => {
+            const timeA = a.created_at || '';
+            const timeB = b.created_at || '';
+            return timeB.localeCompare(timeA);
+        });
 
         // ── Desktop table rows ──────────────────────────────────────────
         ledgerTableBody.innerHTML = renderedRecords.map(item => {
             const cid = item.customer_id || '';
             const isAdmin = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
             const isEmployee = window.currentUserRole === 'store_employee';
+            const isLocked = !!item.record_locked;
+            const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
 
             // Build edit/request-edit button based on role
             const editBtn = isAdmin
@@ -587,7 +593,7 @@ const initApp = () => {
                 ? `<button onclick="editCustomerDirectly('${cid}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Request Edit"><span class="material-symbols-outlined text-[18px]">edit_note</span></button>`
                 : '';
 
-            const deleteBtn = isAdmin
+            const deleteBtn = canDelete
                 ? `<button onclick="deleteRecord('${cid}')" class="text-error hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Delete Record"><span class="material-symbols-outlined text-[18px]">delete</span></button>`
                 : '';
 
@@ -617,6 +623,8 @@ const initApp = () => {
                 const cid = item.customer_id || '';
                 const isAdmin = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
                 const isEmployee = window.currentUserRole === 'store_employee';
+                const isLocked = !!item.record_locked;
+                const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
 
                 const editBtnMobile = isAdmin
                     ? `<button onclick="editCustomerDirectly('${cid}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Edit Record"><span class="material-symbols-outlined text-[20px]">edit</span></button>`
@@ -624,7 +632,7 @@ const initApp = () => {
                     ? `<button onclick="editCustomerDirectly('${cid}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Request Edit"><span class="material-symbols-outlined text-[20px]">edit_note</span></button>`
                     : '';
 
-                const deleteBtnMobile = isAdmin
+                const deleteBtnMobile = canDelete
                     ? `<button onclick="deleteRecord('${cid}')" class="text-rose-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete Record"><span class="material-symbols-outlined text-[20px]">delete</span></button>`
                     : '';
 
@@ -775,13 +783,13 @@ const initApp = () => {
             if (detailFinanceSec) detailFinanceSec.classList.add('hidden');
         }
 
-        const isAdmin = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
-        const isEmployee = window.currentUserRole === 'store_employee';
+        const isLocked = !!item.record_locked;
+        const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
 
         // Set up the delete button in modal
         const btnDelete = document.getElementById('btnDeleteFromModal');
         if (btnDelete) {
-            if (isAdmin) {
+            if (canDelete) {
                 btnDelete.classList.remove('hidden');
                 btnDelete.onclick = async () => {
                     const confirmed = await window.deleteRecord(customerId);
@@ -1078,3 +1086,338 @@ if (document.readyState === 'loading') {
 } else {
     initApp();
 }
+
+window.openIMEIScanner = function(onSuccess) {
+    // 1. Create overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'fullScreenScanner';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.zIndex = '999999';
+    overlay.style.background = '#000000';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.overflow = 'hidden';
+    overlay.style.fontFamily = "'Inter', sans-serif";
+
+    // 2. Create camera preview container
+    const readerDiv = document.createElement('div');
+    readerDiv.id = 'fullScreenScannerReader';
+    readerDiv.style.width = '100%';
+    readerDiv.style.height = '100%';
+    readerDiv.style.position = 'absolute';
+    readerDiv.style.inset = '0';
+    readerDiv.style.zIndex = '1';
+    overlay.appendChild(readerDiv);
+
+    // 3. Create cutout overlay
+    const cutoutOverlay = document.createElement('div');
+    cutoutOverlay.style.position = 'absolute';
+    cutoutOverlay.style.inset = '0';
+    cutoutOverlay.style.zIndex = '2';
+    cutoutOverlay.style.pointerEvents = 'none';
+    cutoutOverlay.style.display = 'flex';
+    cutoutOverlay.style.flexDirection = 'column';
+    cutoutOverlay.style.alignItems = 'center';
+    cutoutOverlay.style.justifyContent = 'center';
+
+    const cutout = document.createElement('div');
+    cutout.style.width = '85%';
+    cutout.style.maxWidth = '340px';
+    cutout.style.height = '100px';
+    cutout.style.border = '1.5px solid #ffffff';
+    cutout.style.borderRadius = '12px';
+    cutout.style.boxShadow = '0 0 0 9999px rgba(0, 0, 0, 0.65)';
+    cutout.style.background = 'transparent';
+    cutout.style.boxSizing = 'border-box';
+    cutoutOverlay.appendChild(cutout);
+
+    const instruction = document.createElement('div');
+    instruction.innerText = 'Place the IMEI barcode inside the highlighted area';
+    instruction.style.color = '#ffffff';
+    instruction.style.fontSize = '14px';
+    instruction.style.fontWeight = '500';
+    instruction.style.marginTop = '24px';
+    instruction.style.textAlign = 'center';
+    instruction.style.width = '90%';
+    instruction.style.letterSpacing = '0.2px';
+    instruction.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)';
+    cutoutOverlay.appendChild(instruction);
+
+    overlay.appendChild(cutoutOverlay);
+
+    // 4. Create Flash / Torch button
+    const flashBtn = document.createElement('button');
+    flashBtn.id = 'fullScreenScannerFlash';
+    flashBtn.style.position = 'absolute';
+    flashBtn.style.top = '24px';
+    flashBtn.style.left = '24px';
+    flashBtn.style.width = '44px';
+    flashBtn.style.height = '44px';
+    flashBtn.style.borderRadius = '50%';
+    flashBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+    flashBtn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    flashBtn.style.color = '#ffffff';
+    flashBtn.style.display = 'none'; // hidden initially, shown if supported
+    flashBtn.style.alignItems = 'center';
+    flashBtn.style.justifyContent = 'center';
+    flashBtn.style.zIndex = '10';
+    flashBtn.style.cursor = 'pointer';
+    flashBtn.style.outline = 'none';
+    flashBtn.style.transition = 'background 0.2s';
+    flashBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 20px;">flashlight_on</span>';
+    overlay.appendChild(flashBtn);
+
+    // 4b. Create Switch Camera button
+    const switchBtn = document.createElement('button');
+    switchBtn.id = 'fullScreenScannerSwitch';
+    switchBtn.style.position = 'absolute';
+    switchBtn.style.top = '24px';
+    switchBtn.style.left = '80px'; // positioned next to flash button
+    switchBtn.style.width = '44px';
+    switchBtn.style.height = '44px';
+    switchBtn.style.borderRadius = '50%';
+    switchBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+    switchBtn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    switchBtn.style.color = '#ffffff';
+    switchBtn.style.display = 'none'; // hidden initially, shown if devices.length > 1
+    switchBtn.style.alignItems = 'center';
+    switchBtn.style.justifyContent = 'center';
+    switchBtn.style.zIndex = '10';
+    switchBtn.style.cursor = 'pointer';
+    switchBtn.style.outline = 'none';
+    switchBtn.style.transition = 'background 0.2s';
+    switchBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 20px;">switch_camera</span>';
+    overlay.appendChild(switchBtn);
+
+    // 5. Create Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.id = 'fullScreenScannerClose';
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '24px';
+    closeBtn.style.right = '24px';
+    closeBtn.style.width = '44px';
+    closeBtn.style.height = '44px';
+    closeBtn.style.borderRadius = '50%';
+    closeBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+    closeBtn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    closeBtn.style.color = '#ffffff';
+    closeBtn.style.display = 'flex';
+    closeBtn.style.alignItems = 'center';
+    closeBtn.style.justifyContent = 'center';
+    closeBtn.style.zIndex = '10';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.outline = 'none';
+    closeBtn.style.transition = 'background 0.2s';
+    closeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 20px;">close</span>';
+    overlay.appendChild(closeBtn);
+
+    // Append styles for video element inside fullScreenScannerReader
+    const styleEl = document.createElement('style');
+    styleEl.id = 'fullScreenScannerStyles';
+    styleEl.textContent = `
+        #fullScreenScannerReader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center center !important;
+            display: block !important;
+        }
+        #fullScreenScannerFlash:hover, #fullScreenScannerClose:hover, #fullScreenScannerSwitch:hover {
+            background: rgba(0, 0, 0, 0.8) !important;
+        }
+    `;
+    document.head.appendChild(styleEl);
+
+    document.body.appendChild(overlay);
+
+    let formats = null;
+    if (window.Html5QrcodeSupportedFormats) {
+        formats = [
+            window.Html5QrcodeSupportedFormats.CODE_128,
+            window.Html5QrcodeSupportedFormats.EAN_13,
+            window.Html5QrcodeSupportedFormats.EAN_8
+        ];
+    }
+    const html5QrCode = new Html5Qrcode('fullScreenScannerReader', formats ? { formatsToSupport: formats } : undefined);
+    let isScanning = false;
+    let currentCameraIndex = 0;
+    let availableCameras = [];
+
+    // Query available camera devices
+    Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length > 1) {
+            availableCameras = devices;
+            switchBtn.style.display = 'flex';
+        }
+    }).catch(e => {
+        console.warn('Failed to get cameras list:', e);
+    });
+
+    const cleanUp = () => {
+        if (html5QrCode && isScanning) {
+            isScanning = false;
+            html5QrCode.stop().then(() => {
+                overlay.remove();
+                styleEl.remove();
+            }).catch(() => {
+                overlay.remove();
+                styleEl.remove();
+            });
+        } else {
+            overlay.remove();
+            styleEl.remove();
+        }
+    };
+
+    closeBtn.onclick = cleanUp;
+
+    // Config
+    const config = {
+        fps: 25,
+        qrbox: null, // Custom cutout drawn by us
+        aspectRatio: window.innerHeight / window.innerWidth
+    };
+
+    const startCamera = (constraints) => {
+        return html5QrCode.start(
+            constraints,
+            config,
+            (decodedText) => {
+                const trimmed = decodedText.trim();
+                if (/^\d{15}$/.test(trimmed)) {
+                    // Play beep and vibrate
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                        osc.start();
+                        setTimeout(() => {
+                            osc.stop();
+                            audioCtx.close();
+                        }, 80);
+                    } catch(e) {}
+
+                    if (navigator.vibrate) {
+                        navigator.vibrate(200);
+                    }
+
+                    // Stop and close
+                    if (isScanning) {
+                        isScanning = false;
+                        html5QrCode.stop().then(() => {
+                            overlay.remove();
+                            styleEl.remove();
+                            onSuccess(trimmed);
+                        }).catch(() => {
+                            overlay.remove();
+                            styleEl.remove();
+                            onSuccess(trimmed);
+                        });
+                    }
+                }
+            },
+            () => {
+                // Ignore scan errors/warnings for smooth continuous scanning
+            }
+        );
+    };
+
+    const setupTorch = () => {
+        const track = html5QrCode.getRunningTrack();
+        if (track) {
+            // Find active camera index from track label
+            const activeLabel = track.label;
+            if (activeLabel && availableCameras.length > 0) {
+                const matchIndex = availableCameras.findIndex(c => c.label === activeLabel);
+                if (matchIndex !== -1) {
+                    currentCameraIndex = matchIndex;
+                }
+            }
+            if (typeof track.getCapabilities === 'function') {
+                try {
+                    const capabilities = track.getCapabilities();
+                    if (capabilities.torch) {
+                        flashBtn.style.display = 'flex';
+                        flashBtn.onclick = async () => {
+                            const settings = track.getSettings();
+                            const currentTorch = settings.torch || false;
+                            await track.applyConstraints({
+                                advanced: [{ torch: !currentTorch }]
+                            });
+                            flashBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 20px;">${!currentTorch ? 'flashlight_off' : 'flashlight_on'}</span>`;
+                        };
+                    } else {
+                        flashBtn.style.display = 'none';
+                    }
+                } catch(e) {
+                    flashBtn.style.display = 'none';
+                }
+            } else {
+                flashBtn.style.display = 'none';
+            }
+        }
+    };
+
+    const toggleCamera = () => {
+        if (availableCameras.length <= 1) return;
+        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+        const targetCameraId = availableCameras[currentCameraIndex].id;
+
+        if (html5QrCode && isScanning) {
+            isScanning = false;
+            flashBtn.style.display = 'none'; // hidden during transition
+            html5QrCode.stop().then(() => {
+                startCamera(targetCameraId).then(() => {
+                    isScanning = true;
+                    setupTorch();
+                }).catch(err => {
+                    console.error('Failed to switch to camera:', err);
+                    // Start with empty constraints to recover
+                    startCamera({}).then(() => {
+                        isScanning = true;
+                        setupTorch();
+                    });
+                });
+            }).catch(e => {
+                console.error('Failed to stop camera for switching:', e);
+            });
+        }
+    };
+    switchBtn.onclick = toggleCamera;
+
+    // Fallback cascade to ensure scanner opens on any platform/device
+    startCamera({
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+    }).then(() => {
+        isScanning = true;
+        setupTorch();
+    }).catch((err) => {
+        console.warn('Failed to start camera with ideal constraints, trying simple environment mode:', err);
+        startCamera({ facingMode: 'environment' }).then(() => {
+            isScanning = true;
+            setupTorch();
+        }).catch((err2) => {
+            console.warn('Failed to start camera in environment mode, trying any default camera:', err2);
+            startCamera({}).then(() => {
+                isScanning = true;
+                setupTorch();
+            }).catch((err3) => {
+                console.error('All camera start attempts failed:', err3);
+                isScanning = false;
+                overlay.remove();
+                styleEl.remove();
+                if (window.showToast) window.showToast('Failed to start camera. Please verify permission.', 'error');
+                else alert('Failed to start camera. Please verify permission.');
+            });
+        });
+    });
+};
+

@@ -1032,7 +1032,35 @@ const initApp = () => {
 
     if (btnScanBarcode) {
         btnScanBarcode.addEventListener('click', () => {
-            if (barcodeFilePicker) barcodeFilePicker.click();
+            if (window.openIMEIScanner) {
+                window.openIMEIScanner(async (imei) => {
+                    showToast('Verifying scanned IMEI...', 'success');
+                    try {
+                        const res = await fetch('/api/verify-imei', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ imei: imei })
+                        });
+                        const verification = await res.json();
+                        if (res.ok && verification.success) {
+                            if (imeiInput) {
+                                imeiInput.value = imei;
+                                imeiInput.classList.remove('border-rose-500');
+                                imeiInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                imeiInput.focus();
+                            }
+                            showToast('IMEI verified successfully: ' + imei, 'success');
+                        } else {
+                            showToast(verification.message || 'Scanned IMEI is invalid.', 'error');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Error verifying scanned IMEI.', 'error');
+                    }
+                });
+            } else if (barcodeFilePicker) {
+                barcodeFilePicker.click();
+            }
         });
     }
 

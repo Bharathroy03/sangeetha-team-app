@@ -85,14 +85,14 @@ h1, h2, h3, h4, .brand-font {
 
 .gradient-text {
     background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    --webkit-background-clip: text;
+    --webkit-text-fill-color: transparent;
 }
 
 .red-gradient-text {
     background: linear-gradient(135deg, #ff4d6d 0%, var(--brand-red) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    --webkit-background-clip: text;
+    --webkit-text-fill-color: transparent;
 }
 
 /* --- LOGIN PAGE --- */

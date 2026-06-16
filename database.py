@@ -130,7 +130,7 @@ def _parse_customer_record(c):
 
 def db_load_customers():
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers"
+    url = f"{SUPABASE_URL}/rest/v1/customers?order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
@@ -156,7 +156,7 @@ def db_save_customers(customers_list):
 
 def db_get_customers_created_today(today_str):
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers?created_at=like.{today_str}%25"
+    url = f"{SUPABASE_URL}/rest/v1/customers?created_at=like.{today_str}%25&order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
@@ -164,7 +164,7 @@ def db_get_customers_created_today(today_str):
 
 def db_get_finance_customers():
     headers = get_headers()
-    url = f"{SUPABASE_URL}/rest/v1/customers?transaction_mode=eq.Finance"
+    url = f"{SUPABASE_URL}/rest/v1/customers?transaction_mode=eq.Finance&order=created_at.desc"
     r = safe_request("GET", url, headers=headers)
     check_response(r, "query")
     customers = r.json()
@@ -347,3 +347,98 @@ def db_count_audit_logs():
     if r.status_code == 200:
         return len(r.json())
     return 0
+
+def db_delete_customer_storage(customer_id):
+    """
+    Look for any files in Supabase Storage buckets matching the customer_id
+    and permanently delete them to reclaim space.
+    """
+    headers = get_headers()
+    # 1. Get list of all buckets
+    buckets_url = f"{SUPABASE_URL}/storage/v1/bucket"
+    try:
+        r = safe_request("GET", buckets_url, headers=headers)
+        if r.status_code != 200:
+            print(f"Warning: Failed to list Supabase storage buckets: {r.text}")
+            return
+        buckets = r.json()
+    except Exception as e:
+        print(f"Warning: Exception while listing Supabase storage buckets: {e}")
+        return
+
+    # 2. For each bucket, list and delete files matching customer_id
+    for bucket in buckets:
+        bucket_id = bucket.get("id")
+        if not bucket_id:
+            continue
+        
+        list_url = f"{SUPABASE_URL}/storage/v1/object/list/{bucket_id}"
+        
+        # Files to delete
+        files_to_delete = []
+        
+        # Check files under folder named {customer_id}
+        try:
+            payload = {
+                "prefix": customer_id,
+                "limit": 100,
+                "offset": 0,
+                "sortBy": {"column": "name", "order": "asc"}
+            }
+            r_list = safe_request("POST", list_url, json=payload, headers=headers)
+            if r_list.status_code == 200:
+                for f in r_list.json():
+                    name = f.get("name")
+                    if name:
+                        files_to_delete.append(f"{customer_id}/{name}")
+        except Exception as e:
+            print(f"Warning: Exception listing folder {customer_id} in bucket {bucket_id}: {e}")
+            
+        # Check files in root starting with {customer_id}
+        try:
+            payload_root = {
+                "prefix": "",
+                "limit": 100,
+                "offset": 0,
+                "sortBy": {"column": "name", "order": "asc"}
+            }
+            r_list_root = safe_request("POST", list_url, json=payload_root, headers=headers)
+            if r_list_root.status_code == 200:
+                for f in r_list_root.json():
+                    name = f.get("name")
+                    if name and name.startswith(customer_id):
+                        files_to_delete.append(name)
+        except Exception as e:
+            print(f"Warning: Exception listing root in bucket {bucket_id}: {e}")
+            
+        # Delete identified files
+        if files_to_delete:
+            delete_url = f"{SUPABASE_URL}/storage/v1/object/{bucket_id}"
+            try:
+                # Remove duplicates
+                unique_files = list(set(files_to_delete))
+                del_payload = {"prefixes": unique_files}
+                r_del = safe_request("DELETE", delete_url, json=del_payload, headers=headers)
+                if r_del.status_code not in [200, 204]:
+                    print(f"Warning: Failed to delete storage objects in {bucket_id}: {r_del.text}")
+                else:
+                    print(f"Deleted customer {customer_id} files {unique_files} from bucket {bucket_id}")
+            except Exception as e:
+                print(f"Warning: Exception deleting objects in {bucket_id}: {e}")
+
+def db_delete_customer_record(customer_id):
+    """
+    Permanently delete the customer record and all related data (edit requests and storage files).
+    """
+    # 1. Clean up storage files
+    db_delete_customer_storage(customer_id)
+    
+    headers = get_headers()
+    
+    # 2. Delete linked edit requests
+    r_edit = safe_request("DELETE", f"{SUPABASE_URL}/rest/v1/customer_edit_requests?customer_id=eq.{customer_id}", headers=headers)
+    check_response(r_edit, "delete")
+    
+    # 3. Delete the customer record itself
+    r_cust = safe_request("DELETE", f"{SUPABASE_URL}/rest/v1/customers?customer_id=eq.{customer_id}", headers=headers)
+    check_response(r_cust, "delete")

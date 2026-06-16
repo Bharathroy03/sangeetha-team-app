@@ -153,12 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Render records in reverse order (newer first)
-        const renderedRecords = [...filtered].reverse();
+        // Render records newest to oldest
+        const renderedRecords = [...filtered].sort((a, b) => {
+            const timeA = a.created_at || '';
+            const timeB = b.created_at || '';
+            return timeB.localeCompare(timeA);
+        });
 
-        // Desktop Table Rows
         ledgerTableBody.innerHTML = renderedRecords.map(item => {
             const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
+            const isLocked = !!item.record_locked;
+            const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
             const editButton = hasDeletePermission ? `
                 <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-1.5 rounded-lg hover:bg-orange-50" title="Edit Record">
                     <span class="material-symbols-outlined text-[18px]">edit</span>
@@ -181,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                             ${editButton}
-                            ${hasDeletePermission ? `
+                            ${canDelete ? `
                             <button onclick="deleteRecord('${item.customer_id}')" class="text-error hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Delete customer row">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                             </button>
@@ -196,6 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ledgerCardList) {
             ledgerCardList.innerHTML = renderedRecords.map((item, idx) => {
                 const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
+                const isLocked = !!item.record_locked;
+                const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
                 const editButtonMobile = hasDeletePermission ? `
                     <button onclick="editCustomerDirectly('${item.customer_id}')" class="text-secondary hover:text-orange-700 transition-colors p-2 rounded-lg hover:bg-orange-50" title="Edit details">
                         <span class="material-symbols-outlined text-[20px]">edit</span>
@@ -222,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                             </button>
                             ${editButtonMobile}
-                            ${hasDeletePermission ? `
+                            ${canDelete ? `
                             <button onclick="deleteRecord('${item.customer_id}')" class="text-rose-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete record">
                                 <span class="material-symbols-outlined text-[20px]">delete</span>
                             </button>
@@ -291,8 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Configure delete button based on permissions
         const btnDelete = document.getElementById('btnDeleteFromModal');
         if (btnDelete) {
-            const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
-            if (hasDeletePermission) {
+            const isLocked = !!item.record_locked;
+            const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
+            if (canDelete) {
                 btnDelete.classList.remove('hidden');
                 btnDelete.onclick = () => {
                     deleteRecord(customerId);

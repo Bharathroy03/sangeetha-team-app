@@ -1,6 +1,15 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime as real_datetime, timezone, timedelta
+
+class datetime(real_datetime):
+    @classmethod
+    def now(cls, tz=None):
+        # Always return Asia/Kolkata time (UTC+5:30) as naive datetime
+        utc_now = real_datetime.now(timezone.utc)
+        kolkata_tz = timezone(timedelta(hours=5, minutes=30))
+        return utc_now.astimezone(kolkata_tz).replace(tzinfo=None)
+
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -99,7 +108,7 @@ from database import (
     db_get_customers_created_today, db_get_finance_customers,
     db_load_crm_walkin, db_save_crm_walkin, db_load_payments, db_save_payments,
     db_delete_payment_history, db_load_edit_requests, db_save_edit_requests,
-    db_load_audit_log, db_add_audit_log, db_count_audit_logs
+    db_load_audit_log, db_add_audit_log, db_count_audit_logs, db_delete_customer_record
 )
 
 
@@ -1167,17 +1176,24 @@ def api_save_raw_data():
 @login_required
 @permission_required('customer_history_delete')
 def api_delete_customer(customer_id):
+    role = session.get('role')
+    if role not in ['super_admin', 'admin']:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
     customers = load_customers()
     customer = next((c for c in customers if c.get('customer_id') == customer_id), None)
     if not customer:
         return jsonify({"success": False, "message": "Record not found."}), 404
         
-    if customer.get('record_locked'):
+    if customer.get('record_locked') and role != 'super_admin':
         return jsonify({"success": False, "message": "This customer record is locked (billing verified) and cannot be deleted."}), 403
         
-    updated_customers = [c for c in customers if c.get('customer_id') != customer_id]
-    save_customers(updated_customers)
-    return jsonify({"success": True, "message": "Customer record deleted successfully!"})
+    try:
+        db_delete_customer_record(customer_id)
+        return jsonify({"success": True, "message": "Customer record permanently deleted from database and storage!"})
+    except Exception as e:
+        log_application_error("Failed to delete customer record", e, 500)
+        return jsonify({"success": False, "message": f"Deletion failed: {str(e)}"}), 500
 
 @app.route('/api/customers/clear-all', methods=['POST'])
 @login_required
