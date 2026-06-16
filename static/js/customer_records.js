@@ -193,11 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const renderedRecords = [...filtered].sort((a, b) => {
-            const timeA = a.created_at || '';
-            const timeB = b.created_at || '';
-            return timeB.localeCompare(timeA);
-        });
+        const renderedRecords = [...filtered].reverse();
         ledgerTableBody.innerHTML = renderedRecords.map(item => {
             const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin');
             const isLocked = !!item.record_locked;
@@ -221,8 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
-            const deleteButton = canDelete ? `
+            const deleteButton = (hasDeletePermission && !isLocked) ? `
                 <button onclick="deleteRecord('${item.customer_id}')" class="text-error hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Delete customer row">
                     <span class="material-symbols-outlined text-[18px]">delete</span>
                 </button>
@@ -283,8 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }
 
-                const canDeleteMobile = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
-                const deleteButtonMobile = canDeleteMobile ? `
+                const deleteButtonMobile = (hasDeletePermission && !isLocked) ? `
                     <button onclick="deleteRecord('${item.customer_id}')" class="text-rose-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" title="Delete record">
                         <span class="material-symbols-outlined text-[20px]">delete</span>
                     </button>
@@ -416,8 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnDelete = document.getElementById('btnDeleteFromModal');
         if (btnDelete) {
-            const canDelete = (window.currentUserRole === 'super_admin') || (window.currentUserRole === 'admin' && !isLocked);
-            if (canDelete) {
+            const hasDeletePermission = (window.currentUserRole === 'super_admin' || window.currentUserRole === 'admin') && !isLocked;
+            if (hasDeletePermission) {
                 btnDelete.classList.remove('hidden');
                 btnDelete.onclick = () => deleteRecord(customerId);
             } else {
@@ -1358,35 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnScanBarcode) {
         btnScanBarcode.addEventListener('click', () => {
-            if (window.openIMEIScanner) {
-                window.openIMEIScanner(async (imei) => {
-                    showToast('Verifying scanned IMEI...', 'success');
-                    try {
-                        const res = await fetch('/api/verify-imei', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imei: imei })
-                        });
-                        const verification = await res.json();
-                        if (res.ok && verification.success) {
-                            if (imeiInput) {
-                                imeiInput.value = imei;
-                                imeiInput.classList.remove('border-rose-500');
-                                imeiInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                imeiInput.focus();
-                            }
-                            showToast('IMEI verified successfully: ' + imei, 'success');
-                        } else {
-                            showToast(verification.message || 'Scanned IMEI is invalid.', 'error');
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        showToast('Error verifying scanned IMEI.', 'error');
-                    }
-                });
-            } else if (barcodeFilePicker) {
-                barcodeFilePicker.click();
-            }
+            if (barcodeFilePicker) barcodeFilePicker.click();
         });
     }
 

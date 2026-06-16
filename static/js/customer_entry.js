@@ -1117,14 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnScanBarcode) {
         btnScanBarcode.addEventListener('click', () => {
-            if (window.openIMEIScanner) {
-                window.openIMEIScanner(async (imei) => {
-                    await handleDecodedIMEI(imei);
-                    if (imeiInput) imeiInput.focus();
-                });
-            } else if (barcodeFilePicker) {
-                barcodeFilePicker.click();
-            }
+            if (barcodeFilePicker) barcodeFilePicker.click();
         });
     }
 
