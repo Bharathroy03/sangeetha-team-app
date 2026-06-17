@@ -373,6 +373,8 @@
 
     <!-- Script Block -->
     <script>
+        window.currentUserRole = "{{ session.get('role', '') }}";
+        window.currentEmployeeId = "{{ session.get('employee_id', '') }}";
         let allUsers = [];
 
         // Toast controller
@@ -443,6 +445,24 @@
                 const statusColor = u.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-rose-50 text-rose-700 border-rose-200';
                 const statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor} border">${u.status}</span>`;
 
+                let deleteButton = '';
+                if (window.currentUserRole === 'super_admin') {
+                    const isSelf = u.employee_id === window.currentEmployeeId;
+                    if (isSelf) {
+                        deleteButton = `
+                            <button class="px-2.5 py-1.5 border border-slate-200 text-slate-300 bg-white cursor-not-allowed rounded-lg text-xs font-bold flex items-center gap-1.5" title="You cannot delete your own account" disabled>
+                                <span class="material-symbols-outlined text-[15px]">delete</span> Delete
+                            </button>
+                        `;
+                    } else {
+                        deleteButton = `
+                            <button onclick="deleteUser('${u.user_id}', '${u.username.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 border border-rose-200 text-error bg-white hover:bg-rose-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5" title="Delete User">
+                                <span class="material-symbols-outlined text-[15px]">delete</span> Delete
+                            </button>
+                        `;
+                    }
+                }
+
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-bold text-slate-800 font-data-mono">${u.user_id}</td>
                     <td class="px-6 py-4 font-data-mono text-slate-500">${u.employee_id}</td>
@@ -454,11 +474,33 @@
                         <div class="flex justify-end gap-2">
                             <button onclick="openEditUserModal('${u.user_id}')" class="px-2.5 py-1.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px]">edit</span> Edit</button>
                             <button onclick="openChangePasswordModal('${u.user_id}')" class="px-2.5 py-1.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px]">key</span> Password</button>
+                            ${deleteButton}
                         </div>
                     </td>
                 `;
                 body.appendChild(tr);
             });
+        }
+
+        // Delete user API call
+        async function deleteUser(userId, username) {
+            const confirmed = confirm(`Are you sure you want to permanently delete user "${username}"? This action cannot be undone.`);
+            if (!confirmed) return;
+            
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                const res = await response.json();
+                if (response.ok && res.success) {
+                    showToast('User deleted successfully!', 'success');
+                    fetchUsers();
+                } else {
+                    showToast(res.message || 'Failed to delete user.', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error deleting user.', 'error');
+            }
         }
 
         // Modals management

@@ -135,7 +135,7 @@
     let sortField = 'created_at';      // active sort column
     let sortDir   = 'desc';            // 'asc' | 'desc'
 
-    // Generic comparator â€” handles date strings, numbers, plain text
+    // Generic comparator — handles date strings, numbers, plain text
     const applySort = (arr) => {
         return [...arr].sort((a, b) => {
             let va = a[sortField] ?? '';
@@ -160,7 +160,7 @@
             sortDir = sortDir === 'asc' ? 'desc' : 'asc';
         } else {
             sortField = field;
-            sortDir   = 'desc'; // default new column â†’ newest/largest first
+            sortDir   = 'desc'; // default new column → newest/largest first
         }
         renderLedgerTable();
     };
@@ -230,8 +230,8 @@
             const arrowEl = document.getElementById(`sort-arrow-${f}`);
             if (!arrowEl) return;
             arrowEl.textContent = sortField === f
-                ? (sortDir === 'asc' ? 'â†‘' : 'â†“')
-                : 'â‡…';
+                ? (sortDir === 'asc' ? '↑' : '↓')
+                : '⇅';
             arrowEl.style.opacity = sortField === f ? '1' : '0.4';
         });
 
@@ -379,17 +379,17 @@
         const item = allCustomers.find(c => c.customer_id === customerId);
         if (!item) return;
 
-        document.getElementById('detail_created_at').textContent = item.created_at || 'â€”';
-        document.getElementById('detail_customer_name').textContent = item.customer_name || 'â€”';
-        document.getElementById('detail_mobile_number').textContent = item.mobile_number || 'â€”';
-        document.getElementById('detail_item_model').textContent = item.item_model || 'â€”';
-        document.getElementById('detail_imei_number').textContent = item.imei_number || 'â€”';
-        document.getElementById('detail_transaction_mode').textContent = item.transaction_mode || 'â€”';
-        document.getElementById('detail_payment_mode').textContent = item.down_payment_mode || item.payment_mode || 'â€”';
-        document.getElementById('detail_exchange_status').textContent = item.exchange_status || 'â€”';
-        document.getElementById('detail_sales_person').textContent = item.sales_person || 'â€”';
+        document.getElementById('detail_created_at').textContent = item.created_at || '—';
+        document.getElementById('detail_customer_name').textContent = item.customer_name || '—';
+        document.getElementById('detail_mobile_number').textContent = item.mobile_number || '—';
+        document.getElementById('detail_item_model').textContent = item.item_model || '—';
+        document.getElementById('detail_imei_number').textContent = item.imei_number || '—';
+        document.getElementById('detail_transaction_mode').textContent = item.transaction_mode || '—';
+        document.getElementById('detail_payment_mode').textContent = item.down_payment_mode || item.payment_mode || '—';
+        document.getElementById('detail_exchange_status').textContent = item.exchange_status || '—';
+        document.getElementById('detail_sales_person').textContent = item.sales_person || '—';
 
-        const displayAmount = item.total_amount_received ? `â‚¹${parseFloat(item.total_amount_received).toLocaleString('en-IN')}` : 'â‚¹0';
+        const displayAmount = item.total_amount_received ? `₹${parseFloat(item.total_amount_received).toLocaleString('en-IN')}` : '₹0';
         document.getElementById('detail_amount_received').textContent = displayAmount;
 
         const detailDownPmtSec = document.getElementById('detail_down_payment_section');
@@ -400,9 +400,9 @@
         if (item.transaction_mode === 'Finance') {
             if (detailDownPmtSec) detailDownPmtSec.classList.remove('hidden');
             if (detailFinanceSec) detailFinanceSec.classList.remove('hidden');
-            const downPmtVal = item.down_payment_value ? `â‚¹${parseFloat(item.down_payment_value).toLocaleString('en-IN')}` : 'â‚¹0';
+            const downPmtVal = item.down_payment_value ? `₹${parseFloat(item.down_payment_value).toLocaleString('en-IN')}` : '₹0';
             if (detailDownPmt) detailDownPmt.textContent = downPmtVal;
-            if (detailFinanceProv) detailFinanceProv.textContent = item.finance_provider || 'â€”';
+            if (detailFinanceProv) detailFinanceProv.textContent = item.finance_provider || '—';
         } else {
             if (detailDownPmtSec) detailDownPmtSec.classList.add('hidden');
             if (detailFinanceSec) detailFinanceSec.classList.add('hidden');
@@ -428,8 +428,8 @@
 
         if (item.billing_verified) {
             if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.remove('hidden');
-            if (detailBillingVerifiedBy) detailBillingVerifiedBy.textContent = item.billing_verified_by || 'â€”';
-            if (detailBillingVerifiedAt) detailBillingVerifiedAt.textContent = item.billing_verified_at || 'â€”';
+            if (detailBillingVerifiedBy) detailBillingVerifiedBy.textContent = item.billing_verified_by || '—';
+            if (detailBillingVerifiedAt) detailBillingVerifiedAt.textContent = item.billing_verified_at || '—';
             if (detailBillingAdminRemarks) detailBillingAdminRemarks.textContent = item.billing_admin_remarks || 'No remarks provided.';
         } else {
             if (detailBillingVerifiedSection) detailBillingVerifiedSection.classList.add('hidden');
@@ -443,8 +443,8 @@
 
         if (item.reopened_by) {
             if (detailBillingReopenedSection) detailBillingReopenedSection.classList.remove('hidden');
-            if (detailReopenedBy) detailReopenedBy.textContent = item.reopened_by || 'â€”';
-            if (detailReopenedAt) detailReopenedAt.textContent = item.reopened_at || 'â€”';
+            if (detailReopenedBy) detailReopenedBy.textContent = item.reopened_by || '—';
+            if (detailReopenedAt) detailReopenedAt.textContent = item.reopened_at || '—';
             if (detailReopenReason) detailReopenReason.textContent = item.reopen_reason || 'No reason provided.';
         } else {
             if (detailBillingReopenedSection) detailBillingReopenedSection.classList.add('hidden');
@@ -933,7 +933,7 @@
 
         const header = document.createElement('div');
         header.style.cssText = 'text-align:center;margin-bottom:14px;padding:0 20px;';
-        header.innerHTML = `<h3 style="margin:0 0 6px 0;font-size:1.1rem;font-weight:700;color:#f97316;">Crop Barcode Area</h3><p style="margin:0;font-size:0.8rem;color:#94a3b8;">Drag the orange handles to crop exactly around the barcode, then tap <strong style="color:#f97316">âœ‚ Scan Crop</strong>.</p>`;
+        header.innerHTML = `<h3 style="margin:0 0 6px 0;font-size:1.1rem;font-weight:700;color:#f97316;">Crop Barcode Area</h3><p style="margin:0;font-size:0.8rem;color:#94a3b8;">Drag the orange handles to crop exactly around the barcode, then tap <strong style="color:#f97316">✂ Scan Crop</strong>.</p>`;
         modal.appendChild(header);
 
         const container = document.createElement('div');
@@ -962,7 +962,7 @@
 
         const btnScan = document.createElement('button');
         btnScan.type = 'button';
-        btnScan.innerText = 'âœ‚ Scan Crop';
+        btnScan.innerText = '✂ Scan Crop';
         btnScan.style.cssText = 'flex:2;padding:13px 16px;border-radius:12px;border:none;background:#f97316;color:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(249,115,22,0.35);';
         btnScan.addEventListener('mouseenter', () => { btnScan.style.backgroundColor = '#ea580c'; });
         btnScan.addEventListener('mouseleave', () => { btnScan.style.backgroundColor = '#f97316'; });
@@ -1110,7 +1110,7 @@
                 canvas.toBlob((blob) => {
                     if (!blob) {
                         btnScan.disabled = false;
-                        btnScan.innerText = 'âœ‚ Scan Crop';
+                        btnScan.innerText = '✂ Scan Crop';
                         btnScan.style.backgroundColor = '#f97316';
                         if (window.showToast) showToast('Failed to crop image. Try again.', 'error');
                         return;
@@ -1121,7 +1121,7 @@
                         setTimeout(() => modal.remove(), 300);
                     }, () => {
                         btnScan.disabled = false;
-                        btnScan.innerText = 'âœ‚ Scan Crop';
+                        btnScan.innerText = '✂ Scan Crop';
                         btnScan.style.backgroundColor = '#f97316';
                     });
                 }, 'image/png');
@@ -1224,8 +1224,8 @@
             const el = document.getElementById(id);
             if (el) el.textContent = val;
         };
-        setVal('cardCustomerPending', `â‚¹${Math.round(s.customer_pending).toLocaleString()}`);
-        setVal('cardEmployeePending', `â‚¹${Math.round(s.employee_pending).toLocaleString()}`);
+        setVal('cardCustomerPending', `₹${Math.round(s.customer_pending).toLocaleString()}`);
+        setVal('cardEmployeePending', `₹${Math.round(s.employee_pending).toLocaleString()}`);
     }
 
     function renderAllTables() {
@@ -1272,8 +1272,8 @@
                 <td class="px-4 py-3 font-bold text-[#0D70C0] cursor-pointer hover:underline" onclick="viewPaymentDetail('${p.payment_id}')">${escapeHtml(p.customer_name)}</td>
                 <td class="px-4 py-3 font-data-mono">${escapeHtml(p.mobile_number)}</td>
                 <td class="px-4 py-3 font-data-mono">${escapeHtml(p.invoice_number || '--')}</td>
-                <td class="px-4 py-3 text-right text-emerald-600 font-bold">â‚¹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                <td class="px-4 py-3 text-right text-rose-600 font-bold">â‚¹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3 text-right text-emerald-600 font-bold">₹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3 text-right text-rose-600 font-bold">₹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3">${escapeHtml(p.pending_from)}</td>
                 <td class="px-4 py-3">${statusTag}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap flex items-center justify-end gap-1.5 min-h-[48px]">
@@ -1299,8 +1299,8 @@
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Customer:</span><span class="font-bold text-[#0D70C0] text-right break-words max-w-[65%]">${escapeHtml(p.customer_name)}</span></div>
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Mobile:</span><span class="font-data-mono text-right break-words">${escapeHtml(p.mobile_number)}</span></div>
                     <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Invoice:</span><span class="font-data-mono text-right break-all max-w-[65%]">${escapeHtml(p.invoice_number || '--')}</span></div>
-                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Collected:</span><span class="font-bold text-emerald-600 text-right">â‚¹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
-                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Pending:</span><span class="font-bold text-rose-600 text-right">â‚¹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Collected:</span><span class="font-bold text-emerald-600 text-right">₹${received.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Pending:</span><span class="font-bold text-rose-600 text-right">₹${pending.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                     <div class="flex justify-between items-center gap-4"><span class="text-slate-400 font-medium whitespace-nowrap">Status:</span><span class="text-right">${statusTag}</span></div>
                 </div>
                 <div class="flex flex-wrap items-center justify-start sm:justify-end gap-2 border-t border-slate-100 pt-3 mt-1">
@@ -1332,7 +1332,7 @@
             tr.innerHTML = `
                 <td class="px-4 py-3.5 font-bold text-[#0D70C0]">${escapeHtml(p.customer_name)}</td>
                 <td class="px-4 py-3.5 font-data-mono text-slate-600">${escapeHtml(p.mobile_number)}</td>
-                <td class="px-4 py-3.5 text-right font-bold text-rose-600">â‚¹${(parseFloat(p.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3.5 text-right font-bold text-rose-600">₹${(parseFloat(p.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3.5 font-bold text-slate-800">${p.due_date}</td>
                 <td class="px-4 py-3.5 text-slate-500 max-w-[200px] truncate" title="${escapeHtml(p.remarks)}">${escapeHtml(p.remarks || 'No notes.')}</td>
                 <td class="px-4 py-3.5 text-right flex items-center justify-end gap-2">
@@ -1380,7 +1380,7 @@
             tr.innerHTML = `
                 <td class="px-4 py-3.5 font-bold text-slate-800">${escapeHtml(emp.name)}</td>
                 <td class="px-4 py-3.5 text-center font-bold">${emp.cases} cases</td>
-                <td class="px-4 py-3.5 text-right font-bold text-rose-600">â‚¹${emp.totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="px-4 py-3.5 text-right font-bold text-rose-600">₹${emp.totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 <td class="px-4 py-3.5 font-bold text-slate-800 font-data-mono">${emp.oldestDue === '9999-12-31' ? '--' : emp.oldestDue}</td>
                 <td class="px-4 py-3.5">${dueBadge}</td>
                 <td class="px-4 py-3.5 text-right">
@@ -1408,9 +1408,9 @@
         document.getElementById('detSalesPerson').textContent = payment.sales_person;
         document.getElementById('detInvoice').textContent = payment.invoice_number || '--';
         document.getElementById('detPaymentMode').textContent = payment.payment_mode;
-        document.getElementById('detTotalBill').textContent = `â‚¹${(parseFloat(payment.total_bill_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        document.getElementById('detReceived').textContent = `â‚¹${(parseFloat(payment.amount_received) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        document.getElementById('detPending').textContent = `â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detTotalBill').textContent = `₹${(parseFloat(payment.total_bill_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detReceived').textContent = `₹${(parseFloat(payment.amount_received) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('detPending').textContent = `₹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         
         const debtSec = document.getElementById('detDebtSection');
         if (parseFloat(payment.pending_amount) > 0) {
@@ -1431,7 +1431,7 @@
                 item.className = 'history-timeline-item flex flex-col gap-0.5 text-[11px]';
                 item.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-emerald-600">+ â‚¹${(parseFloat(log.amount_added) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        <span class="font-bold text-emerald-600">+ ₹${(parseFloat(log.amount_added) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                         <span class="text-slate-400 font-data-mono text-[9px]">${log.date_time}</span>
                     </div>
                     <div class="text-slate-500"><span class="font-semibold text-slate-700">Received By:</span> ${escapeHtml(log.received_by)}</div>
@@ -1498,7 +1498,7 @@
         if (!modal) return;
 
         document.getElementById('partial_payment_id').value = payment.payment_id;
-        document.getElementById('partialPendingBalance').textContent = `â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('partialPendingBalance').textContent = `₹${(parseFloat(payment.pending_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         document.getElementById('partial_amount_added').value = '';
         document.getElementById('partial_amount_added').max = payment.pending_amount;
         document.getElementById('partial_remarks').value = '';
@@ -1538,7 +1538,7 @@
                 });
                 const res = await response.json();
                 if (response.ok && res.success) {
-                    showToast(`Recorded partial payment of â‚¹${amount.toLocaleString()} successfully!`, 'success');
+                    showToast(`Recorded partial payment of ₹${amount.toLocaleString()} successfully!`, 'success');
                     closePartialModal();
                     fetchPayments();
                 } else {
@@ -1555,7 +1555,7 @@
         const payment = allPayments.find(p => p.payment_id === id);
         if (!payment) return;
 
-        const confirmVal = await window.showConfirm(`Are you sure you want to mark payment ID ${payment.payment_id} for ${payment.customer_name} as Fully Paid? This will settle the remaining balance of â‚¹${(parseFloat(payment.pending_amount) || 0).toLocaleString()}.`, 'confirm');
+        const confirmVal = await window.showConfirm(`Are you sure you want to mark payment ID ${payment.payment_id} for ${payment.customer_name} as Fully Paid? This will settle the remaining balance of ₹${(parseFloat(payment.pending_amount) || 0).toLocaleString()}.`, 'confirm');
         if (!confirmVal) return;
 
         window.showLoading('Settle pending balance...');

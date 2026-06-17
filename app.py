@@ -2236,14 +2236,37 @@ def api_sales_persons():
         username = u.get('username', '')
         employee_id = u.get('employee_id', '')
         display_name = f"{username} - {employee_id}"
+        
+        # Determine designation rank
+        role = str(u.get('role') or '').lower()
+        job_title = str(u.get('job_title') or '').lower()
+        if 'manager' in job_title or role == 'super_admin':
+            rank = 1
+        elif 'cashier' in job_title or role == 'admin':
+            rank = 2
+        else:
+            rank = 3
+            
         sales_persons.append({
             "user_id": u.get('user_id') or u.get('id', ''),
             "username": username,
             "employee_id": employee_id,
             "role": u.get('role', ''),
-            "display_name": display_name
+            "display_name": display_name,
+            "rank": rank
         })
+    
+    # Sort sales_persons by rank first, then by employee_id naturally.
+    import re
+    def natural_sort_key(item):
+        emp_id = str(item.get('employee_id') or '')
+        parts = [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', emp_id)]
+        return (item.get('rank', 3), parts)
+    
+    sales_persons.sort(key=natural_sort_key)
     return jsonify(sales_persons)
+
+
 
 @app.route('/api/staff-list', methods=['GET'])
 @login_required

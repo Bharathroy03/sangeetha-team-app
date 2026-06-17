@@ -341,6 +341,7 @@ const initApp = () => {
 
     // --- AUTO CALCULATION LOGIC ---
     function runCalculations(keepExistingStatus = false) {
+        if (!totalBillInput || !amountReceivedInput || !pendingAmountInput) return;
         const totalVal = parseFloat(totalBillInput.value) || 0;
         const receivedVal = parseFloat(amountReceivedInput.value) || 0;
 
@@ -1038,14 +1039,14 @@ const initApp = () => {
 
     // --- FETCH PAYMENTS & STATISTICS ---
     async function fetchPayments() {
-        const start = document.getElementById('filterStartDate').value;
-        const end = document.getElementById('filterEndDate').value;
-        const mode = document.getElementById('filterMode').value;
-        const status = document.getElementById('filterStatus').value;
-        const settlement = document.getElementById('filterSettlement').value;
-        const pendingFrom = document.getElementById('filterPendingFrom').value;
-        const salesperson = document.getElementById('filterSalesperson').value;
-        const search = document.getElementById('filterSearch').value;
+        const start = document.getElementById('filterStartDatePayments') ? document.getElementById('filterStartDatePayments').value : '';
+        const end = document.getElementById('filterEndDatePayments') ? document.getElementById('filterEndDatePayments').value : '';
+        const mode = document.getElementById('filterMode') ? document.getElementById('filterMode').value : '';
+        const status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '';
+        const settlement = document.getElementById('filterSettlement') ? document.getElementById('filterSettlement').value : '';
+        const pendingFrom = document.getElementById('filterPendingFrom') ? document.getElementById('filterPendingFrom').value : '';
+        const salesperson = document.getElementById('filterSalesperson') ? document.getElementById('filterSalesperson').value : '';
+        const search = document.getElementById('filterSearch') ? document.getElementById('filterSearch').value : '';
 
         // Build Query URL
         let params = new URLSearchParams();
@@ -1508,7 +1509,7 @@ const initApp = () => {
     };
 
     // --- FILTER TRIGGERS ---
-    const filters = ['filterStartDate', 'filterEndDate', 'filterMode', 'filterStatus', 'filterSettlement', 'filterPendingFrom', 'filterSalesperson'];
+    const filters = ['filterStartDatePayments', 'filterEndDatePayments', 'filterMode', 'filterStatus', 'filterSettlement', 'filterPendingFrom', 'filterSalesperson'];
     filters.forEach(fid => {
         const el = document.getElementById(fid);
         if (el) el.addEventListener('change', fetchPayments);
@@ -1524,11 +1525,13 @@ const initApp = () => {
         });
     }
 
-    const btnClearDate = document.getElementById('btnClearDateFilters');
+    const btnClearDate = document.getElementById('btnClearDateFiltersPayments');
     if (btnClearDate) {
         btnClearDate.addEventListener('click', () => {
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
+            const startEl = document.getElementById('filterStartDatePayments');
+            const endEl = document.getElementById('filterEndDatePayments');
+            if (startEl) startEl.value = '';
+            if (endEl) endEl.value = '';
             fetchPayments();
         });
     }
